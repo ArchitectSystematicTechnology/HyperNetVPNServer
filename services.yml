@@ -13,3 +13,24 @@ geoip:
     - name: getmyip
       port: 9001
       scheme: http  
+
+openvpn:
+  # these are udp/tcp services, so we don't want to put them behind the reverse proxy
+  # Options:
+  #   1) set scheduling_group=frontend,
+  #   2) create a 'vpn' group, intended for horizontal scaling of the public vpn nodes,
+  #      and run this service there (so you can keep assuming that 'backend' hosts are 'private')
+  scheduling_group: frontend
+  num_instances: 1
+  skip_acme: true
+  containers:
+    - name: openvpn
+      image: registry.0xacab.org/leap/openvpn:latest
+      volumes: /srv/leap/shapeshifter-state:/srv/leap/shapeshifter-state
+    - env:
+        RHOST: 127.0.0.1
+        RPORT: 1194
+        LHOST: "{{ ip }}"
+        OBFSPORT: 23042
+        LOGLEVEL: DEBUG
+        EXTORPORT: 3334

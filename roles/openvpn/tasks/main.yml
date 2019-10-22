@@ -2,3 +2,7 @@
     dest: /srv/leap/shapeshifter-state
     src: "{{ credentials_dir }}/shapeshifter/"
 
+- copy:
+    src: 50shapeshifter.firewall
+    dst: /etc/firewall/filter.d/50shapeshifter
+    notify: reload firewall
