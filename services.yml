@@ -3,6 +3,8 @@ include:
   - ../../float/services.yml.default
 
 geoip:
+  scheduling_group: backend
+  num_instances: 1
   containers:
     - name: geoip
       image: registry.0xacab.org/leap/getmyip:latest
