@@ -1,0 +1,4 @@
+- copy:
+    dest: /srv/leap/shapeshifter-state
+    src: "{{ credentials_dir }}/shapeshifter/"
+

@@ -1,0 +1,13 @@
+---
+include:
+  - ../../float/services.yml.default
+
+geoip:
+  containers:
+    - name: geoip
+      image: registry.0xacab.org/leap/getmyip:latest
+      port: 9001
+  public_endpoints:
+    - name: getmyip
+      port: 9001
+      scheme: http  

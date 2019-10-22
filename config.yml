@@ -1,0 +1,7 @@
+---
+plugin: float
+services_file: services.yml
+hosts_file: hosts.yml
+passwords_file: passwords.yml
+credentials_dir: credentials
+vars_dir: group_vars/all

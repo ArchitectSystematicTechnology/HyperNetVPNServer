@@ -1,0 +1,18 @@
+---
+domain: infra.bitmask.net
+domain_public:
+  - float.bitmask.net
+net_overlays:
+  - name: vpn0
+    network: 172.16.1.0/24
+enable_ssh: true
+enable_osquery: false
+admins:
+  - name: admin
+    email: "admin@bitmask.net"
+    password: "$s$16384$8$1$c479e8eb722f1b071efea7826ccf9c20$96d63ebed0c64afb746026f56f71b2a1f8796c73141d2d6b1958d4ea26c60a0b"
+    ssh_keys:
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICF6TDr56rmY8TMRCG5KSde0yajXktsUV3Q+7vRRN25D"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBYvrtfHSy+W4CQCkmlm2/rV1J5xpzpRVqB8SfHFtnG5"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0aQ6m/foqJlc4xSb585ZvoJWiNlkn15Jm4445yiZky"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBGRfVmBUpsLdFPae/ni0NYMbb5QR87MevNggi/wHHjl"
