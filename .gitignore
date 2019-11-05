@@ -1,0 +1,4 @@
+*.pyc
+*.retry
+.vagrant
+ansible.log
