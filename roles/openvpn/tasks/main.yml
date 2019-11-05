@@ -1,8 +1,11 @@
-- copy:
-    dest: /srv/leap/shapeshifter-state
+- name: Install shapeshifter state
+  copy:
     src: "{{ credentials_dir }}/shapeshifter/"
+    dest: "/srv/leap/shapeshifter-state"
 
-- copy:
-    src: 50shapeshifter.firewall
-    dst: /etc/firewall/filter.d/50shapeshifter
-    notify: reload firewall
+- name: Install firewall config for shapeshifter
+  copy:
+    src: "50shapeshifter.firewall"
+    dest: "/etc/firewall/filter.d/50shapeshifter"
+  notify: "reload firewall"
+
