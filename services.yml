@@ -25,12 +25,12 @@ openvpn:
   skip_acme: true
   containers:
     - name: openvpn
-      image: registry.0xacab.org/leap/openvpn:latest
-      volumes: /srv/leap/shapeshifter-state:/srv/leap/shapeshifter-state
-    - env:
-        RHOST: 127.0.0.1
-        RPORT: 1194
+      image: registry.0xacab.org/leap/container-platform/openvpn:latest
+      port: 1194
+      volumes:
+        - /srv/leap/shapeshifter-state: /srv/leap/shapeshifter-state
+      env:
+        # Shapeshifter specific environment variables
         LHOST: "{{ ip }}"
-        OBFSPORT: 23042
         LOGLEVEL: DEBUG
-        EXTORPORT: 3334
+
