@@ -32,5 +32,6 @@ openvpn:
       env:
         # Shapeshifter specific environment variables
         LHOST: "{{ ip }}"
+        _CHAP_OPTIONS: --no-syslog
         LOGLEVEL: DEBUG
 
