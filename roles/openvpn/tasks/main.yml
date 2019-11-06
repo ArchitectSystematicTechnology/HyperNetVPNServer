@@ -1,7 +1,10 @@
+# this is a recursive copy
 - name: Install shapeshifter state
   copy:
     src: "{{ credentials_dir }}/shapeshifter/"
     dest: "/srv/leap/shapeshifter-state"
+    owner: docker-openvpn
+    mode: 0600
 
 - name: Install firewall config for shapeshifter
   copy:
@@ -9,25 +12,14 @@
     dest: "/etc/firewall/filter.d/50shapeshifter"
   notify: "reload firewall"
 
-# note the following is only because shapeshifter insists on logging into the
-# "state" directory, which does not make sense at all, but if we want to debug
-# it, then we need to make it so it can write there. We want it so configs are
-# not writable by the services, but this breaks that assumption, so we
-# will instead file a bug upstream and turn this off when we are done debugging
-- name: Make sure shapeshifter state directory has the right ownership
-  file:
-    path: "/srv/leap/shapeshifter-state"
-    state: directory
-    owner: docker-openvpn
-
 - name: Make sure shapeshifter state file ownership is correct
   file:
     path: "/srv/leap/shapeshifter-state/obfs4_state.json"
     owner: docker-openvpn
-    mode: 0644
+    mode: 0600
 
 - name: Make sure shapeshifter obfs4_bridgeline.txt file ownership is correct
   file:
-    path: "/srv/leap/shapeshifter-state/obfs4_bridgeline.txt"
+    path: "/srv/leap/shapeshifter-state/obfs4_cert.txt"
     owner: docker-openvpn
-    mode: 0644
+    mode: 0600
