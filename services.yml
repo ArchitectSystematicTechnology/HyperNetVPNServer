@@ -22,7 +22,6 @@ openvpn:
   #      and run this service there (so you can keep assuming that 'backend' hosts are 'private')
   scheduling_group: frontend
   num_instances: 1
-  skip_acme: true
   containers:
     - name: openvpn
       image: registry.0xacab.org/leap/container-platform/openvpn:latest
