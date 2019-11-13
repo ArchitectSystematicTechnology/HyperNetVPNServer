@@ -22,10 +22,15 @@ openvpn:
   #      and run this service there (so you can keep assuming that 'backend' hosts are 'private')
   scheduling_group: frontend
   num_instances: 1
+  public_tcp_endpoints:
+    - name: shapeshifterlistener
+      port: 23042
+    - name: openvpn
+      port: 1194
   containers:
     - name: openvpn
       image: registry.0xacab.org/leap/container-platform/openvpn:latest
-      port: 1194
+      ports: [1194, 23042]
       volumes:
         - /srv/leap/shapeshifter-state: /srv/leap/shapeshifter-state
       env:
