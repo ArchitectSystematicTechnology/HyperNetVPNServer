@@ -1,0 +1,67 @@
+---
+actions:
+  # Delete old indices.
+  1:
+    action: delete_indices
+    description: >-
+      Delete indices older than {{ item.value }} days (based on index name), for {{ item.key }}-
+      prefixed indices. Ignore the error if the filter does not result in an
+      actionable list of indices (ignore_empty_list) and exit cleanly.
+    options:
+      ignore_empty_list: True
+    filters:
+    - filtertype: pattern
+      kind: prefix
+      value: {{ item.key }}-
+    - filtertype: age
+      source: name
+      direction: older
+      timestring: '%Y.%m.%d'
+      unit: days
+      unit_count: {{ item.value }}
+
+  # Set the replica count to 0 after 3 days (in case it was ever
+  # different in the first place, which it probably wasn't).
+  2:
+    action: replicas
+    description: >-
+      Reduce the replica count to 0 for {{ item.key }}- prefixed indices older than
+      3 days (based on index creation_date)
+    options:
+      count: 0
+      wait_for_completion: True
+      ignore_empty_list: True
+    filters:
+    - filtertype: pattern
+      kind: prefix
+      value: {{ item.key }}-
+    - filtertype: age
+      source: creation_date
+      direction: older
+      unit: days
+      unit_count: 3
+
+  # Set indices older than 1 day to read-only.
+  3:
+    action: index_settings
+    description: >-
+      Set {{ item.key }} indices older than 1 day to be read only (block writes)
+    options:
+      index_settings:
+        index:
+          blocks:
+            write: True
+      ignore_unavailable: False
+      ignore_empty_list: True
+      preserve_existing: False
+    filters:
+    - filtertype: pattern
+      kind: prefix
+      value: {{ item.key }}-
+      exclude:
+    - filtertype: age
+      source: name
+      direction: older
+      timestring: '%Y.%m.%d'
+      unit: days
+      unit_count: 2

@@ -1,0 +1,18 @@
+---
+
+# Whether to set up elasticsearch/kibana at all.
+enable_elasticsearch: true
+
+es_major_version: "6"
+
+# This number is very low and only useful for the testing environment.
+es_heap_size: "166m"
+
+# Each member of the following dictionary is the prefix of a logstash-like
+# timestamped index. The value is how many days of logs to keep.
+es_log_keep_days:
+  audit: 180
+  logstash: 15
+  http: 15
+
+kibana_default_index_id: "ec2f3610-55c7-11e8-823a-73397be2582f"

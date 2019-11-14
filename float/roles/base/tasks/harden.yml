@@ -1,0 +1,94 @@
+# from github.com/trailofbits/algo
+
+---
+
+- name: Find directories for minimizing access
+  stat:
+    path: "{{ item }}"
+  register: minimize_access_directories
+  with_items:
+    - "/usr/local/sbin"
+    - "/usr/local/bin"
+    - "/usr/sbin"
+    - "/usr/bin"
+    - "/sbin"
+    - "/bin"
+
+# TODO: understand why recurse=yes gets caught in a loop sometimes.
+- name: Minimize access
+  file: path="{{ item.stat.path }}" mode="go-w" #recurse=yes
+  when: item.stat.isdir
+  with_items: "{{ minimize_access_directories.results }}"
+  no_log: True
+
+- name: Change shadow ownership to root and mode to 600
+  file: dest=/etc/shadow owner=root group=root mode=0600
+
+- name: Change su binary to only be accessible to root
+  file: dest=/bin/su owner=root group=root mode=0750
+
+- name: Collect use of privileged commands
+  shell: >
+    /usr/bin/find {/,/usr/,/usr/local/}{bin,sbin} -xdev \( -perm -4000 -o -perm -2000 \) -type f | sort | awk '{print "-a always,exit -F path=" $1 " -F perm=x -F auid>=500 -F auid!=4294967295 -k privileged" }'
+  args:
+    executable: /bin/bash
+  check_mode: no
+  changed_when: False
+  register: privileged_programs
+
+- name: Restrict core dumps (PAM)
+  lineinfile: dest=/etc/security/limits.conf line="* hard core 0" state=present
+
+# Audit configuration on Debian stretch uses augenrules by default, so
+# we copy our rules in /etc/audit/rules.d.
+- name: Auditd installed
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - auditd
+      - audisp-json
+
+- name: Auditd default config removed
+  file:
+    path: /etc/audit/rules.d/audit.rules
+    state: absent
+
+- name: Auditd rules configured
+  template:
+    src: "{{ item }}"
+    dest: "/etc/audit/rules.d/{{ item | regex_replace('^.*/(.*)\\.j2$', '\\1') }}"
+  with_fileglob:
+    - "templates/audit/rules.d/*.j2"
+  notify:
+    - restart auditd
+
+- name: Auditd configured
+  template:
+    src: audit/auditd.conf.j2
+    dest: /etc/audit/auditd.conf
+  notify:
+    - restart auditd
+
+- name: Audispd plugins configured
+  copy:
+    src: "audisp/plugins.d/{{ item }}"
+    dest: "/etc/audisp/plugins.d/{{ item }}"
+  with_items:
+    - syslog.conf
+    - json.conf
+  notify:
+    - restart auditd
+
+- name: Enable auditd service
+  systemd:
+    name: auditd.service
+    enabled: yes
+
+- name: Disable journald-auditd link
+  systemd:
+    name: systemd-journald-audit.socket
+    state: stopped
+    enabled: no
+    masked: yes

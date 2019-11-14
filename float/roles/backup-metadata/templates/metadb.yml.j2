@@ -1,0 +1,13 @@
+db_driver: "sqlite3"
+db_uri: "/var/lib/tabacco-metadb/meta.db?_journal=WAL"
+http_server:
+  tls:
+    cert: "/etc/credentials/x509/backup-metadata/server/cert.pem"
+    key: "/etc/credentials/x509/backup-metadata/server/private_key.pem"
+    ca: "/etc/credentials/x509/backup-metadata/ca.pem"
+    acl:
+      allow:
+        - path: "/api/add_dataset"
+          cn: "backup-agent.{{ domain }}"
+        - path: ".*"
+          cn: ".*"

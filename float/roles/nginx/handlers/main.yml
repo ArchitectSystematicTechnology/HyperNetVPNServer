@@ -1,0 +1,13 @@
+---
+
+- name: reload nginx
+  systemd: name=nginx.service daemon_reload=yes state=restarted
+  ignore_errors: yes
+
+- name: restart sso-proxy
+  systemd: name=sso-proxy.service state=restarted enabled=yes masked=no
+
+- name: reload firewall
+  systemd:
+    name: firewall.service
+    state: restarted

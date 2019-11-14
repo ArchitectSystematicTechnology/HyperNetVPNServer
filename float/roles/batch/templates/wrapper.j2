@@ -1,0 +1,48 @@
+#!/bin/sh
+
+# Change our working directory to the job dir.
+cd {{ job_dir }}
+
+# Check if we're done.
+if [ -e done ]; then
+    echo "job already complete" >&2
+    exit 0
+fi
+
+# Weak-ass lock.
+if [ -e lock ]; then
+    cur_pid=$(cat lock)
+    if kill -0 $cur_pid 2>/dev/null; then
+        echo "Error: another process is running" >&2
+        exit 1
+    fi
+    echo "removing stale lockfile from PID $cur_pid" >&2
+fi
+echo $$ > lock
+trap "rm -f lock" EXIT INT TERM
+
+# Run in a loop, until parallel succeeds. In practice, this means that
+# failed tasks will be retried.
+while true; do
+    parallel \
+        --will-cite \
+        --ungroup \
+        --progress \
+        --jobs {{ batch_concurrency | default(2) }} \
+        --resume-failed \
+        --joblog joblog \
+        --arg-file input \
+        --max-args 1 \
+        /bin/sh -c '{= s:^\w+\s+::; =}'
+    rc=$?
+    if [ $rc -eq 0 ]; then
+        break
+    fi
+    echo "error: parallel exited with status $rc" >&2
+    echo "sleeping 5 minutes and trying again..." >&2
+    sleep 300
+done
+
+touch done
+
+exit 0

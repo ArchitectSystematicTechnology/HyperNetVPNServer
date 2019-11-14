@@ -1,0 +1,2 @@
+container_cpu_limit{service="{{ systemd_service }}.service"} {{ container.resources.cpu | default('0') }}
+container_memory_limit{service="{{ systemd_service }}.service"} {{ container.resources.ram | default('0') | human_to_bytes }}

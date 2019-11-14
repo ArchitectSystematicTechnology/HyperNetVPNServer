@@ -1,0 +1,64 @@
+global:
+  smtp_from: '{{ alertmanager_smtp_from }}'
+  smtp_smarthost: '{{ alertmanager_smtp_smarthost }}'
+  smtp_require_tls: {{ alertmanager_smtp_require_tls }}
+  smtp_auth_username: '{{ alertmanager_smtp_auth_username }}'
+  smtp_auth_password: '{{ alertmanager_smtp_auth_password }}'
+  smtp_hello: '{{ alertmanager_smtp_hello }}'
+
+templates:
+  - '/etc/prometheus/alertmanager_templates/*.tmpl'
+
+route:
+  group_by: ['alertname', 'service']
+  group_wait: 30s
+  group_interval: 4h
+  repeat_interval: 12h
+
+  # No delivery of alerts by default.
+  receiver: default
+
+  # Only severity=page alerts are ever sent anywhere.
+  routes:
+    - receiver: 'alert-email'
+      match:
+        severity: page
+
+# The following inhibit rules are meant to work both with the job/host
+# hierarchy (for standard metrics) and with the probe/target one (for
+# the blackbox prober metrics).
+inhibit_rules:
+  # Inhibit severity=warn alerts if the same alert is already active with severity=page.
+  - source_match:
+      severity: 'page'
+    target_match:
+      severity: 'warn'
+    equal: ['alertname', 'job', 'probe']
+  # Inhibit scope=host alerts if the same alert is active with scope=global.
+  - source_match:
+      scope: 'global'
+    target_match:
+      scope: 'host'
+    equal: ['alertname', 'job', 'probe']
+  # Inhibit scope=instance alerts if the same alert is active with scope=global
+  # (for services with multiple instances).
+  - source_match:
+      scope: 'global'
+    target_match:
+      scope: 'instance'
+    equal: ['alertname']
+  # Inhibit all host-level alerts if HostUnreachable is firing.
+  - source_match:
+      alertname: HostUnreachable
+    target_match:
+      severity: 'page'
+    equal: ['host']
+
+receivers:
+  - name: default
+  - name: 'alert-email'
+{% if alert_email %}
+    email_configs:
+      - to: '{{ alert_email }}'
+{% endif %}
+

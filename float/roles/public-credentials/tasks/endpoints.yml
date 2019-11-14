@@ -1,0 +1,7 @@
+---
+
+# Loop over the multiple entries in 'item'
+
+- include_tasks: endpoint.yml
+  with_items: "{{ endpoints | list }}"
+

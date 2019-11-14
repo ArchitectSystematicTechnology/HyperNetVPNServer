@@ -1,0 +1,13 @@
+---
+
+# The auth-server should be installed on all hosts.
+
+# TODO: we will need a different configuration on each host (sharded
+# services, for instance, will need different LDAP filters on every
+# host).
+
+- include_tasks: sso-server.yml
+  when: float_enable_sso_server
+
+- include_tasks: user-meta-server.yml
+  when: float_enable_user_meta_server

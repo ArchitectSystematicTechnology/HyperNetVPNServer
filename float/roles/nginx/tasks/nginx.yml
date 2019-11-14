@@ -1,0 +1,186 @@
+---
+
+- name: Install packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - sso-proxy
+      - nginx-full
+
+# SSO proxy setup.
+- name: Configure /etc/default/sso-proxy
+  copy:
+    src: sso-proxy.default
+    dest: /etc/default/sso-proxy
+  notify: restart sso-proxy
+
+- name: Configure ssoproxy
+  template:
+    src: proxy.yml.j2
+    dest: /etc/sso/proxy.yml
+    owner: root
+    group: sso-proxy
+    mode: 0640
+  notify: restart sso-proxy
+
+- name: Add user sso-proxy to credentials group
+  user:
+    name: sso-proxy
+    groups: ssoproxy-credentials
+    append: yes
+
+- name: Enable sso-proxy systemd unit
+  systemd:
+    name: sso-proxy.service
+    enabled: yes
+    masked: no
+
+# NGINX setup.
+
+# The nginx user must be a member of the groups that own the
+# credentials (internal and public).
+- name: Create nginx group
+  group:
+    name: nginx
+    system: yes
+
+- name: Create nginx user
+  user:
+    name: nginx
+    group: nginx
+    groups: nginx-credentials,public-credentials
+    home: /nonexistent
+    system: yes
+
+- name: Fix permissions of /var/lib/nginx subdirs
+  file:
+    path: "/var/lib/nginx/{{ item }}"
+    owner: nginx
+  with_items:
+    - body
+    - proxy
+
+- name: Install NGINX systemd unit
+  copy:
+    src: nginx.service
+    dest: /etc/systemd/system/nginx.service
+  notify: reload nginx
+
+- name: Install NGINX logrotate config
+  copy:
+    src: nginx.logrotate
+    dest: /etc/logrotate.d/nginx
+
+- name: Install DH parameters
+  copy:
+    src: "{{ credentials_dir }}/x509/dhparam"
+    dest: /etc/nginx/dhparam
+
+- name: Install NGINX config (dirs)
+  file:
+    path: "/etc/nginx/{{ item.path }}"
+    state: directory
+  with_filetree: templates/config/
+  when: item.state == 'directory'
+- name: Install NGINX config (files)
+  template:
+    src: "{{ item.src }}"
+    dest: "/etc/nginx/{{ item.path }}"
+  with_filetree: templates/config/
+  when: item.state == 'file'
+  notify: reload nginx
+
+- name: Create sites-auto directory
+  file:
+    path: /etc/nginx/sites-auto
+    state: directory
+
+- name: Disable unwanted modules
+  file:
+    path: "/etc/nginx/modules-enabled/{{ item }}"
+    state: absent
+  with_items:
+    - "50-mod-http-auth-pam.conf"
+    - "50-mod-http-dav-ext.conf"
+    - "50-mod-http-echo.conf"
+    - "50-mod-http-image-filter.conf"
+    - "50-mod-http-subs-filter.conf"
+    - "50-mod-http-upstream-fair.conf"
+    - "50-mod-http-xslt-filter.conf"
+    - "50-mod-mail.conf"
+    - "50-mod-stream.conf"
+
+# Setup the HTTP router configuration.
+- name: Configure NGINX (upstreams)
+  template:
+    src: nginx-upstream.j2
+    dest: /etc/nginx/conf.d/float_upstreams.conf
+  notify: reload nginx
+
+- name: Configure NGINX (vhosts)
+  template:
+    src: nginx-vhost.j2
+    dest: /etc/nginx/sites-available/float.conf
+  notify: reload nginx
+
+- name: Activate NGINX configuration
+  file:
+    dest: /etc/nginx/sites-enabled/float.conf
+    src: /etc/nginx/sites-available/float.conf
+    state: link
+  notify: reload nginx
+
+# Install the default homepage for nonexisting sites.
+- name: Install default homepage
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+
+- name: Install favicon
+  copy:
+    src: favicon.ico
+    dest: /var/www/html/favicon.ico
+
+- name: Create the custom error directory
+  file:
+    path: /var/www/html/__errors
+    state: directory
+
+- name: Copy custom error messages
+  copy:
+    src: "{{ item }}"
+    dest: /var/www/html/__errors/
+  with_fileglob: "errors/*"
+
+# Create the cache directory.
+- file:
+    path: /var/cache/nginx
+    state: directory
+    owner: nginx
+    group: nginx
+    mode: 0700
+
+# Configure the firewall.
+- template:
+    src: firewall/20nginx.j2
+    dest: /etc/firewall/filter.d/20nginx
+  notify: "reload firewall"
+
+# Misc setup.
+- name: Install acme reload hook
+  copy:
+    content: "#!/bin/sh\nsystemctl reload nginx\n"
+    dest: /etc/acme-storage/reload-hooks/nginx
+    mode: 0755
+
+# Misc cleanup of old files.
+- name: Remove obsolete files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /usr/local/bin/acme-reload-nginx
+    - /etc/cron.d/acme-reload-nginx
+

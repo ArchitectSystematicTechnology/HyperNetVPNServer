@@ -1,0 +1,55 @@
+---
+
+- set_fact:
+    enable_backup: "{{ backup_repository_restic_password != '' }}"
+
+- name: Create a group to allow reading tabacco configs
+  group:
+    name: tabacco
+    system: yes
+    state: present
+
+- name: Create backup config and scratch directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0750
+    group: tabacco
+  with_items:
+    - /etc/tabacco
+    - /etc/tabacco/sources
+    - /etc/tabacco/handlers
+    - /var/lib/tabacco
+
+- name: Create backup agent config
+  template:
+    src: tabacco/agent.yml.j2
+    dest: /etc/tabacco/agent.yml
+    mode: 0600
+  notify:
+    - reload backup agent
+
+- name: Install backup agent systemd unit
+  template:
+    src: tabacco/agent.service.j2
+    dest: /etc/systemd/system/tabacco-agent.service
+  notify:
+    - restart backup agent
+
+- name: Enable backup agent systemd unit
+  systemd:
+    name: tabacco-agent.service
+    masked: no
+    enabled: yes
+    daemon_reload: yes
+  when: enable_backup
+
+- file:
+    path: /usr/lib/float/datasets
+    state: directory
+
+- include_tasks: backup_dataset.yml
+  with_subelements:
+    - "{{ services }}"
+    - datasets
+    - { skip_missing: true }

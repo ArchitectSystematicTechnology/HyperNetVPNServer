@@ -1,0 +1,10 @@
+---
+
+- name: restart sso-server
+  systemd: name=sso-server.service state=restarted
+
+- name: restart user-meta-server
+  systemd: name=user-meta-server.service state=restarted
+
+- name: restart auth-server
+  systemd: name=auth-server.service state=restarted

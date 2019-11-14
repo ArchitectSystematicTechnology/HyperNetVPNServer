@@ -1,0 +1,28 @@
+{#
+
+Map tying float services (float_service=), systemd services (service=)
+and vhosts together, used to build Graphana dynamic dashboards.
+
+#}
+{% for service_name, service in services | dictsort %}
+{% for ep in service.get('public_endpoints', []) %}
+{% for s in service.get('systemd_services', []) %}
+{% for d in domain_public %}
+vhostmap{float_service="{{ service_name }}",service="{{ s }}",vhost="{{ ep.name }}.{{ d }}:443"} 1
+{% endfor %}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+{#
+
+Map tying together float services (float_service=) and systemd services
+(service=), used to build alerts and Graphana dynamic dashboards.
+
+#}
+{% for service_name, service in services | dictsort %}
+{% for systemd_service in service.get('systemd_services', []) %}
+{% for h in groups[service_name] %}
+svcmap{float_service="{{ service_name }}",service="{{ systemd_service }}",target_host="{{ h }}"} 1
+{% endfor %}
+{% endfor %}
+{% endfor %}

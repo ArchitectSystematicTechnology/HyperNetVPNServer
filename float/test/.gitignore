@@ -1,0 +1,5 @@
+.vagrant
+*.retry
+*.log
+.ansible_vault_pw
+test-*

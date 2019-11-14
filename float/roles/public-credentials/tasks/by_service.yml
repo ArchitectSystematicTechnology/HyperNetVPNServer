@@ -1,0 +1,12 @@
+---
+
+# Install credentials by type for a specific service. The
+# 'credentials_type' can't be 'http' in this case, only 'tcp' or
+# 'other'.
+
+- set_fact:
+    endpoint_variable: "public_{{ credentials_type }}_endpoints"
+  when: credentials_type != 'http'
+
+- include_tasks: endpoint.yml
+  with_items: "{{ services[credentials_service].get(endpoint_variable, []) }}"

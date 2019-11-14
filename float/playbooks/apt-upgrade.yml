@@ -1,0 +1,10 @@
+---
+
+- hosts: all
+  tasks:
+    - apt:
+        update_cache: yes
+        upgrade: yes
+    - apt:
+        autoclean: yes
+        autoremove: yes

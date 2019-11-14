@@ -1,0 +1,8 @@
+groups:
+- name: roles/prometheus/files/rules/rules_acme.conf
+  rules:
+    - record: cn:cert_ok
+      expr: max(cert_ok) by (cn)
+
+    - record: cn:cert_renewal_errors:rate1h
+      expr: sum(delta(cert_renewal_errors[1h])) by (cn)

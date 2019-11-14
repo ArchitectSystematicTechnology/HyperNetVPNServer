@@ -1,0 +1,11 @@
+groups:
+- name: roles/prometheus/files/rules/alerts_cpu.conf
+  rules:
+  - alert: CPUUsageHigh
+    expr: instance_utilization:rate5m > 0.96
+    for: 10m
+    labels:
+      severity: warn
+    annotations:
+      summary: 'CPU utilization is high on {{ $labels.instance }}'
+      description: 'CPU utilization is high on {{ $labels.instance }}'

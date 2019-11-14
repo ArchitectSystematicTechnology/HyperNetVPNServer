@@ -1,0 +1,6 @@
+---
+
+- name: restart tabacco-metadb
+  systemd:
+    name: tabacco-metadb.service
+    state: restarted

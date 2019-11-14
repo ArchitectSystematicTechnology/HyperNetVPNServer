@@ -1,0 +1,45 @@
+stages:
+  - docker_build
+  - test
+
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+  GIT_SUBMODULE_STRATEGY: recursive
+
+run_base_test:
+  stage: test
+  script: "cd test && /usr/bin/timeout 3h ./run-test.sh ${APT_PROXY_ADDR:+--apt-proxy $APT_PROXY_ADDR} base"
+  tags: [ai3]
+  except:
+    - schedules
+
+run_buster_test:
+  stage: test
+  script: "cd test && /usr/bin/timeout 3h ./run-test.sh ${APT_PROXY_ADDR:+--apt-proxy $APT_PROXY_ADDR} buster"
+  tags: [ai3]
+  except:
+    - schedules
+
+run_full_test:
+  stage: test
+  script: "cd test && /usr/bin/timeout 3h ./run-test.sh --wait-time 300 ${APT_PROXY_ADDR:+--apt-proxy $APT_PROXY_ADDR} full"
+  tags: [ai3]
+  only:
+    - schedules
+
+docker_build_and_release_tests:
+  stage: docker_build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.autistici.org
+    - cd test && docker build --build-arg ci_token=$CI_JOB_TOKEN --pull -t $IMAGE_TAG .
+    - docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:integration-test
+    - docker push $CI_REGISTRY_IMAGE:integration-test
+  only:
+    changes:
+      - test/float_integration_test/**
+    refs:
+      - master
+

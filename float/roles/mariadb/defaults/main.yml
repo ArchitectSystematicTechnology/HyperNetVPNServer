@@ -1,0 +1,41 @@
+---
+
+mariadb_instance: default
+mariadb_service: "mariadb@{{ mariadb_instance }}.service"
+mariadb_socket: "/var/run/mariadb-{{ mariadb_instance }}/server.sock"
+mariadb_config: "/etc/mysql/conf.d/my{{ mariadb_instance }}.cnf"
+mariadb_config_dir: "/etc/mysql/{{ mariadb_instance }}.conf.d"
+mariadb_data_dir: "/var/lib/mariadb/{{ mariadb_instance }}"
+mariadb_client: "/usr/local/bin/mysql-{{ mariadb_instance }}"
+
+# Server configuration
+mariadb_server_id: 0
+mariadb_port: 3306
+mariadb_bind_address: 0.0.0.0
+
+# InnoDB
+mariadb_innodb_log_file_size: 256M
+
+# User limits
+mariadb_max_user_connections: 200
+
+# System limits
+mariadb_ulimit_nofile: 16384
+
+# Monitoring configuration
+mariadb_metrics_port: "{{ mariadb_port + 6000 }}"
+mariadb_metrics_address: ""
+mariadb_metrics_config: "/etc/prometheus/mysql-{{ mariadb_instance }}.cnf"
+mariadb_metrics_service: "prometheus-mysqld-exporter@{{ mariadb_instance }}.service"
+
+# Replication
+mariadb_enable_replication: false
+mariadb_is_master: false
+mariadb_master_host: ""
+mariadb_master_port: "{{ mariadb_port }}"
+mariadb_replication_user: replica
+mariadb_replication_password: ""
+mariadb_replicate_dbs: []
+
+# Custom server settings.
+mariadb_settings: {}

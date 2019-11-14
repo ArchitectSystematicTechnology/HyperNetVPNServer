@@ -1,0 +1,48 @@
+{% for n in net_overlays %}
+acl "net_{{ n.name }}" {
+  {{ n.network }};
+};
+{% endfor %}
+
+options {
+  directory "/var/cache/bind";
+
+  listen-on { any; };
+  listen-on-v6 { any; };
+
+  dnssec-enable yes;
+  dnssec-validation auto;
+
+  notify no;
+  rrset-order { order random; };
+
+  // Stay away from UDP size problems.
+  edns-udp-size 512;
+
+  // Conform to RFC1035.
+  auth-nxdomain no;
+
+  allow-transfer { none; };
+  allow-query {
+    localhost;
+{% for n in net_overlays %}
+    net_{{ n.name }};
+{% endfor %}
+  };
+};
+
+logging {
+  category lame-servers { null; };
+  category edns-disabled { null; };
+};
+
+statistics-channels {
+  inet 127.0.0.1 port 8053 allow { localhost; };
+};
+
+{% if acme_tsig_key is defined %}
+key acme {
+  algorithm "{{ acme_tsig_key.algo | lower }}";
+  secret "{{ acme_tsig_key.public }}";
+};
+{% endif %}

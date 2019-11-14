@@ -1,0 +1,25 @@
+---
+
+- name: restart prometheus
+  systemd:
+    name: docker-prometheus-prometheus.service
+    state: restarted
+  listen: "reload prometheus"
+
+- name: restart prometheus-alertmanager
+  systemd:
+    name: docker-prometheus-alertmanager.service
+    state: restarted
+  listen: "reload prometheus"
+
+- name: restart prometheus-blackbox
+  systemd:
+    name: docker-prometheus-blackbox.service
+    state: restarted
+  listen: "reload prometheus"
+
+- name: restart grafana-server
+  systemd:
+    name: docker-prometheus-grafana.service
+    state: restarted
+  listen: "restart grafana"

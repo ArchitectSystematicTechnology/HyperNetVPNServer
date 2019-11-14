@@ -1,0 +1,17 @@
+[Unit]
+Description=MTail
+Requires=mtail.socket
+
+[Service]
+Type=simple
+# Systemd will pass mtail.socket as FD 3.
+ExecStart=/usr/bin/mtail --progs /etc/mtail --logtostderr --port 3903 --logs /dev/fd/3
+Restart=on-failure
+User=mtail
+
+# Limit memory leaks
+MemoryMax=1G
+ExecStartPost=+/bin/sh -c "echo 0 > /sys/fs/cgroup/memory/system.slice/%n/memory.swappiness"
+
+[Install]
+WantedBy=multi-user.target

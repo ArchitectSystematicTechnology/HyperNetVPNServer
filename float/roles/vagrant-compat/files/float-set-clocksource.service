@@ -1,0 +1,12 @@
+[Unit]
+Description=set acpi as clocksource to avoid clock skew on resume from suspend-to-ram
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+User=root
+Group=root
+ExecStart=/usr/local/sbin/float-set-clocksource
+
+[Install]
+WantedBy=multi-user.target

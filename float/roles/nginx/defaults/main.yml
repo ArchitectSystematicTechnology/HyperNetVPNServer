@@ -1,0 +1,24 @@
+---
+dhparam_bits: 2048
+
+# How much memory to use for key caching in the proxy_cache.
+nginx_cache_keys_mem: "64m"
+
+# How much disk space to use for the cache.
+nginx_cache_fs_size: "1g"
+
+# URL of the SSO login server.
+sso_server_url: "https://login.{{ domain_public[0] }}/"
+
+# Rate limiting configuration, per-IP and per-service pools.
+nginx_limit_perip_rate: "10r/s"
+nginx_limit_perip_burst: 100
+nginx_limit_perserver_rate: "100r/s"
+nginx_limit_perserver_burst: 100
+
+# Various top-level NGINX configuration options that might need tuning.
+nginx_worker_connections: 4096
+nginx_keepalive_timeout: "20s"
+nginx_server_names_hash_max_size: 2048
+nginx_server_names_hash_bucket_size: 2048
+nginx_client_max_body_size: "100m"

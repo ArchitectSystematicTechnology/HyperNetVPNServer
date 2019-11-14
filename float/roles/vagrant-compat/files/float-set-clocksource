@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+set -u
+
+for cs in /sys/devices/system/clocksource/clocksource*; do
+  if ! grep -q acpi_pm $cs/available_clocksource ; then
+    echo "acpi_pm unavailable"
+    exit 1
+  fi
+
+  if ! grep -q acpi_pm $cs/current_clocksource; then
+    echo "acpi_pm" > $cs/current_clocksource
+  fi
+done

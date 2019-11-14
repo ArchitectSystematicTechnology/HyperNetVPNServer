@@ -1,0 +1,33 @@
+---
+
+- name: restart rsyslog-collector
+  systemd:
+    name: "rsyslog-collector.service"
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+    masked: no
+
+- name: restart elasticsearch
+  systemd:
+    name: "docker-log-collector-elasticsearch.service"
+    state: restarted
+
+- name: provision elasticsearch
+  async: 600
+  poll: 0
+  command: "/usr/local/bin/es_init.py"
+  run_once: true
+  when: "not ansible_check_mode"
+
+- name: restart kibana
+  systemd:
+    name: "docker-log-collector-kibana.service"
+    state: restarted
+
+- name: provision kibana
+  async: 600
+  poll: 0
+  command: "/usr/local/bin/kibana_importer.py --default-index {{ kibana_default_index_id }} --verbose --wait"
+  run_once: true
+  when: "not ansible_check_mode"

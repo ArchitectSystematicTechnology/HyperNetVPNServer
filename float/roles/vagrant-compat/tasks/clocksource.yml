@@ -1,0 +1,17 @@
+- name: Copy set-clocksource script
+  copy:
+    src: float-set-clocksource
+    dest: /usr/local/sbin/float-set-clocksource
+    mode: 0555
+
+- name: Copy systemd service
+  copy:
+    src: float-set-clocksource.service
+    dest: /etc/systemd/system/float-set-clocksource.service
+
+- name: Start set-clocksource
+  systemd:
+    name: float-set-clocksource.service
+    state: started
+    enabled: yes
+    daemon_reload: yes

@@ -1,0 +1,54 @@
+---
+
+- name: Install prometheus config files in /etc/default
+  copy:
+    src: "{{ 'node-exporter.default' if ansible_distribution_release == 'stretch' else 'node-exporter.default.buster' }}"
+    dest: "/etc/default/prometheus-node-exporter"
+  notify:
+    - reload prometheus-node-exporter
+
+- name: Install prometheus node package
+  apt:
+    name: prometheus-node-exporter
+    state: present
+
+- name: Add static metrics
+  template:
+    src: "{{ item }}.j2"
+    dest: "/var/lib/prometheus/node-exporter/{{ item }}"
+  with_items:
+    - roles.prom
+    - ansible.prom
+    - vhostmap.prom
+
+- name: Enable prometheus node systemd unit
+  systemd:
+    name: "prometheus-node-exporter.service"
+    enabled: yes
+    state: started
+
+# Script and cron job to periodically run shell scripts that generate
+# Prometheus metrics for the local node (collected via the node exporter).
+- name: Install node-exporter-cron script
+  copy:
+    src: node-exporter-cron.sh
+    dest: "/usr/local/bin/node-exporter-cron"
+    mode: 0755
+
+- name: Install node-exporter-cron cron job
+  copy:
+    dest: "/etc/cron.d/node-exporter-scripts"
+    content: "32 * * * * root /usr/local/bin/node-exporter-cron\n"
+
+- name: Create node-exporter scripts directory
+  file:
+    path: "/etc/prometheus/node-exporter-scripts"
+    state: directory
+
+- name: Install node-exporter-scripts
+  copy:
+    dest: "/etc/prometheus/node-exporter-scripts/{{ item.path }}"
+    src: "{{ item.src }}"
+    mode: 0755
+  with_filetree: files/node-exporter-scripts/
+  when: item.state == 'file'

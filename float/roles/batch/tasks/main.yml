@@ -1,0 +1,54 @@
+---
+
+# First, prepare the input and figure out job-related parameters.
+
+- name: Compute hash of input
+  local_action: shell md5sum {{ input_file }} | awk '{print $1}'
+  run_once: true
+  register: md5sum
+
+- set_fact:
+    batch_input_hash: "{{ md5sum.stdout }}"
+
+- name: Split input file by shard
+  local_action: shell awk '{ print > "{{ job_name }}_" $1 ".dat" }' < {{ input_file }}
+  run_once: true
+
+- set_fact:
+    job_id: "{{ job_name }}.{{ batch_input_hash }}"
+    job_dir: "/var/tmp/{{ job_name }}.{{ batch_input_hash }}"
+
+# Set up the hosts.
+
+- name: Install GNU parallel
+  apt:
+    name: parallel
+    state: present
+
+- name: Create ephemeral job dir
+  file:
+    path: "{{ job_dir }}"
+    state: directory
+
+- name: Check shard input file
+  local_action:
+    module: stat
+    path: "{{ job_name }}_{{ shard_id }}.dat"
+  register: shard_has_input
+
+- name: Transfer input to hosts
+  copy:
+    src: "{{ job_name }}_{{ shard_id }}.dat"
+    dest: "{{ job_dir }}/input"
+  when: shard_has_input.stat is defined and shard_has_input.stat.exists
+
+- name: Set up wrapper
+  template:
+    src: "wrapper.j2"
+    dest: "{{ job_dir }}/wrapper"
+    mode: 0755
+  when: shard_has_input.stat is defined and shard_has_input.stat.exists
+
+- name: Run wrapper
+  shell: "nohup {{ job_dir }}/wrapper >> {{ job_dir }}/output &"
+  when: shard_has_input.stat is defined and shard_has_input.stat.exists

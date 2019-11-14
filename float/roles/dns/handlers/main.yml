@@ -1,0 +1,11 @@
+---
+
+- name: reload bind
+  systemd:
+    name: bind9.service
+    state: reloaded
+
+- name: reload firewall
+  systemd:
+    name: firewall.service
+    state: restarted

@@ -1,0 +1,216 @@
+---
+
+frontend:
+  scheduling_group: frontend
+  service_credentials:
+    - name: nginx
+      enable_server: false
+    - name: ssoproxy
+      enable_server: false
+    - name: replds-acme
+  systemd_services:
+    - nginx.service
+    - sso-proxy.service
+    - bind9.service
+    - replds@acme.service
+  ports:
+    - 5005
+  volumes:
+    - name: cache
+      path: /var/cache/nginx
+      owner: nginx
+      group: nginx
+      mode: "0700"
+      size: 20g
+
+log-collector:
+  scheduling_group: backend
+  num_instances: 1
+  service_credentials:
+    - name: log-collector
+      enable_client: false
+  monitoring_endpoints:
+    - job_name: rsyslog-collector
+      port: 9105
+      scheme: http
+  systemd_services:
+    - rsyslog-collector.service
+  ports:
+    - 6514
+
+prometheus:
+  scheduling_group: backend
+  num_instances: 1
+  service_credentials:
+    - { name: prometheus }
+  containers:
+    - name: prometheus
+      image: registry.git.autistici.org/ai3/docker/prometheus:master
+      port: 9090
+      volumes:
+        - /etc/prometheus: /etc/prometheus
+        - /var/lib/prometheus/metrics2: /var/lib/prometheus/metrics2
+      args: "--storage.tsdb.retention.time={{ prometheus_tsdb_retention | default('90d') }} --web.external-url=https://monitor.{{ domain_public[0] }}"
+    - name: alertmanager
+      image: registry.git.autistici.org/ai3/docker/prometheus-alertmanager:master
+      ports:
+        - 9093
+        - 9094
+      volumes:
+        - /etc/prometheus: /etc/prometheus
+        - /var/lib/prometheus/alertmanager: /var/lib/prometheus/alertmanager
+      args: "--web.external-url=https://alertmanager.{{ domain_public[0] }} --cluster.listen-address=:9094 --cluster.advertise-address={{ float_host_dns_map.get(inventory_hostname + '.prometheus', ['']) | list | first }}:9094{% for h in groups['prometheus']|sort if h != inventory_hostname %} --cluster.peer={{ h }}.prometheus.{{ domain }}:9094{% endfor %}"
+    - name: blackbox
+      image: registry.git.autistici.org/ai3/docker/prometheus-blackbox:master
+      ports:
+        - 9115
+      volumes:
+        - /etc/prometheus: /etc/prometheus
+      args: "--config.file /etc/prometheus/blackbox.yml"
+      drop_capabilities: false
+    - name: grafana
+      image: registry.git.autistici.org/ai3/docker/grafana:master
+      port: 2929
+      volumes:
+        - /etc/grafana: /etc/grafana
+        - /var/lib/grafana: /var/lib/grafana
+  public_endpoints:
+    - name: monitor
+      port: 9090
+      scheme: http
+      enable_sso_proxy: true
+    - name: alertmanager
+      port: 9093
+      scheme: http
+      enable_sso_proxy: true
+    - name: prober
+      port: 9115
+      scheme: http
+      enable_sso_proxy: true
+    - name: grafana
+      port: 2929
+      scheme: https
+      enable_sso_proxy: true
+  monitoring_endpoints:
+    - job_name: prometheus
+      port: 9090
+      scheme: http
+    - job_name: alertmanager
+      port: 9093
+      scheme: http
+    - job_name: grafana
+      port: 2929
+      scheme: https
+  ports:
+    - 9094
+  volumes:
+    - name: metrics
+      path: /var/lib/prometheus
+      owner: docker-prometheus
+      group: docker-prometheus
+
+sso-server:
+  num_instances: 1
+  scheduling_group: backend
+  service_credentials:
+    - name: sso-server
+      enable_server: false
+  public_endpoints:
+    - name: login
+      port: 5002
+      scheme: http
+  monitoring_endpoints:
+    - job_name: sso-server
+      port: 5002
+      scheme: http
+
+auth-server:
+  scheduling_group: all
+  service_credentials:
+    - name: auth-server
+      enable_server: false
+  monitoring_endpoints:
+    - job_name: auth-server
+      port: 9004
+      scheme: http
+
+auth-cache:
+  scheduling_group: backend
+  containers:
+    - name: memcache
+      image: registry.git.autistici.org/ai3/docker/memcached:master
+      port: 11212
+      env:
+        PORT: "11212"
+  ports:
+    - 11212
+
+user-meta-server:
+  num_instances: 1
+  scheduling_group: backend
+  service_credentials:
+    - name: user-meta-server
+  monitoring_endpoints:
+    - job_name: user-meta-server
+      port: 5505
+      scheme: https
+  ports:
+    - 5505
+  systemd_services:
+    - user-meta-server.service
+  datasets:
+    - name: db
+      path: /var/lib/user-meta-server
+
+admin-dashboard:
+  scheduling_group: frontend
+  service_credentials:
+    - name: admin-dashboard
+  containers:
+    - name: http
+      image: registry.git.autistici.org/ai3/tools/float-dashboard:master
+      port: 8011
+      volumes:
+        - /etc/float: /etc/float
+      env:
+        ADDR: "0.0.0.0:8011"
+  public_endpoints:
+    - name: admin
+      port: 8011
+      scheme: https
+      enable_sso_proxy: true
+  monitoring_endpoints:
+    - job_name: admin-dashboard
+      port: 8011
+      scheme: https
+
+backup-metadata:
+  num_instances: 1
+  scheduling_group: backend
+  service_credentials:
+    - name: backup-metadata
+      enable_client: false
+  monitoring_endpoints:
+    - job_name: backup-metadata
+      port: 5332
+      scheme: https
+  ports:
+    - 5332
+  systemd_services:
+    - tabacco-metadb.service
+
+acme:
+  num_instances: 1
+  scheduling_group: frontend
+  service_credentials:
+    - name: acme
+      enable_server: false
+  monitoring_endpoints:
+    - job_name: acme
+      port: 5004
+      scheme: http
+  ports:
+    - 5004
+  systemd_services:
+    - acmeserver.service
+

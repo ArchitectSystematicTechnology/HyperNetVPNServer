@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://git.autistici.org/ai3/float.git
+	branch = master
+	commit = 15ed5137e3c5b89fe12e3e795706bb0aea721f74
+	parent = 7f945908bfbe3622e842386de8686672dac44aa5
+	cmdver = 0.3.1

@@ -1,0 +1,69 @@
+---
+{%- macro domain_public_regex() %}
+{%- for d in domain_public -%}
+{%- if not loop.first %}|{% endif -%}
+{# We are inside a quoted YAML string so we must escape backslashes twice #}
+{{ d | regex_escape() | regex_replace('\\\\', '\\\\\\\\') }}
+{%- endfor -%}
+{%- endmacro %}
+
+{%- macro public_endpoints_regex() %}
+{%- for s in services.values() %}
+{%- for p in s.get('public_endpoints', []) %}
+|{{ p.name | regex_escape() | regex_replace('\\\\', '\\\\\\\\') }}
+{%- endfor %}
+{%- endfor %}
+{%- endmacro %}
+
+secret_key_file: "/etc/sso/secret.key"
+public_key_file: "/etc/sso/public.key"
+domain: "{{ domain_public[0] }}"
+allowed_services:
+{# Automatically allow all services with public_endpoints #}
+  - "^({{ public_endpoints_regex() }})\\.({{ domain_public_regex() }})/$"
+{# Additional services (public and internal) #}
+{% for s in sso_extra_allowed_services %}
+  - {{ s | to_json }}
+{% endfor %}
+allowed_cors_origins: {{ sso_allowed_cors_origins | to_json }}
+allowed_exchanges: {{ sso_allowed_exchanges | to_json }}
+service_ttls: {{ sso_service_ttls | to_json }}
+auth_session_lifetime: 43200
+session_secrets:
+  - "{{ sso_session_auth_secret }}"
+  - "{{ sso_session_enc_secret }}"
+csrf_secret: "{{ sso_csrf_secret }}"
+auth_service: sso
+{% if enable_keystore %}
+keystore:
+  url: "https://mail-backend.{{ domain }}:5006"
+  sharded: true
+  tls:
+    cert: "/etc/credentials/x509/sso-server/client/cert.pem"
+    key: "/etc/credentials/x509/sso-server/client/private_key.pem"
+    ca: "/etc/credentials/x509/sso-server/ca.pem"
+keystore_enable_groups:
+  - users
+{% endif %}
+url_path_prefix: "{{ sso_server_url_path_prefix }}"
+account_recovery_url: "{{ sso_server_account_recovery_url | default('') }}"
+device_manager:
+  auth_key: "{{ sso_device_manager_auth_secret }}"
+  trusted_forwarders:
+    - 127.0.0.1
+    - ::1
+{% for h in groups['frontend']|sort %}
+    - {{ hostvars[h]['ip'] }}
+{% for n in net_overlays %}{% if hostvars[h].get('ip_' + n.name) %}
+    - {{ hostvars[h]['ip_' + n.name] }}
+{% endif %}{% endfor %}
+{% endfor %}
+{% if sso_logo_image is defined %}
+site_logo: {{ sso_logo_image  }}
+{% endif %}
+{% if sso_site_title is defined %}
+site_name: {{ sso_site_title }}
+{% endif %}
+{% if sso_favicon is defined %}
+site_favicon: {{ sso_favicon }}
+{% endif %}

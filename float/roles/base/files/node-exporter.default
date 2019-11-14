@@ -1,0 +1,6 @@
+
+ARGS="--collectors.enabled=conntrack,diskstats,entropy,filefd,filesystem,hwmon,loadavg,meminfo,netdev,netstat,sockstat,stat,systemd,textfile,time,uname,vmstat \
+    --collector.diskstats.ignored-devices=^(ram|loop|fd)\d+$ \
+    --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/) \
+    --collector.textfile.directory=/var/lib/prometheus/node-exporter \
+    --collector.systemd.unit-blacklist=^.*\.(device|swap|mount)$"

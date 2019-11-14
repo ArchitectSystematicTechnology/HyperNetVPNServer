@@ -1,0 +1,95 @@
+---
+
+# Configure and provision Elasticsearch and Kibana. No need to install
+# them as they are running in Docker containers.
+
+# ES needs write permissions on the configuration directory because
+# it needs to write the elasticsearch.keystore file in there.
+- name: Create /etc/elasticsearch
+  file:
+    path: /etc/elasticsearch
+    state: directory
+    owner: root
+    group: docker-log-collector
+    mode: 0770
+
+- name: Configure Elasticsearch (create dirs)
+  file:
+    path: "/etc/elasticsearch/{{ item.path }}"
+    state: directory
+  with_filetree: "templates/elasticsearch/"
+  when: item.state == 'directory'
+
+- name: Configure Elasticsearch
+  template:
+    src: "{{ item.src }}"
+    dest: "/etc/elasticsearch/{{ item.path }}"
+  with_filetree: "templates/elasticsearch/"
+  when: "item.state == 'file' and not item.src.endswith('.j2')"
+  notify:
+    - "restart elasticsearch"
+    - "provision elasticsearch"
+
+- name: Configure Elasticsearch index maintenance jobs
+  template:
+    src: "elasticsearch/actions/maint.yml.j2"
+    dest: "/etc/elasticsearch/actions/maint_{{ item.key }}.yml"
+  with_dict: "{{ es_log_keep_days }}"
+
+- name: Create Elasticsearch data directories
+  file:
+    path: "{{ item }}"
+    owner: docker-log-collector
+    mode: 0700
+    state: directory
+  with_items:
+    - /var/lib/elasticsearch
+    - /var/log/elasticsearch
+
+- name: Install ES index template loader tool
+  copy:
+    src: es_init.py
+    dest: "/usr/local/bin/es_init.py"
+    mode: 0755
+
+# Configure Kibana.
+
+- name: Install kibana_importer tool
+  copy:
+    src: kibana_importer.py
+    dest: "/usr/local/bin/kibana_importer.py"
+    mode: 0755
+
+- name: Install Kibana provisioning config dir
+  file:
+    path: /etc/kibana/provisioning
+    state: directory
+
+- name: Install Kibana provisioning config
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/kibana/provisioning/{{ item | basename }}"
+  with_fileglob:
+    - "files/kibana/provisioning/*.json"
+  notify:
+    - "provision kibana"
+
+- name: Configure Kibana
+  template:
+    src: "kibana/kibana.yml"
+    dest: "/etc/kibana/kibana.yml"
+  notify: "restart kibana"
+
+- name: Create Kibana data dir
+  file:
+    path: /var/lib/kibana
+    state: directory
+    owner: docker-log-collector
+    mode: 0700
+
+- name: Start Kibana
+  systemd:
+    name: docker-log-collector-kibana.service
+    state: started
+    enabled: yes
+    masked: no

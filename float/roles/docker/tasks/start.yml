@@ -1,0 +1,82 @@
+---
+
+- set_fact:
+    service: "{{ services[item.service] }}"
+    container: "{{ item.container }}"
+    systemd_service: "docker-{{ item.tag }}"
+    container_user: "docker-{{ item.service }}"
+
+- name: Create container runtime primary group ({{ container_user }})
+  group:
+    name: "{{ container_user }}"
+
+- name: Create container user ({{ container_user }})
+  user:
+    name: "{{ container_user }}"
+    group: "{{ container_user }}"
+    home: "/var/empty"
+    createhome: false
+
+- name: Add user {{ container_user }} to the credentials groups
+  user:
+    name: "{{ container_user }}"
+    groups:
+      - "{{ cred.name }}-credentials"
+    append: true
+  with_list: "{{ service.service_credentials }}"
+  when: "service.service_credentials is defined"
+  loop_control:
+    loop_var: cred
+
+- name: Configure environment for {{ systemd_service }}
+  template:
+    src: env.j2
+    dest: "/etc/default/{{ service.name }}-{{ container.name }}"
+
+- name: Create run script for {{ systemd_service }}
+  template:
+    src: run.sh.j2
+    dest: "/usr/lib/float/docker/run-{{ service.name }}-{{ container.name }}.sh"
+    mode: 0755
+  register: docker_systemd_run_script
+
+- name: Set up the systemd unit {{ systemd_service }}
+  template:
+    src: systemd.j2
+    dest: "/etc/systemd/system/{{ systemd_service }}.service"
+  register: docker_systemd_unit
+
+# Pull the container image, and start/restart the associated systemd
+# unit. If there are errors, we don't abort the entire playbook, but
+# simply skip restarting the service.
+#
+# Due to the lack of parametrized handlers, we'll just notify systemd
+# right away.  Always bump the service if the systemd unit changes.
+- name: Set up the {{ item.tag }} service
+  block:
+    - name: Pull the Docker image {{ container.image }}
+      docker_image:
+        name: "{{ container.image }}"
+        force: true
+      register: docker_image
+
+    - name: Start the systemd unit {{ systemd_service }}
+      systemd:
+        name: "{{ systemd_service }}.service"
+        daemon_reload: "{{ docker_systemd_unit is changed }}"
+        state: "{{ 'restarted' if (docker_systemd_run_script.changed or docker_systemd_unit.changed or docker_image.changed) else 'started' }}"
+        enabled: yes
+        masked: no
+        no_block: yes
+      changed_when: false
+  rescue:
+    - debug:
+        msg: "Failure to set up container {{ item.tag }}"
+
+# If resource limits are set for this container, create some related
+# metrics to be exported to Prometheus.
+- name: Export resource limits to monitoring
+  template:
+    src: container-limits.j2
+    dest: "/var/lib/prometheus/node-exporter/container-{{ service.name }}-{{ container.name }}.prom"
+  when: "container.resources is defined"

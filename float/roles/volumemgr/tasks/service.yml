@@ -1,0 +1,9 @@
+---
+
+- set_fact:
+    service: "{{ services[service_name_iter] }}"
+
+- include_tasks: volume.yml
+  with_items: "{{ service.volumes | default([]) }}"
+  loop_control:
+    loop_var: volume

@@ -1,0 +1,18 @@
+---
+
+- name: Install float-debug-proxy
+  apt:
+    name: float-debug-proxy
+    state: present
+
+- name: Open firewall for float-debug-proxy
+  copy:
+    dest: /etc/firewall/filter.d/99float-debug-proxy
+    content: "allow_port tcp 9051"
+  notify: "reload firewall"
+
+- name: Start float-debug-proxy
+  systemd:
+    name: float-debug-proxy.service
+    state: started
+    enabled: yes

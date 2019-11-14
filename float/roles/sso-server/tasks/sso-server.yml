@@ -1,0 +1,70 @@
+---
+
+- name: Install sso-server package
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - sso-server
+      - geoipupdate
+
+# Setup the Country GeoIP database.
+- name: Configure GeoIP downloader
+  copy:
+    src: GeoIP.conf
+    dest: /etc/GeoIP.conf
+
+- stat:
+    path: /var/lib/GeoIP/GeoLite2-Country.mmdb
+  register: geoip_country
+
+- name: Download GeoLite2-Country database
+  shell: geoipupdate
+  when: not geoip_country.stat.exists
+
+- name: Setup geoipupdate cron job
+  copy:
+    dest: /etc/cron.d/geoipupdate
+    content: "12 0 * * 5 root /usr/local/bin/splay 3600 && /usr/bin/geoipupdate"
+
+# Setup the SSO server.
+- user:
+    name: sso-server
+    groups: sso-server-credentials
+    append: true
+
+- name: Install sso-server secret key
+  copy:
+    src: "{{ credentials_dir }}/sso/secret.key"
+    dest: "/etc/sso/secret.key"
+    owner: root
+    group: sso-server
+    mode: 0440
+
+- name: Install sso-server configuration
+  template:
+    src: server.yml.j2
+    dest: /etc/sso/server.yml
+    owner: root
+    group: sso-server
+    mode: 0750
+  notify: restart sso-server
+
+- name: Enable sso-server systemd unit
+  systemd:
+    name: sso-server.service
+    enabled: yes
+    masked: no
+    state: started
+  notify: restart sso-server
+
+- name: Configure auth-server SSO service
+  copy:
+    dest: /etc/auth-server/services.d/10sso.yml
+    src: sso.service.yml
+    owner: root
+    group: auth-server
+    mode: 0750
+  notify: restart auth-server
+

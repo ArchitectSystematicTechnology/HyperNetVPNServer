@@ -1,0 +1,44 @@
+[client]
+port={{ mariadb_port }}
+socket={{ mariadb_socket }}
+default-character-set = utf8mb4
+
+[mysql]
+default-character-set = utf8mb4
+prompt=\u@\h({{ mariadb_instance }}) [\d]>\_
+no-auto-rehash
+
+[mariadb]
+server_id={{ mariadb_server_id }}
+bind-address={{ mariadb_bind_address }}
+port={{ mariadb_port }}
+socket={{ mariadb_socket }}
+datadir={{ mariadb_data_dir }}
+log_bin={{ mariadb_data_dir }}/binary_log
+binlog-format=ROW
+innodb_file_per_table=1
+innodb_flush_method=O_DIRECT
+innodb_flush_log_at_trx_commit=2
+innodb_log_file_size={{ mariadb_innodb_log_file_size }}
+innodb_log_buffer_size=8M
+log_warnings=3
+
+# Do not block hosts because of errors.
+max_connect_errors = 4294967295
+
+character-set-server  = utf8mb4
+collation-server      = utf8mb4_general_ci
+
+{% if mariadb_replicate_dbs %}
+{% for db in mariadb_replicate_dbs %}
+replicate_do_db={{ db }}
+replicate_wild_do_table={{ db }}.%
+{% endfor %}
+{% endif %}
+
+{% for key, value in mariadb_settings | dictsort %}
+{{ key }}={{ value }}
+{% endfor %}
+
+# Include instance-specific configuration.
+!includedir {{ mariadb_config_dir }}/

@@ -1,0 +1,48 @@
+{
+    "options": {
+        "config_plugin": "filesystem",
+        "logger_plugin": "syslog",
+        "logger_syslog_prepend_cee": "true",
+        "schedule_splay_percent": "20",
+        "utc": "true"
+    },
+
+    "schedule": {
+        "file_events": {
+            "query": "select * from file_events;",
+            "removed": false,
+            "interval": 9600
+        }
+    },
+
+    "decorators": {
+        "load": [
+            "SELECT uuid AS host_uuid FROM system_info;"
+        ]
+    },
+
+    "packs": {
+        "osquery-monitoring": "/usr/share/osquery/packs/osquery-monitoring.conf",
+        "incident-response": "/usr/share/osquery/packs/incident-response.conf",
+        "vuln-management": "/usr/share/osquery/packs/vuln-management.conf",
+        "ossec-rootkit": "/usr/share/osquery/packs/ossec-rootkit.conf"
+    },
+
+    "file_paths": {
+        "homes": [
+            "/root/.ssh/%%"
+        ],
+        "etc": [
+            "/etc/passwd",
+            "/etc/shadow",
+            "/etc/ssh/sshd_config",
+            "/etc/ssh/authorized_keys/%%"
+        ],
+        "bin": [
+            "/bin/%%",
+            "/sbin/%%",
+            "/usr/bin/%%",
+            "/usr/sbin/%%"
+        ]
+    }
+}

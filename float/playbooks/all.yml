@@ -1,0 +1,13 @@
+---
+
+# Setup base infra.
+- import_playbook: infra.yml
+
+- hosts: sso-server
+  roles:
+    - sso-server
+
+- hosts: user-meta-server
+  roles:
+    - sso-server
+

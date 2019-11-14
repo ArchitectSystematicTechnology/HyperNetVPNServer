@@ -1,0 +1,23 @@
+digraph sso {
+  {
+    rank=min
+    user [color=gray]
+  }
+
+  {
+    DB [shape=cylinder]
+  }
+
+  user -> IP [label="login"]
+  user -> service1 [label="unauth"]
+  service1 -> user [label="redir"]
+  user -> service1 [label="token"]
+  user -> service2 [label="token"]
+  IP -> user [label="token"]
+
+  IP -> "auth-server"
+  "auth-server" -> DB
+
+  IP -> keystore
+  keystore -> DB
+}

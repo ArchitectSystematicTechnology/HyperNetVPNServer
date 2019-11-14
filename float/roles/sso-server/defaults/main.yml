@@ -1,0 +1,43 @@
+---
+sso_session_auth_secret: ""
+sso_session_enc_secret: ""
+sso_csrf_secret: ""
+sso_device_manager_auth_secret: ""
+enable_keystore: false
+
+# Allows deploying the SSO service on a subpath.
+sso_server_url_path_prefix: "/"
+
+# Additional allowed services (on top of those defined as
+# public_endpoints).The values are regular expressions and must be
+# escaped if necessary.
+sso_extra_allowed_services:
+  - "^(imap|accountserver)\\.{{ domain | regex_escape }}/$"
+  - "[^.]+\\.webmail\\.{{ domain_public[0] | regex_escape }}/$"
+
+# Allowed exchanges (source and destination services).
+sso_allowed_exchanges:
+  - src_regexp: "^[^.]+\\.webmail\\.({{ domain_public | join('|') }})/$"
+    dst_regexp: "^imap\\.{{ domain | regex_escape }}/$"
+  - src_regexp: "^accounts\\.({{ domain_public | join('|') }})/$"
+    dst_regexp: "^accountserver\\.{{ domain | regex_escape }}/$"
+  - src_regexp: "^accountadmin\\.({{ domain_public | join('|') }})/$"
+    dst_regexp: "^accountserver\\.{{ domain | regex_escape }}/$"
+
+# TTLs for SSO tickets for various services. Remember to always
+# include the catch-all default entry.
+sso_service_ttls:
+  - regexp: "^[^.]+\\.webmail\\.({{ domain_public | join('|') }}) }}/$"
+    ttl: 43200
+  - regexp: "^imap\\.{{ domain | regex_escape }}/$"
+    ttl: 43200
+  - regexp: "^accounts\\.({{ domain_public | join('|') }})/$"
+    ttl: 3600
+  - regexp: "^accountserver\\.{{ domain | regex_escape }}/$"
+    ttl: 3600
+  - regexp: ".*"
+    ttl: 300
+
+# List of allowed Origins for CORS (URLs without path component).
+# These are not regular expressions, but you can use wildcards (*).
+sso_allowed_cors_origins: []

@@ -1,0 +1,46 @@
+---
+
+# Protect production from rollbacks.
+#
+# We store the git commit of HEAD from the source repository being
+# pushed on the remote servers, and we check if the remote commit is
+# older than the local one.
+#
+# To skip the checks in an emergency, set the
+# 'skip_rollback_protection' variable to 'true' in the Ansible
+# configuration.
+
+# Detect remote commit (if present).
+- stat:
+    path: /etc/ai3-ansible-commit
+  register: commit_guard_stat
+
+- slurp:
+    src: /etc/ai3-ansible-commit
+  register: commit_guard_content
+  when: commit_guard_stat.stat.exists
+- set_fact:
+    remote_git_revision: "{{ commit_guard_content.content | b64decode }}"
+  when: commit_guard_stat.stat.exists
+
+# Compare the remote revision with the local one. Ignore errors here
+# so we can call the 'fail' module immediately afterwards, with a
+# custom message.
+- local_action:
+    module: shell
+    _raw_params: git merge-base --is-ancestor {{ remote_git_revision }} {{ git_revision }}
+    chdir: "{{ inventory_dir }}"
+  when: commit_guard_stat.stat.exists
+  become: false
+  changed_when: false
+  ignore_errors: true
+  register: commit_compare
+  check_mode: no
+
+- fail:
+    msg: "You are pushing an older version of the sources. Run 'git pull' and try again?"
+  when: "commit_guard_stat.stat.exists and commit_compare.rc != 0 and not skip_rollback_protection"
+
+- copy:
+    dest: /etc/ai3-ansible-commit
+    content: "{{ git_revision }}"

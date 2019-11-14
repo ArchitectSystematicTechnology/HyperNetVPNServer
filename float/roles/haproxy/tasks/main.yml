@@ -1,0 +1,4 @@
+---
+
+- import_tasks: haproxy.yml
+  when: float_enable_tcp_frontend

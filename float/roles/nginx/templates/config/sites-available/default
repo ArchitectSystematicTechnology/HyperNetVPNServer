@@ -1,0 +1,54 @@
+
+# Define a map with domain-level redirects.
+map $http_host $top_level_domain_redirect {
+  default "";
+
+{% for domain, dest in nginx_top_level_domain_redirects|default({})|dictsort %}
+  {{ domain }} {{ dest }};
+{% endfor %}
+}
+
+server {
+        listen [::]:80 default_server ipv6only=off;
+        server_name _;
+
+{# Only enable this if the 'acme' service is defined,
+   or the basic tests will fail #}
+{% if 'acme' in services %}
+        # Handle ACME challenge verification.
+        location /.well-known/acme-challenge {
+                include /etc/nginx/snippets/proxy.conf;
+                proxy_pass http://acme.{{ domain }}:5004;
+        }
+{% endif %}
+
+	if ($top_level_domain_redirect) {
+		return 301 $top_level_domain_redirect$request_uri;
+	}
+
+        # Redirect everything else to HTTPS.
+        location / {
+                return 301 https://$host$request_uri;
+        }
+}
+
+server {
+        listen [::]:443 http2 default_server ipv6only=off;
+        server_name _;
+        ssl on;
+
+        ssl_certificate /etc/credentials/public/default/fullchain.pem;
+        ssl_certificate_key /etc/credentials/public/default/privkey.pem;
+
+        root /var/www/html;
+        index index.html;
+
+        location /healthcheck {
+                 access_log off;
+                 return 200 "OK\n";
+        }
+
+        location / {
+                 try_files $uri $uri/ =404;
+        }
+}

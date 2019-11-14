@@ -1,0 +1,37 @@
+---
+
+- name: Install Grafana config (dirs)
+  file:
+    path: "/etc/grafana/{{ item.path }}"
+    state: directory
+    owner: root
+    group: docker-prometheus
+    mode: 0750
+  with_filetree: grafana/
+  when: item.state == 'directory'
+- name: Install Grafana config (files)
+  copy:
+    src: "{{ item.src }}"
+    dest: "/etc/grafana/{{ item.path }}"
+    owner: root
+    group: docker-prometheus
+    mode: 0640
+  with_filetree: grafana/
+  when: item.state == 'file'
+  notify: restart grafana
+
+- name: Create Grafana database directory
+  file:
+    path: "/var/lib/grafana"
+    state: directory
+    owner: docker-prometheus
+    mode: 0700
+
+- name: Install main Grafana configuration file
+  template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+    owner: root
+    group: docker-prometheus
+    mode: 0640
+  notify: restart grafana

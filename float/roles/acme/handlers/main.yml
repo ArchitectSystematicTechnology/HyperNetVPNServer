@@ -1,0 +1,11 @@
+---
+
+- name: restart acmeserver
+  systemd:
+    name: acmeserver.service
+    state: restarted
+
+- name: reload acmeserver
+  systemd:
+    name: acmeserver.service
+    state: reloaded

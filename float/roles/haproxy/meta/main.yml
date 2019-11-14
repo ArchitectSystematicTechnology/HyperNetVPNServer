@@ -1,0 +1,7 @@
+---
+
+dependencies:
+  - role: public-credentials
+    vars:
+      credentials_type: tcp
+

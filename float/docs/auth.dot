@@ -1,0 +1,17 @@
+digraph simple_no2fa {
+  {
+    rank=min
+    user [color=gray]
+  }
+
+  {
+    DB [shape=cylinder]
+  }
+
+  user -> dovecot [label="password/ASP"]
+  dovecot -> "auth-server" [label=PAM]
+  "auth-server" -> DB
+  dovecot -> keylookupd
+  keylookupd -> DB
+}
+

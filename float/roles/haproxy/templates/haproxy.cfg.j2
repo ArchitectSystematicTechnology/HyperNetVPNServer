@@ -1,0 +1,59 @@
+global
+        maxconn 20000
+        user haproxy
+        group haproxy
+        chroot /var/lib/haproxy
+        daemon
+
+defaults
+        log global
+        mode tcp
+        option redispatch
+        option tcplog
+        option tcpka
+        option clitcpka
+        option srvtcpka
+        option dontlognull
+        retries 3
+        timeout connect 10s
+        timeout client 1440m
+        timeout server 1440m
+
+{% for service_name, service in services|dictsort %}
+{% for ep in service.get('public_tcp_endpoints', []) %}
+
+{% if ep.get('ports', []) %}
+
+{% for port in ep.ports %}
+frontend fe_{{ service_name }}_{{ ep.name }}_{{ port }}
+        bind :::{{ port }}
+        default_backend be_{{ service_name }}_{{ ep.name }}_{{ port }}
+
+backend be_{{ service_name }}_{{ ep.name }}_{{ port }}
+        log global
+        balance leastconn
+        option independant-streams
+{% for s in groups[service_name]|sort %}   
+        server task{{ loop.index -1 }} {{ s }}.{{ service_name }}.{{ domain }}:{{ port }} check fall 3 id {{ loop.index + 999 }} inter 5000 rise 3 slowstart 60000 weight 50
+{% endfor %}
+
+{% endfor %} # ep.ports
+
+{% else %} 
+frontend fe_{{ service_name }}_{{ ep.name }}_{{ ep.port }}
+        bind :::{{ ep.port }}
+        default_backend be_{{ service_name }}_{{ ep.name }}_{{ ep.port }}
+
+
+backend be_{{ service_name }}_{{ ep.name }}_{{ ep.port }}
+        log global
+        balance leastconn
+        option independant-streams
+{% for s in groups[service_name]|sort %}
+        server task{{ loop.index -1 }} {{ s }}.{{ service_name }}.{{ domain }}:{{ ep.port }} check fall 3 id {{ loop.index + 999 }} inter 5000 rise 3 slowstart 60000 weight 50
+{% endfor %}
+
+{% endif %} # ep.get('ports')
+
+{% endfor %}
+{% endfor %}

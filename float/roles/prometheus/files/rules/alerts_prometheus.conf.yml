@@ -1,0 +1,172 @@
+groups:
+- name: roles/prometheus/files/rules/alerts_prometheus.conf
+  rules:
+  - alert: PrometheusUnreachable
+    expr: up{job=~"prometheus.*"} == 0
+    for: 10m
+    labels:
+      pager: pagerduty
+      service: prometheus
+      severity: critical
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} could not be scraped for
+        over 10 minutes.'
+      title: '{{$labels.job}} is unreachable'
+  - alert: PrometheusManyRestarts
+    expr: changes(process_start_time_seconds{job=~"prometheus.*"}[30m]) > 3
+    for: 30m
+    labels:
+      pager: pagerduty
+      service: prometheus
+      severity: critical
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} has restarted more than
+        3 times in the last 30 minutes. It might be crashlooping.'
+      title: '{{$labels.job}} is restarting frequently'
+  - alert: PrometheusRuleEvaluationSlow
+    expr: prometheus_evaluator_duration_seconds{job=~"prometheus.*",quantile="0.9"}
+      > 60
+    for: 10m
+    labels:
+      service: prometheus
+      severity: warn
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} has a 90th percentile
+        latency of {{$value}}s completing rule evaluation cycles.'
+      title: '{{$labels.job}} is evaluating rules too slowly'
+  - alert: PrometheusCheckpointingSlow
+    expr: avg_over_time(prometheus_local_storage_checkpoint_last_duration_seconds{job=~"prometheus.*"}[15m])
+      > prometheus_local_storage_max_chunks_to_persist{job=~"prometheus.*"} / 5000
+    for: 5m
+    labels:
+      service: prometheus
+      severity: warn
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} needs {{$value}}s on average
+        for each checkpoint.'
+      title: '{{$labels.job}} is checkpointing too slowly'
+  - alert: PrometheusIndexingBacklog
+    expr: prometheus_local_storage_indexing_queue_length{job=~"prometheus.*"} / prometheus_local_storage_indexing_queue_capacity{job=~"prometheus.*"}
+      * 100 > 10
+    for: 30m
+    labels:
+      service: prometheus
+      severity: warn
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} is backlogging on the
+        indexing queue for more than 30m. Queue is currently {{$value | printf `%.0f`}}%
+        full.'
+      title: '{{$labels.job}} is backlogging on the indexing queue'
+  - alert: PrometheusNotIngestingSamples
+    expr: rate(prometheus_local_storage_ingested_samples_total{job=~"prometheus.*"}[5m])
+      == 0
+    for: 5m
+    labels:
+      service: prometheus
+      severity: critical
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} has not ingested any samples
+        in the last 10 minutes.'
+      title: '{{$labels.job}} is not ingesting samples'
+  - alert: PrometheusPersistErrors
+    expr: rate(prometheus_local_storage_persist_errors_total{job=~"prometheus.*"}[10m])
+      > 0
+    labels:
+      service: prometheus
+      severity: warn
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} has encountered {{$value}}
+        persist errors per second in the last 10 minutes.'
+      title: '{{$labels.job}} has persist errors'
+  - alert: PrometheusNotificationsBacklog
+    expr: prometheus_notifications_queue_length{job=~"prometheus.*"} > 0
+    for: 10m
+    labels:
+      pager: pagerduty
+      service: prometheus
+      severity: critical
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} is backlogging on the
+        notifications queue. The queue has not been empty for 10 minutes. Current
+        queue length: {{$value}}.'
+      title: '{{$labels.job}} is backlogging on the notifications queue'
+  - alert: PrometheusScrapingSlowly
+    expr: prometheus_target_interval_length_seconds{interval!~".*m.*",job=~"prometheus.*",quantile="0.9"}
+      > 2 * 60
+    for: 10m
+    labels:
+      service: prometheus
+      severity: warn
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} has a 90th percentile
+        latency of {{$value}}s for scraping targets in the {{$labels.interval}} target
+        pool.'
+      title: '{{$labels.job}} is scraping targets slowly'
+  - alert: PrometheusStorageInconsistent
+    expr: prometheus_local_storage_inconsistencies_total{job=~"prometheus.*"} > 0
+    labels:
+      service: prometheus
+      severity: warn
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} has detected a storage
+        inconsistency. A server restart is needed to initiate recovery.'
+      title: '{{$labels.job}} has an inconsistent storage'
+  - alert: PrometheusPersistencePressureTooHigh
+    expr: prometheus_local_storage_persistence_urgency_score{job=~"prometheus.*"}
+      > 0.8 and predict_linear(prometheus_local_storage_persistence_urgency_score{job=~"prometheus.*"}[30m],
+      3600 * 24) > 1
+    for: 30m
+    labels:
+      service: prometheus
+      severity: warn
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} is approaching critical
+        persistence pressure. Throttled ingestion expected within the next 24h.'
+      title: '{{$labels.job}} can not keep up persisting'
+  - alert: PrometheusPersistencePressureTooHigh
+    expr: prometheus_local_storage_persistence_urgency_score{job=~"prometheus.*"}
+      > 0.85 and predict_linear(prometheus_local_storage_persistence_urgency_score{job=~"prometheus.*"}[30m],
+      3600 * 2) > 1
+    for: 30m
+    labels:
+      service: prometheus
+      severity: critical
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} is approaching critical
+        persistence pressure. Throttled ingestion expected within the next 2h.'
+      title: '{{$labels.job}} can not keep up persisting'
+  - alert: PrometheusSeriesMaintenanceStalled
+    expr: prometheus_local_storage_memory_series{job=~"prometheus.*"} / ON(job, instance)
+      rate(prometheus_local_storage_series_ops_total{job=~"prometheus.*",type="maintenance_in_memory"}[5m])
+      / 3600 > 24 and ON(job, instance) prometheus_local_storage_rushed_mode == 1
+    for: 1h
+    labels:
+      service: prometheus
+      severity: warn
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} is maintaining memory
+        time series so slowly that it will take {{$value | printf `%.0f`}}h to complete
+        a full cycle. This will lead to persistence falling behind.'
+      title: '{{$labels.job}} is maintaining memory time series too slowly'
+  - alert: PrometheusInvalidConfigFile
+    expr: prometheus_config_last_reload_successful{job=~"prometheus.*"} == 0
+    for: 30m
+    labels:
+      pager: pagerduty
+      service: prometheus
+      severity: critical
+    annotations:
+      description: The configuration file for {{$labels.job}} at {{$labels.instance}}
+        is invalid and was therefore not reloaded.
+      title: '{{$labels.job}} has an invalid config'
+  - alert: PrometheusOutOfOrderSamplesDiscarded
+    expr: increase(prometheus_local_storage_out_of_order_samples_total{job=~"prometheus.*"}[10m])
+      > 0
+    for: 1h
+    labels:
+      service: prometheus
+      severity: warn
+    annotations:
+      description: '{{$labels.job}} at {{$labels.instance}} has discarded {{$value}}
+        out-of-order samples over the last hour.'
+      title: '{{$labels.job}} is discarding out-of-order samples'

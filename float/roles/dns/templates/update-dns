@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# Wrapper for zonetool, with the right options.
+#
+
+exec /usr/bin/zonetool \
+     --config /etc/dns/zonetool.yml \
+     --named-conf /etc/bind/named.conf.zones \
+     --output-dir /etc/bind/zones --delete \
+     --key-dir /etc/credentials/dnssec \
+     --ds-dir /etc/bind/dnssec-ds \
+     --nsec3-salt {{ dnssec_nsec3_salt }} \
+     --dnssec-refresh \
+     /etc/dns/manual /etc/dns/auto

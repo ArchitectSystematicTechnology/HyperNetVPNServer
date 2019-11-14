@@ -1,0 +1,25 @@
+[Unit]
+Description={{ service.name }}/{{ container.name }}
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=-/etc/default/{{ service.name }}-{{ container.name }}
+ExecStart=/usr/lib/float/docker/run-{{ service.name }}-{{ container.name }}.sh
+Restart=always
+RestartSec=3s
+Type=simple
+SyslogIdentifier={{ service.name }}-{{ container.name }}
+
+{% if container.resources is defined %}
+{% if container.resources.ram is defined %}
+MemoryHigh={{ container.resources.ram }}
+{% endif %}
+{% if container.resources.cpu is defined %}
+CPUQuota={{ 100 * container.resources.cpu }}%
+{% endif %}
+{% endif %}
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target docker.service

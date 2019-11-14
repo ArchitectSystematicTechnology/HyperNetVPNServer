@@ -1,0 +1,11 @@
+---
+
+- name: Install users file
+  template:
+    src: users.yml.j2
+    dest: /etc/auth-server/users.yml
+    owner: auth-server
+    group: auth-server
+    mode: 0400
+  notify: restart auth-server
+

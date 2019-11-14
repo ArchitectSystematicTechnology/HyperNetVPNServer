@@ -1,0 +1,33 @@
+---
+
+- name: Install motd
+  copy:
+    src: motd
+    dest: /etc/motd
+
+- name: Set locale to C
+  copy:
+    src: "default/locale"
+    dest: "/etc/default/locale"
+
+- name: Install /etc/profile.d snippets
+  template:
+    src: "{{ item }}"
+    dest: "/etc/profile.d/{{ item | regex_replace('^.*/(.*)\\.j2$', '\\1') }}"
+  with_fileglob:
+    - "templates/profile.d/*.j2"
+
+- name: Install common scripts
+  copy:
+    src: "{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: 0755
+  with_items:
+    - splay
+    - if-changed
+
+- name: Configure sysctl
+  template:
+    src: "sysctl.conf.j2"
+    dest: "/etc/sysctl.conf"
+  notify: reload sysctl

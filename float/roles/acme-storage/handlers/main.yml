@@ -1,0 +1,7 @@
+---
+
+- listen: "restart replds@acme"
+  systemd:
+    name: "replds@acme"
+    state: restarted
+

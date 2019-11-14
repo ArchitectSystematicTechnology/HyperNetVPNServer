@@ -1,0 +1,26 @@
+127.0.0.1	localhost
+::1		localhost ip6-localhost ip6-loopback
+ff02::1		ip6-allnodes
+ff02::2		ip6-allrouters
+
+{% macro dump_map(m) %}
+{% for name, addrs in m | dictsort %}
+{% for addr in addrs %}
+{{ addr }} {{ name }}.{{ domain }}{% if '.' not in name %} {{ name }}{% endif %}
+
+{% endfor %}
+{% endfor %}
+{% endmacro %}
+
+# Hosts and interfaces.
+{{ dump_map(float_global_dns_map) }}
+
+# Service discovery.
+{{ dump_map(float_host_dns_map) }}
+
+{% if static_host_entries is defined %}
+# Static entries.
+{% for entry in static_host_entries %}
+{{ entry.addr }} {{ entry.host }}
+{% endfor %}
+{% endif %}

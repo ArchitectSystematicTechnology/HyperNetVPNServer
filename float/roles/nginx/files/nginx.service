@@ -1,0 +1,40 @@
+[Unit]
+Description=NGINX
+After=network.target
+
+[Service]
+Type=forking
+Restart=on-failure
+PIDFile=/run/nginx/nginx.pid
+# After testing configuration with nginx -t (as root), these directories will
+# be owned by root:nginx.
+# Since asking operators to remember to 'sudo -u nginx nginx -t' is not an
+# option, force ownership here or nginx will refuse to (re)start.
+ExecStartPre=+/usr/bin/install -v -d -m 700 -o nginx -g nginx /var/cache/nginx /var/cache/nginx/temp
+ExecStartPre=/usr/sbin/nginx -t -q -g 'daemon on; master_process on; error_log stderr;'
+ExecStart=/usr/sbin/nginx -g 'daemon on; master_process on; error_log stderr;'
+ExecReload=/usr/sbin/nginx -g 'daemon on; master_process on; error_log stderr;' -s reload
+ExecStop=/bin/kill -TERM $MAINPID
+
+User=nginx
+Group=nginx
+LimitNOFILE=65535
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectHome=yes
+ProtectSystem=full
+ReadOnlyDirectories=/
+ReadWriteDirectories=-/run/nginx
+ReadWriteDirectories=-/var/cache/nginx
+ReadWriteDirectories=-/var/lib/nginx
+SystemCallFilter=~@mount
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+RuntimeDirectory=nginx
+RuntimeDirectoryMode=750
+
+[Install]
+WantedBy=multi-user.target

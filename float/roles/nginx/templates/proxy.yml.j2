@@ -1,0 +1,28 @@
+---
+
+session_auth_key: "{{ ssoproxy_session_auth_key }}"
+session_enc_key: "{{ ssoproxy_session_enc_key }}"
+sso_server_url: "{{ sso_server_url }}"
+sso_public_key_file: "/etc/sso/public.key"
+sso_domain: "{{ domain_public[0] }}"
+backends:
+{% for service in services.values() -%}
+{% for endpoint in service.get('public_endpoints', []) -%}
+{% if endpoint.get('enable_sso_proxy') %}
+  - host: "{{ endpoint.name }}.{{ domain_public[0] }}"
+{% if endpoint.get('scheme') == 'https' %}
+    tls_server_name: "{{ service.name }}.{{ domain }}"
+    client_tls:
+      cert: "/etc/credentials/x509/ssoproxy/client/cert.pem"
+      key: "/etc/credentials/x509/ssoproxy/client/private_key.pem"
+      ca: "/etc/credentials/x509/ssoproxy/ca.pem"
+{% endif %}
+    upstream:
+      - {{ service.name }}.{{ domain }}:{{ endpoint.port }}
+    allowed_groups:
+{% for group in endpoint.get('allowed_groups', ['admins']) %}
+      - {{ group }}
+{% endfor %}
+{% endif -%}
+{% endfor -%}
+{% endfor %}

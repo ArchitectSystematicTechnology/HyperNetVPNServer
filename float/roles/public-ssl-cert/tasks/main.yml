@@ -1,0 +1,29 @@
+---
+
+# This role simply creates a self-signed SSL certificate for initial
+# service startup (which happens before the ACME automation has a
+# chance to run) in /etc/credentials/public.
+#
+# The 'cn' parameter must be defined by the calling role.
+#
+# The naming scheme for the credentials follows somewhat a common
+# ACME convention: the full chain of public certificates (including
+# the Letsencrypt roots) is stored in 'fullchain.pem', the private
+# key in 'privkey.pem'.
+
+- file:
+    path: "/etc/credentials/public/{{ cn }}"
+    state: directory
+
+- name: "Create a self-signed certificate for {{ cn }}"
+  shell: "openssl req -x509 -newkey rsa:2048 -keyout /etc/credentials/public/{{ cn }}/privkey.pem -nodes -out /etc/credentials/public/{{ cn }}/fullchain.pem -days 3650 -subj '/CN={{ cn }}'"
+  args:
+    creates: "/etc/credentials/public/{{ cn }}/fullchain.pem"
+  register: ssl_cert_selfsigned
+
+- file:
+    path: "/etc/credentials/public/{{ cn }}/privkey.pem"
+    owner: root
+    group: public-credentials
+    mode: 0640
+  when: ssl_cert_selfsigned.changed

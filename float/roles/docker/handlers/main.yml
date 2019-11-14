@@ -1,0 +1,5 @@
+---
+
+- name: restart docker
+  systemd: name=docker.service state=restarted
+  ignore_errors: yes

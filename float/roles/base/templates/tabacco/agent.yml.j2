@@ -1,0 +1,19 @@
+hostname: "{{ inventory_hostname }}"
+default_nice_level: 9
+default_io_class: 3
+work_dir: /var/lib/tabacco
+random_seed_file: /var/lib/tabacco/.seed
+queue_config:
+  concurrency: 2
+metadb:
+  url: "https://backup-metadata.{{ domain }}:5332"
+  tls:
+    cert: "/etc/credentials/x509/backup-agent/client/cert.pem"
+    key: "/etc/credentials/x509/backup-agent/client/private_key.pem"
+    ca: "/etc/credentials/x509/backup-agent/ca.pem"
+repository:
+  name: default
+  type: restic
+  params:
+    uri: "{{ backup_repository_uri }}"
+    password: "{{ backup_repository_restic_password }}"

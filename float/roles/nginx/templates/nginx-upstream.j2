@@ -1,0 +1,28 @@
+{% macro config_upstream(upstream, shard=None) %}
+upstream {{ upstream.name }}{% if shard %}_{{ shard }}{% endif %} {
+{% if upstream.enable_sso_proxy | default(False) %}
+{#
+        Talk directly to the SSO proxy on localhost.
+#}
+        server 127.0.0.1:5003;
+{% else %}
+{#
+        Use the internal endpoint name, which resolves to multiple IP
+        addresses on the right interface (depending on whether we are in
+        the same network overlay or not).
+#}
+        server {% if shard %}{{ shard }}.{% endif %}{{ upstream.service_name }}.{{ domain }}:{{ upstream.port }};
+{% endif %}
+}
+{% endmacro %}
+
+
+{% for upstream in float_http_upstreams.values() | sort(attribute='service_name') %}
+{% if upstream.sharded %}
+{% for h in groups[upstream.service_name]|sort %}
+{{ config_upstream(upstream, hostvars[h]['shard_id']) }}
+{% endfor %}
+{% else %}
+{{ config_upstream(upstream) }}
+{% endif %}
+{% endfor %}

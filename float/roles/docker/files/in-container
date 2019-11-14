@@ -1,0 +1,82 @@
+#!/bin/sh
+#
+#  Run a command *inside* a running container.
+#
+
+usage() {
+    cat <<EOF
+Usage: $0 [--root] <container-name> <command> [<args>...]
+Run a command inside a running container.
+
+Known options:
+
+  --root        Do not setuid to the container user, run
+                the command as the container root instead.
+  -i, --interactive
+                Keep STDIN open and allocate a pseudo-TTY.
+
+EOF
+}
+
+usage_err() {
+    echo "$*" >&2
+    echo "Try running '$0 --help' for help" >&2
+    exit 2
+}
+
+die() {
+    echo "$*" >&2
+    exit 1
+}
+
+opt_root=0
+docker_opts=
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --root)
+            opt_root=1
+            ;;
+        -i|--interactive)
+            docker_opts="${docker_opts} -it"
+            ;;
+        -*)
+            usage_err "Unknown option $1"
+            ;;
+        *)
+            break
+            ;;
+    esac
+    shift
+done
+
+if [ $# -lt 1 ]; then
+    usage_err "Not enough arguments"
+fi
+
+container_name="$1"
+shift
+
+if [ $opt_root -eq 0 ]; then
+    # Read container params from /etc/default.
+    if [ ! -e /etc/default/${container_name} ]; then
+        die "ERROR: can't find container ${container_name}"
+    fi
+    container_user=$(. /etc/default/${container_name} ; echo $USER)
+
+    uid=$(getent passwd ${container_user} | cut -d: -f3)
+    gid=$(getent passwd ${container_user} | cut -d: -f4)
+    if [ -z "$uid" ]; then
+        die "ERROR: could not find uid of user ${container_user}"
+    fi
+    if [ -z "$uid" ]; then
+        die "ERROR: could not find gid of user ${container_user}"
+    fi
+
+    docker_opts="${docker_opts} --user ${uid}:${gid}"
+fi
+
+exec docker exec ${docker_opts} ${container_name} "$@"

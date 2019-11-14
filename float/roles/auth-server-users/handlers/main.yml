@@ -1,0 +1,4 @@
+---
+
+- name: restart auth-server
+  systemd: name=auth-server.service state=restarted

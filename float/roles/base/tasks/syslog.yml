@@ -1,0 +1,68 @@
+---
+
+# Install rsyslog from the backports repository. This isn't strictly
+# necessary but it is done to have the same version of rsyslog on all
+# hosts, including the log-collector.
+- name: Install rsyslog packages from backports
+  apt:
+    name: "{{ packages }}"
+    default_release: "{{ 'stretch-backports' if ansible_distribution_release == 'stretch' else '' }}"
+    state: present
+  vars:
+    packages:
+      - rsyslog
+      - rsyslog-gnutls
+      - mtail
+
+- name: Install mtail systemd socket unit
+  copy:
+    src: "mtail.socket"
+    dest: "/etc/systemd/system/mtail.socket"
+  notify: restart mtail
+
+- name: Install mtail systemd unit
+  copy:
+    src: "{{ 'mtail.service' if ansible_distribution_release == 'stretch' else 'mtail.service.buster' }}"
+    dest: "/etc/systemd/system/mtail.service"
+  notify: restart mtail
+
+- file:
+    path: /etc/mtail
+    state: directory
+
+- name: Install mtail programs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/mtail/
+  with_fileglob:
+    - "files/mtail/*.mtail"
+  notify: restart mtail
+
+- file:
+    path: /etc/systemd/system/rsyslog.service.d
+    state: directory
+- name: Configure rsyslog systemd unit to require mtail
+  copy:
+    src: rsyslog-mtail.conf
+    dest: /etc/systemd/system/rsyslog.service.d/mtail.conf
+  register: rsyslog_systemd
+- systemd: daemon_reload=yes
+  when: "rsyslog_systemd is changed"
+
+- name: Create /var/lib/rsyslogd
+  file:
+    path: /var/lib/rsyslogd
+    state: directory
+    mode: 0700
+
+- name: Configure rsyslog
+  template:
+    src: rsyslog.conf.j2
+    dest: /etc/rsyslog.conf
+  notify: restart rsyslog
+
+- name: Configure journald
+  copy:
+    src: journald.conf
+    dest: /etc/systemd/journald.conf
+  notify: restart journald

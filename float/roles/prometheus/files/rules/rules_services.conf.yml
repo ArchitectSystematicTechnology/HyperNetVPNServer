@@ -1,0 +1,47 @@
+groups:
+  - name: roles/prometheus/files/rules/rules_services.conf
+    rules:
+      - record: job:total:count
+        expr: count(up) by (job)
+      - record: job:up:count
+        expr: sum(up) by (job)
+      - record: job:up:fraction
+        expr: job:up:count / job:total:count
+
+      - record: node_systemd_unit_ok
+        expr: sum(node_systemd_unit_state{state="active"}) by (host,name)
+
+      # The global svcmap is identical on all hosts, pick one.
+      # Rewrite the 'target_host' label to just 'host'.
+      - record: global:svcmap
+        expr: label_replace(max(svcmap) without (host,instance),"host","$1","target_host","(.*)")
+
+      # By joining the node_systemd_unit_state with svcmap we can find
+      # float_services that have at least one failing systemd unit.
+      # The result metric has both float_service and service labels.
+      - record: service:presence_by_host
+        expr: label_replace(max(node_systemd_unit_state) by (host,name),"service","$1","name","(.*)") * on (service,host) group_right global:svcmap
+
+      - record: service:ok_by_host
+        expr: label_replace(node_systemd_unit_ok,"service","$1","name","(.*)") * on(service,host) group_right global:svcmap
+
+      # Now we can group the above at the float_service level, and find
+      # hosts that have at least one service failing in the group.
+      - record: float_service:presence_by_host
+        expr: count(service:presence_by_host) by (float_service,host)
+      - record: float_service:ok_by_host
+        expr: min(service:ok_by_host) by (float_service,host)
+
+      # Finally count the host availability.
+      - record: float_service:presence
+        expr: count(float_service:presence_by_host) by (float_service)
+      - record: float_service:ok
+        expr: sum(float_service:ok_by_host) by (float_service)
+      - record: float_service:ok:ratio
+        expr: float_service:ok / float_service:presence
+
+      # Aggregate service CPU usage as reported by cgroups.
+      - record: cpu_usage:rate1m
+        expr: rate(cgroup_cpu_usage[1m])
+      - record: service:cpu_usage:rate1m
+        expr: sum(cpu_usage:rate1m) by (host,service)

@@ -1,0 +1,11 @@
+[Unit]
+Description=MTail input FIFO
+
+[Socket]
+ListenFIFO=/run/mtail.fifo
+SocketMode=700
+SocketUser=mtail
+SocketGroup=mtail
+PipeSize=1M
+RemoveOnStop=on
+
