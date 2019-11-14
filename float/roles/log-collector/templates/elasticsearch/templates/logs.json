@@ -1,0 +1,28 @@
+{
+    "index_patterns": ["logstash-*"],
+    "settings": {
+        "index.number_of_shards": 1,
+        "index.number_of_replicas": 0,
+        "index.query.default_field": "message",
+        "index.refresh_interval": "30s",
+        "index.merge.scheduler.max_thread_count": 1
+    },
+    "mappings": {
+        "events": {
+            "_source": {
+                "excludes": ["ignore", "originalmsg", "unparsed-data"]
+            },
+            "properties": {
+                "message": {"type": "text"},
+                "host": {"type": "keyword"},
+                "program": {"type": "keyword"},
+                "severity": {"type": "keyword"},
+                "facility": {"type": "keyword"},
+                "tag": {"type": "keyword"},
+                "ignore": {"index": false, "type": "text", "store": false},
+                "originalmsg": {"index": false, "type": "text", "store": false},
+                "unparsed-data": {"index": false, "type": "text", "store": false}
+            }
+        }
+    }
+}

@@ -1,0 +1,54 @@
+---
+
+# Note: since we are iterating over all known services using
+# 'with_subelements', we have to explicitly check if the service is
+# enabled on this host.
+- set_fact:
+    service: "{{ item.0 }}"
+    dataset: "{{ item.1 }}"
+    dataset_name: "{{ item.0.name }}/{{ item.1.name }}"
+    dataset_filename: "{{ item.0.name }}_{{ item.1.name }}"
+    dataset_type: "{% if 'backup_command' in item.1 %}pipe{% else %}file{% endif %}"
+    dataset_should_backup: "{{ item.0.name in float_enabled_services and ((not item.1.get('on_master_only', False)) or (item.0.get('master_host') == inventory_hostname)) }}"
+
+- name: Set up configuration for dataset {{ dataset.name }} (source)
+  template:
+    src: "tabacco/sources/source.yml.j2"
+    dest: "/etc/tabacco/sources/{{ dataset_filename }}.yml"
+    mode: 0600
+  when: dataset_should_backup
+  notify:
+    - reload backup agent
+
+- name: Set up configuration for dataset {{ dataset.name }} (handler)
+  template:
+    src: "tabacco/handlers/{{ dataset_type }}.yml.j2"
+    dest: "/etc/tabacco/handlers/{{ dataset_filename }}.yml"
+    mode: 0600
+  when: dataset_should_backup and dataset_type == 'pipe'
+  notify:
+    - reload backup agent
+
+- name: Clear configuration for dataset {{ dataset.name }}
+  file:
+    path: "/etc/tabacco/{{ diritem }}/{{ dataset_filename }}.yml"
+    state: absent
+  when: not dataset_should_backup
+  with_items:
+    - sources
+    - handlers
+  loop_control:
+    loop_var: diritem
+
+- name: Create restore script
+  template:
+    src: "tabacco/restore-script.j2"
+    dest: "/usr/lib/float/datasets/restore-{{ dataset_filename }}"
+    mode: 0755
+  when: dataset_should_backup
+
+- name: Wipe dataset restore guard file
+  file:
+    path: "/var/lib/float/datasets/{{ dataset_filename }}.restore_guard"
+    state: absent
+  when: not dataset_should_backup

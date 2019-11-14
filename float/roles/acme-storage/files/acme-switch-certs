@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# Periodically check the contents of the repository managed by
+# replds@acme, and merge it onto /etc/credentials/public.
+#
+# Implements a notification hook by executing all scripts found
+# in the /etc/acme-storage/reload-hooks directory whenever there
+# are changes in the certificates. This is a pretty broad
+# mechanism that might be unsuitable for services using just a
+# single certificate: to avoid them restarting too often, the
+# approach found in acme-reload-frontend (for instance) might
+# be more appropriate.
+#
+
+public_creds_dir=/etc/credentials/public
+replds_dir=/var/lib/replds/acme
+
+# To see if rsync has changed anything, we can check the output of
+# rsync --stats.
+rsync_files_changed=$( \
+    rsync --archive --copy-links --stats ${replds_dir}/ ${public_creds_dir}/ \
+    | awk -F: '/Number of regular files transferred:/ {print $2}' \
+)
+
+if [ "$rsync_files_changed" -gt 0 ]; then
+    run-parts /etc/acme-storage/reload-hooks
+fi
+
+exit 0

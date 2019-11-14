@@ -1,0 +1,32 @@
+groups:
+  - name: roles/prometheus/files/rules/rules_base.conf
+    rules:
+      - record: job:up:count
+        expr: count(up) by (job)
+      - record: job:up:sum
+        expr: sum(up) by (job)
+      - record: job:up:ratio
+        expr: job:up:sum / job:up:count
+
+      # Sum prober metrics over the probers (hosts), producing
+      # an aggregation by target.
+      - record: target:probe_success:count
+        expr: count(probe_success) by (probe,zone,target)
+      - record: target:probe_success:sum
+        expr: sum(probe_success) by (probe,zone,target)
+      - record: target:probe_success:ratio
+        expr: target:probe_success:sum / target:probe_success:count
+
+      # Sum prober metrics over targets, aggregating by probe.
+      - record: probe:probe_success:count
+        expr: count(probe_success) by (probe,zone)
+      - record: probe:probe_success:sum
+        expr: sum(probe_success) by (probe,zone)
+      - record: probe:probe_success:ratio
+        expr: probe:probe_success:sum / probe:probe_success:count
+
+      # Special metric for the ping probe. The label_replace() sets
+      # the host to the value of the target label (instead of the host
+      # running the prober).
+      - record: host_reachable
+        expr: label_replace(target:probe_success:ratio{probe="ping"} > 0.6, "host", "$1", "target", "(.*)")

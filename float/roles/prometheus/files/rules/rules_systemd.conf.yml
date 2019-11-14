@@ -1,0 +1,5 @@
+groups:
+- name: roles/prometheus/files/rules/rules_systemd.conf
+  rules:
+  - record: instance:systemd_unit_restarts:delta10m
+    expr: delta(systemd_unit_restarts[10m])

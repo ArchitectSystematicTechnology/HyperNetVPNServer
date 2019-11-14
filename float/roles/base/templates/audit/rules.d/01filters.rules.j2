@@ -1,0 +1,26 @@
+
+### Filters - to reduce volume and remove noisy entries
+
+# Ignore root doing things via cron.
+-a never,user -F msgtype=USER_START -F auid=-1
+-a never,user -F msgtype=USER_END -F auid=-1
+-a never,user -F msgtype=CRED_DISP -F auid=-1
+-a never,user -F msgtype=CRED_REFR -F auid=-1
+-a never,exit -F exe=/usr/sbin/cron -F auid=-1
+
+# Note: the following section has been disabled because
+# we use audisp-json that does event aggregation, and
+# actually makes use of EOE, CWD, PATH and the rest of
+# the events below...
+
+# Ignore EOE (end-of-event) messages, we don't use them.
+#-a always,exclude -F msgtype=EOE
+
+# Ignore auxiliary events that we do not use. These contain auxiliary information
+# to the SYSCALL type messages. See
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/security_guide/sec-understanding_audit_log_files
+# for more information.
+#-a always,exclude -F msgtype=CWD
+#-a always,exclude -F msgtype=PATH
+#-a always,exclude -F msgtype=PROCTITLE
+

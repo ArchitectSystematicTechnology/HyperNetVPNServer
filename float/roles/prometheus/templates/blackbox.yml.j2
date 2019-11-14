@@ -1,0 +1,71 @@
+modules:
+
+  # Healthcheck probe to use on internal targets.
+  http_health:
+    prober: http
+    timeout: 5s
+    http:
+      valid_status_codes: []
+      method: GET
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+      fail_if_not_matches_regexp:
+        - "OK"
+      preferred_ip_protocol: ip4
+      tls_config:
+        ca_file: /etc/credentials/x509/prometheus/ca.pem
+        cert_file: /etc/credentials/x509/prometheus/client/cert.pem
+        key_file: /etc/credentials/x509/prometheus/client/private_key.pem
+        insecure_skip_verify: false
+
+  # HTTP probe for the main public website.
+  http_public:
+    prober: http
+    timeout: 5s
+    http:
+      valid_status_codes: [200, 301, 302, 307]
+      method: GET
+      headers:
+        Host: "www.{{ domain_public[0] }}"
+      fail_if_ssl: false
+      fail_if_not_ssl: true
+      preferred_ip_protocol: ip4
+      tls_config:
+        server_name: "www.{{ domain_public[0] }}"
+        ca_file: /etc/ssl/certs/ca-certificates.crt
+        insecure_skip_verify: false
+
+{% for custom_probe in prometheus_custom_blackbox_probes.get('http', []) %}
+  http_{{ custom_probe.name }}:
+    prober: http
+    timeout: 5s
+    http:
+      valid_status_codes: [200, 301, 302, 307]
+      method: GET
+      headers:
+        Host: "{{ custom_probe.host }}"
+      fail_if_ssl: false
+      fail_if_not_ssl: true
+      preferred_ip_protocol: ip4
+      tls_config:
+        server_name: "{{ custom_probe.host }}"
+        ca_file: /etc/ssl/certs/ca-certificates.crt
+        insecure_skip_verify: false
+{% endfor %}
+
+  ping:
+    prober: icmp
+    timeout: 5s
+    icmp:
+      preferred_ip_protocol: ip4
+
+  dns_toplevel:
+    prober: dns
+    timeout: 5s
+    dns:
+      preferred_ip_protocol: ip4
+      query_name: "{{ domain_public[0] }}"
+      query_type: "A"
+      valid_rcodes:
+        - "NOERROR"
+

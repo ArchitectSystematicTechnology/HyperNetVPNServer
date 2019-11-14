@@ -1,0 +1,15 @@
+---
+
+# Destination (To:) of alert emails.
+alert_email: ""
+
+# Alertmanager SMTP parameters.
+alertmanager_smtp_from: "prometheus@{{ domain }}"
+alertmanager_smtp_smarthost: "localhost:25"
+alertmanager_smtp_require_tls: false
+alertmanager_smtp_hello: "localhost"
+alertmanager_smtp_auth_username: ""
+alertmanager_smtp_auth_password: ""
+
+# Custom blackbox probes.
+prometheus_custom_blackbox_probes: {}

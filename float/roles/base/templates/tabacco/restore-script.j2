@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# Restore the dataset {{ dataset_name }}.
+
+# Uses a guard file to ensure the restore runs only once
+# on a specific machine (or actually, once every time the
+# service is newly scheduled there).
+
+umask 077
+
+guard_dir=/var/lib/float/datasets
+mkdir -p ${guard_dir}
+
+guard_file="${guard_dir}/{{ dataset_filename }}.restore_guard"
+if [ -e "${guard_file}" ]; then
+    echo "restore already ran for this dataset, skipping..." >&2
+    exit 0
+fi
+
+# Use 'tabacco query' to detect if a backup of this dataset exists,
+# otherwise there's nothing to restore (the service might be new
+# perhaps).
+ds_pattern="{{ dataset_name }}/*"
+ds=$(tabacco query "${ds_pattern}" 2>/dev/null)
+if [ "x${ds}" = "x[]" ]; then
+    echo "could not find any backups for ${ds_pattern}" >&2
+    echo "nothing to restore, skipping..." >&2
+else
+    echo "starting restore of ${ds_pattern}..." >&2
+    tabacco restore "${ds_pattern}"
+    if [ $? -gt 0 ]; then
+        echo "ERROR: restore failed!" >&2
+        exit 1
+    fi
+fi
+
+echo "marking restore successful" >&2
+touch "${guard_file}"
+
+exit 0

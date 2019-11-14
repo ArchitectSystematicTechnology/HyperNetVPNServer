@@ -1,0 +1,13 @@
+# A network overlay is a logical IP network for a cluster, running
+# on top of the normal Internet (encrypted).
+#
+# It is used to provide internal services with IP addresses.
+#
+# The actual implementation is configurable via the 'network_overlay_backend'
+# configuration variable, though right now only the 'tinc' backend exists.
+
+---
+
+- include_tasks: "configure_netoverlay_tinc.yml"
+  with_items: "{{ float_host_overlay_networks }}"
+  when: "network_overlay_backend|default('tinc') == 'tinc'"

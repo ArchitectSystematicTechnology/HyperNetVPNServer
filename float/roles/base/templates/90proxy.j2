@@ -1,0 +1,2 @@
+Acquire::http::Proxy "http://{{ apt_proxy }}";
+Acquire::http::Proxy::{{ apt_proxy | regex_replace(':[0-9]*$', '') }} "DIRECT";

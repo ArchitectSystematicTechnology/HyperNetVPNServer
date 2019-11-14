@@ -1,0 +1,6 @@
+---
+
+- name: systemctl reset-failed
+  command: "systemctl reset-failed"
+  changed_when: false
+

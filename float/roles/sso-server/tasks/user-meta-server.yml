@@ -1,0 +1,27 @@
+---
+
+- name: Install user-meta-server package
+  apt: name=user-meta-server state=latest
+
+- user:
+    name: user-meta-server
+    groups: user-meta-server-credentials
+    append: true
+
+- name: Install user-meta-server configuration
+  template:
+    src: user-meta-server.yml.j2
+    dest: /etc/user-meta-server.yml
+    owner: root
+    group: user-meta-server
+    mode: 0640
+  notify: restart user-meta-server
+
+- name: Configure user-meta-server runtime params
+  copy:
+    dest: /etc/default/user-meta-server
+    content: "ADDR=:5505\n"
+  notify: restart user-meta-server
+
+- name: Enable user-meta-server systemd unit
+  systemd: name=user-meta-server.service enabled=yes masked=no

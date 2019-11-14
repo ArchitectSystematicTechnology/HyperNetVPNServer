@@ -1,0 +1,12 @@
+
+## Self Auditing rules
+
+# Auditd configuration
+# Modifications to audit configuration that occur while the audit collection functions are operating
+-w /etc/audit/rules.d -p wa -k auditconfig
+-w /etc/libaudit.conf -p wa -k auditconfig
+-w /etc/audisp/ -p wa -k audispconfig
+
+# Monitor for use of audit management tools
+-w /sbin/auditctl -p x -k audittools
+-w /sbin/auditd -p x -k audittools

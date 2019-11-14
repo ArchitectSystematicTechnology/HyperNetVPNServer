@@ -1,0 +1,447 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import argparse
+import jinja2
+import os
+import random
+import re
+import subprocess
+import sys
+import yaml
+
+
+# Find the root ai3/float source directory.
+srcdir = os.path.dirname(__file__)
+
+# Skeleton directories that should be created.
+skel_dirs = [
+    'credentials',
+    'group_vars/all',
+    'playbooks',
+]
+
+# Define the templates for a skeleton configuration.
+skel = {
+    'base': {
+        'ansible.cfg': '''
+[defaults]
+roles_path = {{ srcdir }}/roles:roles
+inventory_plugins = {{ srcdir }}/plugins/inventory
+action_plugins = {{ srcdir }}/plugins/action
+vars_plugins = {{ srcdir }}/plugins/vars
+display_skipped_hosts = False
+nocows = 1
+force_handlers = True
+callback_whitelist = profile_tasks
+host_key_checking = False
+{% if mitogen %}
+strategy_plugins = {{ mitogen }}/ansible_mitogen/plugins/strategy
+strategy = mitogen_linear
+{% endif %}
+
+[inventory]
+enable_plugins = float
+
+[ssh_connection]
+ssh_args = -C -o ControlMaster=auto -o ControlPersist=120s
+control_path_dir = ~/.ansible/cp
+control_path = %(directory)s/%%h-%%r
+pipelining = True
+''',
+        'config.yml': '''---
+plugin: float
+services_file: services.yml
+hosts_file: hosts.yml
+passwords_file: passwords.yml
+credentials_dir: credentials
+''',
+        'services.yml': '''---
+include:
+  - "{{ srcdir }}/{{ default_services_file }}"
+''',
+        'passwords.yml': '''---
+- include: "{{ srcdir }}/passwords.yml.default"
+''',
+        'site.yml': '''---
+- import_playbook: "{{ srcdir }}/playbooks/all.yml"
+''',
+        'hosts.yml': '''---
+{% if vagrant %}
+group_vars:
+  vagrant:
+    ansible_user: vagrant
+    ansible_become: true
+    ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_key"
+{% if libvirt and libvirt != 'localhost' %}
+    ansible_ssh_extra_args = "-o ProxyJump={{ libvirt }}"
+{% endif %}
+{% else %}
+# REPLACE THESE WITH YOUR OWN HOSTS!
+{% endif %}
+hosts:
+{% for h in hosts %}
+  {{ h.name }}:
+    ansible_host: {{ h.ip }}
+    ip: {{ h.ip }}
+    ip_vpn0: {{ h.ip_vpn0 }}
+{% if h.shard_id %}
+    shard_id: {{ h.shard_id }}
+{% endif %}
+    groups: {{ h.groups | toyaml }}
+{% endfor %}
+''',
+        'group_vars/all/config.yml': '''---
+{{ config | toyaml }}
+''',
+    },
+
+    'vagrant': {
+        'Vagrantfile': '''
+Vagrant.configure(2) do |config|
+  config.vm.box = "{{ vagrant_box }}"
+
+  # Use the old insecure Vagrant SSH key for access.
+  config.ssh.insert_key = false
+
+  # Disable synchronization of the /vagrant folder for faster startup.
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+{% if not libvirt %}
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "{{ ram }}"]
+  end
+{% elif libvirt != 'localhost' %}
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.host = "{{ libvirt_host }}"
+    libvirt.username = "{{ libvirt_user }}"
+    libvirt.connect_via_ssh = true
+    libvirt.id_ssh_key_file = "id_ed25519"
+
+    libvirt.cpus = 1
+    libvirt.memory = {{ ram }}
+  end
+{% else %}
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.cpus = 1
+    libvirt.memory = {{ ram }}
+  end
+{% endif %}
+
+{% for h in hosts %}
+  config.vm.define "{{ h.name }}" do |m|
+    m.vm.hostname = "{{ h.name }}"
+    m.vm.network "private_network", ip: "{{ h.ip }}"{% if libvirt %}, libvirt__dhcp_enabled: false{% endif %}
+
+  end
+{% endfor %}
+end
+''',
+    },
+}
+
+
+def support_ansible_vault_gpg_passphrase():
+    """Support GPG-encrypted Ansible Vault passphrases.
+
+    We do this by rewriting the ANSIBLE_VAULT_PASSWORD_FILE
+    environment variable and pointing it at a wrapper script.
+
+    The function does not return anything but as a side effect it will
+    modify os.environ (so that the subprocess modulee will pick up the
+    changes).
+
+    """
+    pwfile = os.getenv('ANSIBLE_VAULT_PASSWORD_FILE')
+    if not pwfile:
+        raise Exception(
+            'The environment variable ANSIBLE_VAULT_PASSWORD_FILE is not '
+            'defined. You should point it at the file containing your '
+            'Ansible Vault passphrase (possibly encrypted with GPG).')
+    if not os.path.exists(pwfile):
+        raise Exception(
+            'The ANSIBLE_VAULT_PASSWORD_FILE (%s) does not exist.' % (
+                pwfile,))
+
+    # Be friendly to the user and resolve tilde (~ and ~user) paths,
+    # which the shell would not do otherwise in environment variables.
+    # Then ensure it is an absolute path.
+    pwfile = os.path.abspath(os.path.expanduser(pwfile))
+
+    # If the file has a .gpg extension, wrap it with our decoding
+    # script: Ansible will execute the script due to its +x
+    # permissions, which in turn will use gpg to decrypt the
+    # passphrase (using another environment variable to find the
+    # original file).
+    if pwfile.endswith('.gpg'):
+        os.environ['FLOAT_VAULT_PASSWORD_FILE'] = pwfile
+        pwfile = os.path.abspath(
+            os.path.join(srcdir, 'scripts', 'get-vault-password'))
+
+    os.environ['ANSIBLE_VAULT_PASSWORD_FILE'] = pwfile
+
+
+def command_run(config, playbooks,
+                ansible_verbosity=0,
+                ansible_check=False,
+                ansible_diff=False,
+                ansible_stdout=None,
+                ansible_extra_vars=[]):
+    if not os.path.exists(config):
+        raise Exception(
+            'The configuration file %s does not exist!' % (config,))
+
+    if ansible_stdout:
+        os.environ['ANSIBLE_STDOUT_CALLBACK'] = ansible_stdout
+
+    for arg in playbooks:
+        if not os.path.exists(arg):
+            # See if we have a stock playbook with that name.
+            if not arg.endswith('.yml'):
+                arg += '.yml'
+            pbk = os.path.join(srcdir, 'playbooks', arg)
+            if os.path.exists(pbk):
+                arg = pbk
+
+        print('Running playbook %s...' % (arg,))
+
+        os.environ['LC_ALL'] = 'C'
+        support_ansible_vault_gpg_passphrase()
+        cmd = [os.getenv('ANSIBLE_PLAYBOOK', 'ansible-playbook'),
+               '-i', config]
+        if ansible_verbosity > 0:
+            cmd.append('-' + ('v' * ansible_verbosity))
+        if ansible_check:
+            cmd.append('--check')
+        if ansible_diff:
+            cmd.append('--diff')
+        for v in ansible_extra_vars:
+            cmd.append('--extra-vars=' + v)
+        cmd.append(arg)
+        subprocess.check_call(cmd)
+
+
+def command_init_credentials(config):
+    command_run(config, ['init-credentials.yml'])
+
+
+def _parse_network(s):
+    # Given a network in the form a.b.c.0, return the first three octects.
+    m = re.match(r'(\d+\.\d+\.\d+)\.0$', s)
+    if not m:
+        raise Exception('Syntax error: %s does not match format a.b.c.0' % s)
+    return m.group(1)
+
+
+def command_create_env(path, domain, vagrant, mitogen, libvirt, num_hosts, net,
+                       apt_proxy, debian_dist, ram, no_elasticsearch):
+    if os.path.exists(path):
+        raise Exception('Target %s already exists' % path)
+
+    vars = {
+        'srcdir': os.path.relpath(srcdir, path),
+        'default_services_file': (
+            'services.yml.no-elasticsearch' if no_elasticsearch else 'services.yml.default'),
+        'vagrant': vagrant,
+        'mitogen': mitogen,
+        'libvirt': libvirt,
+        'ram': ram,
+    }
+
+    vpn_net = '192.168.13'
+
+    if vagrant:
+        if net:
+            net = _parse_network(net)
+        else:
+            # Avoid low-numbered 10.x networks that may be used by Vagrant.
+            net = '10.%d.%d' % (
+                random.randint(100, 254),
+                random.randint(0, 254))
+            print('using network %s.0/24 for the VMs' % net)
+        hosts = [{
+            'name': 'host%d' % (i+1),
+            'ip': '%s.%d' % (net, i+10),
+            'ip_vpn0': '%s.%d' % (vpn_net, i+1),
+            'shard_id': ('host%d' % (i+1)) if i > 0 else None,
+            'groups': ['frontend', 'vagrant'] if i == 0 else ['backend', 'vagrant'],
+        } for i in range(num_hosts)]
+        vars['vagrant_box'] = 'debian/%s64' % debian_dist
+    else:
+        hosts = [{
+            'name': 'host1',
+            'ip': '1.2.3.4',
+            'ip_vpn0': '%s.1' % vpn_net,
+            'shard_id': None,
+            'groups': ['frontend', 'backend'],
+        }]
+    vars['hosts'] = hosts
+
+    if libvirt and libvirt != 'localhost':
+        vars['libvirt_user'], vars['libvirt_host'] = libvirt.split('@')
+
+    vars['config'] = {
+        'testing': True,
+        'domain': 'infra.%s' % domain,
+        'domain_public': [domain],
+        'net_overlays': [
+            {'name': 'vpn0',
+             'network': '%s.0/24' % vpn_net}],
+        'enable_ssh': False,
+        'enable_osquery': False,
+        'enable_elasticsearch': not no_elasticsearch,
+        'float_debian_dist': debian_dist,
+        'admins': [
+            {'name': 'admin',
+             'email': 'admin@%s' % domain,
+             'password': '$s$16384$8$1$c479e8eb722f1b071efea7826ccf9c20$96d63ebed0c64afb746026f56f71b2a1f8796c73141d2d6b1958d4ea26c60a0b'}],
+
+        # Parameters that are appropriate for a test environment.
+        'prometheus_tsdb_retention': '2d',
+        'mariadb_innodb_log_file_size': '20M',
+        'log_collector_retention_days': 2,
+    }
+    if apt_proxy:
+        vars['config']['apt_proxy'] = apt_proxy
+    if not no_elasticsearch:
+        vars['config']['es_log_keep_days'] = {
+            'audit': 2,
+            'logstash': 2,
+            'http': 2,
+        }
+
+    for d in skel_dirs:
+        print('creating directory %s' % os.path.join(path, d))
+        os.makedirs(os.path.join(path, d))
+
+    filedata = skel['base']
+    if vagrant:
+        filedata.update(skel['vagrant'])
+    # Create a jinja environment so we can set our toyaml filter.
+    env = jinja2.Environment(
+        loader=jinja2.DictLoader(filedata),
+        autoescape=False,
+        trim_blocks=True,
+        keep_trailing_newline=True)
+    env.filters = {'toyaml': lambda x: yaml.dump(x)}
+    for name in filedata:
+        print('creating file %s' % os.path.join(path, name))
+        with open(os.path.join(path, name), 'w') as fd:
+            fd.write(env.get_template(name).render(vars))
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Container-based cluster management CLI.')
+
+    subparsers = parser.add_subparsers(dest='subparser')
+
+    help_parser = subparsers.add_parser(
+        'help', help='print help')
+
+    create_env_parser = subparsers.add_parser(
+        'create-env',
+        help='initialize a new environment',
+        description='''Initialize a new (test) environment.
+
+This command creates a new float configuration with defaults that are
+suitable for a test environment. Check out docs/running.md for notes
+on how to modify this configuration for a production environment.
+
+The generated configuration can include a Vagrant setup for running
+the test VMs to run float on: for this reason, a lot of the options
+of this command have to do with setting up the virtual machines
+themselves.
+''')
+    create_env_parser.add_argument(
+        'path', help='output directory (must not exist yet)')
+    create_env_parser.add_argument(
+        '--vagrant', action='store_true',
+        help='set up a Vagrantfile')
+    create_env_parser.add_argument(
+        '--num-hosts', metavar='N', type=int, default=3,
+        help='number of VMs to create when using --vagrant (default: 3)')
+    create_env_parser.add_argument(
+        '--ram', metavar='MB', type=int, default=3072,
+        help='RAM for each VM when using --vagrant (default: 3072)')
+    create_env_parser.add_argument(
+        '--mitogen', metavar='PATH',
+        help='directory with the Mitogen source repository'
+        ' (enables Mitogen in the generated ansible.cfg)')
+    create_env_parser.add_argument(
+        '--libvirt', metavar='USER@HOST',
+        help='configure Vagrant to use libvirt on HOST as USER. '
+        ' If the argument has the special value "localhost", use the '
+        ' local libvirtd (i.e. qemu://system).')
+    create_env_parser.add_argument(
+        '--domain', default='example.com',
+        help='public domain to use (default: example.com)')
+    create_env_parser.add_argument(
+        '--net',
+        help='Vagrant private network (default: randomly selected)')
+    create_env_parser.add_argument(
+        '--debian-dist', metavar='DIST',
+        default='stretch',
+        help='Debian distribution to use (default: stretch)')
+    create_env_parser.add_argument(
+        '--no-elasticsearch', action='store_true',
+        help='disable Elasticsearch/Kibana, useful in testing'
+        ' environments due to the large footprint of these services')
+    create_env_parser.add_argument(
+        '--apt-proxy', metavar='HOST:PORT',
+        help='proxy for APT package retrieval')
+
+    run_parser = subparsers.add_parser(
+        'run',
+        help='run Ansible playbooks',
+        description='Run Ansible playbooks.')
+    run_parser.add_argument(
+        'playbooks', metavar='playbook', nargs='*',
+        default=['site.yml'], help='Playbooks to run')
+    run_parser.add_argument(
+        '--config', metavar='file', default='config.yml',
+        help='Path to the configuration file')
+    run_parser.add_argument(
+        '-v', '--verbose', dest='ansible_verbosity', action='count',
+        help='Increase ansible-playbook verbosity')
+    run_parser.add_argument(
+        '-C', '--check', dest='ansible_check', action='store_true',
+        help='Run ansible-playbook with the --check flag')
+    run_parser.add_argument(
+        '-O', '--stdout', dest='ansible_stdout', type=str,
+        help='Select ansible stdout callback (e.g. minimal, actionable)',
+        default=None)
+    run_parser.add_argument(
+        '-D', '--diff', dest='ansible_diff', action='store_true',
+        help='Run ansible-playbook with the --diff flag')
+    run_parser.add_argument(
+        '-e', '--extra-vars', dest='ansible_extra_vars',
+        action='append', default=[],
+        help='Extra variables for Ansible')
+
+    init_credentials_parser = subparsers.add_parser(
+        'init-credentials',
+        help='initialize credentials',
+        description='Initialize credentials.')
+    init_credentials_parser.add_argument(
+        '--config', metavar='file', default='config.yml',
+        help='Path to the configuration file')
+
+    kwargs = vars(parser.parse_args())
+    cmd = kwargs.pop('subparser')
+
+    if cmd == 'help' or not cmd:
+        parser.print_help()
+        return
+
+    handler = 'command_' + cmd.replace('-', '_')
+    globals()[handler](**kwargs)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception as e:
+        print("ERROR: %s" % (str(e),), file=sys.stderr)
+        sys.exit(1)

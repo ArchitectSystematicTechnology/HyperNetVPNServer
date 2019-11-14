@@ -1,0 +1,19 @@
+
+# Record modifications to the cron configuration
+# (possible persistence attempts)
+-w /etc/cron.allow -p wa -k cron-config
+-w /etc/cron.deny -p wa -k cron-config
+-w /etc/cron.d/ -p wa -k cron-config
+-w /etc/cron.daily/ -p wa -k cron-config
+-w /etc/cron.hourly/ -p wa -k cron-config
+-w /etc/cron.monthly/ -p wa -k cron-config
+-w /etc/cron.weekly/ -p wa -k cron-config
+-w /etc/crontab -p wa -k cron-config
+-w /var/spool/cron/crontabs/ -k cron-config
+-w /etc/inittab -p wa -k cron-config
+-w /etc/init.d/ -p wa -k cron-config
+-w /etc/init/ -p wa -k cron-config
+-w /etc/at.allow -p wa -k cron-config
+-w /etc/at.deny -p wa -k cron-config
+-w /var/spool/at/ -p wa -k cron-config
+-w /etc/anacrontab -p wa -k cron-config

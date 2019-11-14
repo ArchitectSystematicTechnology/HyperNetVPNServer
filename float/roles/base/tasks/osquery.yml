@@ -1,0 +1,31 @@
+---
+
+- name: Install osquery APT key
+  apt_key:
+    id: 1484120AC4E9F8A1A577AEEE97A80C63C9D8B80B
+    keyserver: keyserver.ubuntu.com
+    state: present
+
+- name: Install osquery APT repository
+  apt_repository:
+    repo: "deb [arch=amd64] {% if apt_proxy is defined %}http://{{ apt_proxy }}/HTTPS/{% else %}https:{% endif %}//pkg.osquery.io/deb deb main"
+    state: present
+
+- name: Install osqueryd package
+  apt:
+    name: osquery
+    state: present
+
+- name: Configure osqueryd
+  template:
+    src: "osquery.conf.j2"
+    dest: "/etc/osquery/osquery.conf"
+    mode: 0400
+  notify: restart osquery
+
+- name: Enable osqueryd
+  systemd:
+    name: "osqueryd.service"
+    enabled: yes
+    masked: no
+    state: started

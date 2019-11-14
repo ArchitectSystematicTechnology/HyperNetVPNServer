@@ -1,0 +1,42 @@
+---
+
+# The tabacco package and /etc/tabacco directory have already been set
+# up by the "base" role.
+
+# The metadata server runs as its own dedicated user, it needs no
+# special privileges.
+
+- name: Create backup metadata user
+  user:
+    name: backup-metadata
+    groups: tabacco,backup-metadata-credentials
+    system: yes
+    state: present
+
+- name: Create backup metadata server database dir
+  file:
+    path: /var/lib/tabacco-metadb
+    state: directory
+    owner: backup-metadata
+    mode: 0700
+
+- name: Configure the backup metadata server
+  template:
+    src: metadb.yml.j2
+    dest: /etc/tabacco/metadb.yml
+  notify:
+    - restart tabacco-metadb
+
+- name: Setup the backup-metadata systemd unit
+  template:
+    src: metadb.service.j2
+    dest: /etc/systemd/system/tabacco-metadb.service
+  notify:
+    - restart tabacco-metadb
+
+- name: Enable the backup metadata server
+  systemd:
+    name: tabacco-metadb.service
+    masked: no
+    enabled: yes
+    daemon_reload: yes

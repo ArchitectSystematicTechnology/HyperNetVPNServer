@@ -1,0 +1,17 @@
+# This file controls the configuration of the audit daemon. We are
+# forwarding all audit logs to the central log collector via audispd.
+#
+# NOTE: the auditd version included in Debian stretch has a bug where
+# the 'write_logs' option is not properly handled. See
+# https://bugzilla.redhat.com/show_bug.cgi?id=1382397
+# for details. This should be fixed in the next stable release.
+#
+write_logs = no
+priority_boost = 4
+flush = none
+disp_qos = lossy
+dispatcher = /sbin/audispd
+name_format = none
+space_left = 75
+admin_space_left = 50
+action_mail_acct = {{ auditd_action_mail_acct }}

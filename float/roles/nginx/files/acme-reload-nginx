@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# Reload NGINX when the certificates change.
+#
+
+# The grep/awk one-liner finds all certificate files referenced in
+# NGINX site configuration files.
+sites_dirs="/etc/nginx/sites-available /etc/nginx/sites-auto"
+certs=$(fgrep -r ssl_certificate $sites_dirs \
+            | awk '$2=="ssl_certificate" {print $3}' \
+            | sed -e 's/;$//')
+if-changed $certs && systemctl reload nginx
+exit 0

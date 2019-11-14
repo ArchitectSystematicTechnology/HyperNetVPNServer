@@ -1,0 +1,18 @@
+---
+
+# Playbook that runs the float infra roles on 'frontend' hosts.
+
+- hosts: frontend
+  roles:
+    - nginx
+    - dns
+    - haproxy
+
+- hosts: admin-dashboard
+  roles:
+    - admin-dashboard
+
+- hosts: acme
+  roles:
+    - acme
+

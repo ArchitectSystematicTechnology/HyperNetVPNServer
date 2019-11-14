@@ -1,0 +1,109 @@
+---
+
+- name: Install DNS-related packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - bind9
+      - dnsutils
+      - python-zonetool
+
+- name: Install bind9 configuration (dirs)
+  file:
+    path: "/etc/bind/{{ item.path }}"
+    state: directory
+  with_filetree: "templates/bind/"
+  when: item.state == 'directory'
+
+- name: Install bind9 configuration (files)
+  template:
+    src: "{{ item.src }}"
+    dest: "/etc/bind/{{ item.path }}"
+    owner: root
+    group: bind
+  with_filetree: "templates/bind/"
+  when: item.state == 'file'
+  notify: reload bind
+  register: dns_config
+
+- name: Create bind9 zone dirs
+  file:
+    path: "/etc/bind/zones"
+    state: directory
+    owner: root
+    group: bind
+    mode: 0775
+
+- name: Create bind9 dsset dirs
+  file:
+    path: "/etc/bind/dnssec-ds"
+    state: directory
+    owner: root
+    group: bind
+    mode: 0775
+
+- name: Create dns config dirs
+  file:
+    path: "/etc/dns/{{ item }}"
+    state: directory
+  with_items:
+    - manual
+    - auto
+
+- name: Create empty named.conf.* files if necessary
+  file:
+    path: "/etc/bind/{{ item }}"
+    state: touch
+  changed_when: false
+  with_items:
+    - named.conf.zones
+    - named.conf.internal-custom-zones
+    - named.conf.external-custom-zones
+
+- name: Generate infrastructural zone
+  template:
+    src: dns/infra.yml
+    dest: /etc/dns/manual/infra.yml
+  register: zonetool_infra_config
+
+- name: Install zonetool configuration
+  template:
+    src: zonetool.yml
+    dest: /etc/dns/zonetool.yml
+  register: zonetool_config
+
+- name: Install update-dns script
+  template:
+    src: update-dns
+    dest: /usr/sbin/update-dns
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Generate zones
+  command: /usr/sbin/update-dns
+  when: dns_config.changed or zonetool_config.changed or zonetool_infra_config.changed
+  notify: reload bind
+
+- name: Install firewall config
+  template:
+    src: firewall/20dns.j2
+    dest: /etc/firewall/filter.d/20dns
+  notify: reload firewall
+
+- name: Create dnssec credentials dir
+  file:
+    path: "/etc/credentials/dnssec"
+    state: directory
+    mode: 0700
+
+- name: Install DNSSEC keys
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/credentials/dnssec/{{ item | basename }}"
+    mode: 0600
+  with_fileglob:
+    - "{{ credentials_dir }}/dnssec/K*.private"
+    - "{{ credentials_dir }}/dnssec/K*.key"

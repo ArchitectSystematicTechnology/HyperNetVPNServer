@@ -1,0 +1,47 @@
+---
+
+- name: Install the acmeserver package
+  apt:
+    name: acmeserver
+    state: present
+
+- name: Create /etc/acme directory tree
+  file:
+    path: "/etc/acme/{{ item }}"
+    state: directory
+  with_items:
+    - certs.d
+    - auto.d
+
+- name: Configure acmeserver
+  template:
+    src: config.yml.j2
+    dest: /etc/acme/config.yml
+  notify: "restart acmeserver"
+
+- name: Configure public certificates
+  template:
+    src: certs.yml.j2
+    dest: /etc/acme/certs.d/float.yml
+  notify: "reload acmeserver"
+
+- name: Create /var/lib/acme directory
+  file:
+    path: "/var/lib/acme"
+    state: directory
+    owner: acmeserver
+    group: acmeserver
+    mode: 0700
+
+- name: Add the acmeserver user to the public-credentials and acme-credentials group
+  user:
+    name: acmeserver
+    groups: public-credentials,acme-credentials
+    append: yes
+
+- name: Enable acmeserver service
+  systemd:
+    name: acmeserver.service
+    state: started
+    enabled: yes
+    masked: no

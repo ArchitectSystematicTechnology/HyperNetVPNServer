@@ -1,0 +1,57 @@
+{# TODO: this macro is useless, remove these rules from production? #}
+{# NOTE: auid=1000 is the vagrant user, removed to get rid of noise in tests. #}
+{% macro is_real_user() %}-F auid>1000 -F auid!=4294967295{% endmacro %}
+
+# Collect Use of Privileged Commands
+{% if privileged_programs is defined and privileged_programs.stdout_lines|length > 0 %}
+{{ privileged_programs.stdout }}
+{% endif %}
+
+# Events related to privilege escalations (for non-system users)
+-a always,exit -F dir=/home -F uid=0 {{ is_real_user() }} -C auid!=obj_uid -k sudo
+-a always,exit -F arch=b32 -S chmod {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S chown {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S fchmod {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S fchmodat {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S fchown {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S fchownat {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S fremovexattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S fsetxattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S lchown {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S lremovexattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S lsetxattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S removexattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -S setxattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b32 -C auid!=uid -S execve {{ is_real_user() }} -F auid!=-1 -k privesc
+-a always,exit -F arch=b32 -S setuid -S setgid -S setreuid -S setregid -k privesc
+-a always,exit -F arch=b32 -S setuid -S setgid -S setreuid -S setregid -F exit=EPERM -k privesc
+{% if ansible_architecture == "x86_64" %}
+-a always,exit -F arch=b64 -S chmod  {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S chown {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S fchmod {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S fchmodat {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S fchown {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S fchownat {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S fremovexattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S fsetxattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S lchown {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S lremovexattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S lsetxattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S removexattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -S setxattr {{ is_real_user() }} -k privesc
+-a always,exit -F arch=b64 -C auid!=uid -S execve {{ is_real_user() }} -F auid!=-1 -k privesc
+-a always,exit -F arch=b64 -S setuid -S setgid -S setreuid -S setregid -k privesc
+-a always,exit -F arch=b64 -S setuid -S setgid -S setreuid -S setregid -F exit=EPERM -k privesc
+{% endif %}
+
+# Monitor ptrace usage
+-a always,exit -F arch=b32 -S ptrace -k ptrace
+-a always,exit -F arch=b32 -S ptrace -F a0=0x4 -k ptrace
+-a always,exit -F arch=b32 -S ptrace -F a0=0x5 -k ptrace
+-a always,exit -F arch=b32 -S ptrace -F a0=0x6 -k ptrace
+{% if ansible_architecture == "x86_64" %}
+-a always,exit -F arch=b64 -S ptrace -k ptrace
+-a always,exit -F arch=b64 -S ptrace -F a0=0x4 -k ptrace
+-a always,exit -F arch=b64 -S ptrace -F a0=0x5 -k ptrace
+-a always,exit -F arch=b64 -S ptrace -F a0=0x6 -k ptrace
+{% endif %}

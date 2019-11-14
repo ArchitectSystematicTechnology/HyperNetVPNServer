@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# Returns true if one or more files have changed since the previous
+# invocation over the same set of files.
+#
+
+files_fp=$(echo "$@" | md5sum - | awk '{print $1}')
+state_file="/var/tmp/.if-changed.${files_fp}"
+
+max_ts=0
+for file in "$@"
+do
+    ts=$(stat -c %Y "$file")
+    if [ $ts -gt $max_ts ]; then
+        max_ts=$ts
+    fi
+done
+
+prev_ts=0
+if [ -e $state_file ]; then
+    prev_ts=$(cat $state_file)
+fi
+echo $max_ts > $state_file
+if [ $max_ts -gt $prev_ts ]; then
+    exit 0
+fi
+exit 1

@@ -1,0 +1,43 @@
+---
+
+# Configure Prometheus components.
+
+- name: Create /etc/prometheus and subdirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "/etc/prometheus"
+    - "/etc/prometheus/rules"
+    - "/etc/prometheus/alertmanager_templates"
+    - "/etc/prometheus/consoles"
+    - "/etc/prometheus/console_libraries"
+
+- name: Install Prometheus rules
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/prometheus/rules/"
+  with_fileglob:
+    - files/rules/*.conf.yml
+  notify: "reload prometheus"
+
+- name: Install Prometheus configs
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/prometheus/{{ item }}"
+  loop:
+    - "alertmanager.yml"
+    - "blackbox.yml"
+    - "prometheus.yml"
+  notify: "reload prometheus"
+
+- name: Create /var/lib/prometheus dirs
+  file:
+    path: "/var/lib/prometheus/{{ item }}"
+    state: directory
+    owner: docker-prometheus
+    group: docker-prometheus
+    mode: 0750
+  loop:
+    - alertmanager
+    - metrics2

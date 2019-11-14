@@ -1,0 +1,61 @@
+---
+
+- set_fact:
+    tinc_net: "{{ item }}"
+    tinc_dir: "/etc/tinc/{{ item }}"
+    tinc_netmask_cidr: 24
+
+- name: Install the tinc package
+  apt: package=tinc state=latest
+
+- file: path="{{ tinc_dir }}" state=directory
+- file: path="{{ tinc_dir }}/hosts" state=directory
+
+- name: Generate tinc host key
+  shell: "tincd --net={{ tinc_net }} --generate-keys </dev/null"
+  args:
+    creates: "{{ tinc_dir }}/rsa_key.pub"
+
+- name: Generate tinc host configuration
+  tinc_host_conf:
+    overlay: "{{ tinc_net }}"
+  check_mode: no
+
+# Generate tinc host entries for all *other* hosts. Skip if for
+# some reason (failures) we weren't able to fetch it.
+- name: Install tinc host configuration
+  copy:
+    dest: "{{ tinc_dir}}/hosts/{{ h }}"
+    content: "{{ hostvars[h]['tinc_host_config'] }}"
+  with_items: "{{ groups['overlay-' + tinc_net] | list }}"
+  loop_control:
+    loop_var: h
+  when: "'tinc_host_config' in hostvars[h]"
+  register: tinc_config_hosts
+
+- name: "Create tinc@{{ tinc_net }} configuration"
+  template:
+    src: "tinc/{{ f }}.j2"
+    dest: "{{ tinc_dir }}/{{ f }}"
+    mode: 0755
+  with_items:
+    - tinc.conf
+    - tinc-up
+    - tinc-down
+  loop_control:
+    loop_var: f
+  register: tinc_config
+
+- name: "Enable systemd service tinc@{{ tinc_net }}"
+  systemd: name="tinc@{{ tinc_net }}.service" state=started enabled=yes masked=no
+
+# Need an explicit restart with the named service (so can't easily use a handler).
+- name: "Restart tinc@{{ tinc_net }}"
+  systemd: name="tinc@{{ tinc_net }}.service" state=restarted enabled=yes masked=no
+  when: "tinc_config.changed or tinc_config_hosts.changed"
+
+- name: "Install firewall rules for {{ tinc_net }}"
+  template:
+    src: "firewall/11net-overlay.j2"
+    dest: "/etc/firewall/filter.d/11net-overlay-{{ tinc_net }}"
+  notify: "reload firewall"

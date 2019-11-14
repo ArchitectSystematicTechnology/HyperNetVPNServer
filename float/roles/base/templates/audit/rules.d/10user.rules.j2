@@ -1,0 +1,42 @@
+{# TODO: this macro is useless, remove these rules from production? #}
+{# NOTE: auid=1000 is the vagrant user, removed to get rid of noise in tests. #}
+{% macro is_real_user() %}-F auid>1000 -F auid!=4294967295{% endmacro %}
+
+## Rules that monitor user behavior
+## (a user is someone with id > 500).
+
+# Collect Login and Logout Events
+-w /var/log/faillog -p wa -k logins
+-w /var/log/lastlog -p wa -k logins
+-w /var/log/tallylog -p wa -k logins
+
+#  Collect Session Initiation Information 
+-w /var/run/utmp -p wa -k session
+-w /var/log/wtmp -p wa -k session
+-w /var/log/btmp -p wa -k session
+
+# Collect Unsuccessful Unauthorized Access Attempts to Files
+{% if ansible_architecture == "x86_64" %}
+-a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -F exit=-EACCES {{ is_real_user() }} -k access
+-a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -F exit=-EPERM {{ is_real_user() }} -k access
+{% endif %}
+-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EACCES {{ is_real_user() }} -k access
+-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EPERM {{ is_real_user() }} -k access
+
+# Collect Successful File System Mounts
+{% if ansible_architecture == "x86_64" %}
+-a always,exit -F arch=b64 -S mount {{ is_real_user() }} -k mounts
+{% endif %}
+-a always,exit -F arch=b32 -S mount {{ is_real_user() }} -k mounts
+
+# Collect File Deletion Events by User
+{% if ansible_architecture == "x86_64" %}
+-a always,exit -F arch=b64 -S unlink -S unlinkat -S rename -S renameat {{ is_real_user() }} -k delete
+{% endif %}
+-a always,exit -F arch=b32 -S unlink -S unlinkat -S rename -S renameat {{ is_real_user() }} -k delete
+
+# Collect Changes to System Administration Scope
+-w /etc/sudoers -p wa -k scope
+
+# Collect System Administrator Actions (sudolog)
+-w /var/log/sudo.log -p wa -k actions

@@ -1,0 +1,15 @@
+groups:
+- name: roles/prometheus/files/rules/rules_nginx.conf
+  rules:
+  - record: host:nginx_http_requests_total:rate5m
+    expr: sum(rate(nginx_http_requests[5m])) by (host, vhost)
+  - record: host:nginx_http_requests_errs:rate5m
+    expr: sum(rate(nginx_http_requests{code=~"5.*"}[5m])) by (host, vhost)
+  - record: host:nginx_http_requests_errs:ratio
+    expr: (host:nginx_http_requests_errs:rate5m / host:nginx_http_requests_total:rate5m)
+  - record: global:nginx_http_requests_total:rate5m
+    expr: sum(rate(nginx_http_requests[5m])) by (vhost)
+  - record: global:nginx_http_requests_errs:rate5m
+    expr: sum(rate(nginx_http_requests{code=~"5.*"}[5m])) by (vhost)
+  - record: global:nginx_http_requests_errs:ratio
+    expr: (global:nginx_http_requests_errs:rate5m / global:nginx_http_requests_total:rate5m)

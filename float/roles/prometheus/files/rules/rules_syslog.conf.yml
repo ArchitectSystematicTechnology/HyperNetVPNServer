@@ -1,0 +1,11 @@
+groups:
+  - name: roles/prometheus/files/rules/rules_syslog.conf
+    rules:
+      - record: rsyslog_action_failed:rate5m
+        expr: rate(rsyslog_action_failed[5m])
+      - record: rsyslog_action_processed:rate5m
+        expr: rate(rsyslog_action_processed[5m])
+      - record: rsyslog_queue_discarded
+        expr: rsyslog_queue_discarded_not_full + rsyslog_queue_discarded_full
+      - record: rsyslog_queue_discarded:rate5m
+        expr: rate(rsyslog_queue_discarded[5m])

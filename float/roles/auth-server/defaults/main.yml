@@ -1,0 +1,16 @@
+---
+
+auth_server_ip_ratelimit:
+  limit: 10
+  period: 30
+
+auth_server_failed_login_blacklist:
+  limit: 10
+  period: 300
+  blacklist_for: 3600
+  on_failure: true
+
+auth_server_anti_bruteforce_blacklist:
+  limit: 50
+  period: 3600
+  blacklist_for: 86400

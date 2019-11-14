@@ -1,0 +1,39 @@
+{% for service_name, service in services|dictsort %}
+
+{# Create certificates for all the HTTP public endpoints #}
+{% for pe in service.get('public_endpoints', []) if pe.get('name') and not pe.get('skip_acme', False) and pe.get('path', '/') == '/' %}
+- names:
+{% if pe.domains is defined %}
+{% for d in pe.domains %}
+    - "{{ d }}"
+{% endfor %}
+{% else %}
+{% for d in domain_public %}
+    - "{{ pe.name }}.{{ d }}"
+{% if pe.get('sharded', False) %}
+{% for h in groups[service_name]|sort if hostvars[h].get('shard_id') %}
+    - "{{ hostvars[h].shard_id }}.{{ pe.name }}.{{ d }}"
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+{# Create certificates for all the TCP public endpoints #}
+{% for te in service.get('public_tcp_endpoints', []) if te.get('name') and not te.get('skip_acme', False) %}
+- names:
+{% for d in domain_public %}
+    - "{{ te.name }}.{{ d }}"
+{% endfor %}
+{% endfor %}
+
+{# Create certificates for all the other public endpoints #}
+{% for oe in service.get('public_other_endpoints', []) if oe.get('name') and not oe.get('skip_acme', False) %}
+- names:
+{% for d in domain_public %}
+    - "{{ oe.name }}.{{ d }}"
+{% endfor %}
+{% endfor %}
+
+{% endfor %}
+

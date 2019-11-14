@@ -1,0 +1,1 @@
+45 3 * * * root /usr/local/bin/acme-reload-nginx

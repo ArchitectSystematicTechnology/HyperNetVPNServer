@@ -1,0 +1,56 @@
+# Grafana configuration.
+
+app_mode = production
+instance_name = {{ ansible_hostname }}
+
+[server]
+protocol = https
+http_port = 2929
+cert_file = /etc/credentials/x509/prometheus/server/cert.pem
+cert_key = /etc/credentials/x509/prometheus/server/private_key.pem
+root_url = https://grafana.{{ domain_public[0] }}
+domain = grafana.{{ domain_public[0] }}
+
+[session]
+provider = file
+cookie_name = grafana_sess
+cookie_secure = true
+
+[analytics]
+reporting_enabled = false
+check_for_updates = false
+
+[security]
+secret_key = {{ grafana_session_secret }}
+disable_gravatar = true
+
+[users]
+allow_sign_up = false
+allow_org_create = false
+auto_assign_org = true
+auto_assign_org_role = Admin
+
+[auth]
+disable_login_form = true
+disable_signout_menu = true
+
+# Enable for local testing
+[auth.anonymous]
+enabled = false
+
+[auth.proxy]
+enabled = true
+header_name = X-Authenticated-User
+header_property = username
+auto_sign_up = true
+
+[log]
+mode = console
+level = info
+
+[log.console]
+format = text
+
+[paths]
+provisioning = /etc/grafana/provisioning
+

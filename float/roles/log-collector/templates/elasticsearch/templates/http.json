@@ -1,0 +1,33 @@
+{
+    "index_patterns": ["http-*"],
+    "settings": {
+        "index.number_of_shards": 1,
+        "index.number_of_replicas": 0,
+        "index.query.default_field": "request",
+        "index.refresh_interval": "30s",
+        "index.merge.scheduler.max_thread_count": 1
+    },
+    "mappings": {
+        "events": {
+            "_source": {
+                "excludes": ["originalmsg", "unparsed-data"]
+            },
+            "properties": {
+                "host": {"type": "keyword"},
+                "request": {"type": "text"},
+                "ident": {"type": "keyword", "index": false},
+                "auth": {"type": "keyword", "index": false},
+                "vhost": {"type": "keyword"},
+                "verb": {"type": "keyword"},
+                "status": {"type": "short"},
+                "bytes": {"type": "integer", "index": false, "ignore_malformed": true},
+                "httpversion": {"type": "keyword", "index": false},
+                "referrer": {"type": "text", "index": false},
+                "agent": {"type": "text", "index": false},
+                "backend": {"type": "keyword"},
+                "originalmsg": {"type": "text", "index": false, "store": false},
+                "unparsed-data": {"type": "text", "index": false, "store": false}
+            }
+        }
+    }
+}

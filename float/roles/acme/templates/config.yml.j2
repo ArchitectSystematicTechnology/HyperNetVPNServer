@@ -1,0 +1,28 @@
+testing: {{ testing|default(True)|to_json }}
+use_rsa: true
+email: "certs@{{ domain_public[0] }}"
+account_key_path: "/var/lib/acme/account.key"
+default_challenge: "http-01"
+config_dirs:
+  - /etc/acme/certs.d
+  - /etc/acme/auto.d
+http:
+  enabled: true
+dns:
+  enabled: true
+  tsig_key_name: "acme"
+  tsig_key_algo: "{{ acme_tsig_key.algo }}"
+  tsig_key_secret: "{{ acme_tsig_key.private }}"
+  nameservers:
+{% for h in groups['frontend']|sort %}
+    - {{ hostvars[h]['ip'] }}
+{% endfor %}
+output:
+  path: "/var/lib/replds/acme"
+  replds:
+    url: "https://frontend.{{ domain }}:5005"
+    tls:
+      cert: "/etc/credentials/x509/acme/client/cert.pem"
+      key: "/etc/credentials/x509/acme/client/private_key.pem"
+      ca: "/etc/credentials/x509/acme/ca.pem"
+

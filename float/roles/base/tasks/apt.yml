@@ -1,0 +1,99 @@
+---
+
+# Set the global apt HTTP proxy to the value of 'apt_proxy'. This
+# will cover the default package sources (so we don't have to mangle
+# sources.list). For https sources though we're going to have to use
+# the awful {% if %} construct inline, to inject the apt_proxy in
+# the apt_repository itself. See the docker role for an example.
+- name: Install apt proxy
+  when: apt_proxy is defined
+  template:
+    src: 90proxy.j2
+    dest: /etc/apt/apt.conf.d/90proxy
+
+- name: Disable apt proxy
+  when: apt_proxy is not defined
+  file:
+    state: absent
+    dest: /etc/apt/apt.conf.d/90proxy
+
+- name: Configure apt
+  copy:
+    src: "apt/{{ item }}"
+    dest: "/etc/apt/apt.conf.d/{{ item }}"
+  with_items:
+    - 02periodic
+    - 03no-recommends
+    - 50unattended-upgrades
+
+- name: Setup apt trusted keyring
+  copy:
+    src: "apt/{{ item }}"
+    dest: "/etc/apt/trusted.gpg.d/{{ item }}"
+  with_items:
+    - deb_autistici_org.gpg
+
+- name: Install our standard sources.list
+  template:
+    src: "sources.list.j2"
+    dest: "/etc/apt/sources.list"
+
+- name: Install package repositories
+  apt_repository:
+    repo: "deb http://deb.autistici.org/urepo ai3/"
+    state: present
+
+- name: Run apt-get update
+  apt:
+    update_cache: yes
+    cache_valid_time: 1800
+
+# When testing, try to make dpkg faster by disabling fsync.
+- name: Speed up dpkg
+  apt:
+    name: dpkg-eatmydata
+    state: present
+  when: "testing|default(True)"
+
+- name: Install base packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - apt-transport-https
+      - unattended-upgrades
+      - rsync
+      - git
+      - python-pip
+      - python-docker
+      - ntp
+      - openssl
+      - liblz4-tool
+      - curl
+      - lsof
+      - cgroups-exporter
+      - rsyslog-exporter
+      - logcat
+      - tabacco
+      - restic
+      - runcron
+
+- name: Install extra packages
+  apt:
+    name: "{{ extra_packages }}"
+    state: present
+  vars:
+    extra_packages:
+      - net-tools
+      - vim
+  when: "not testing|default(True)"
+
+- name: Remove blacklisted packages
+  apt:
+    name: "{{ packages }}"
+    state: absent
+  vars:
+    packages:
+      - nfs-common
+      - rpcbind

@@ -1,0 +1,6 @@
+deb http://deb.debian.org/debian {{ float_debian_dist }} main contrib non-free
+{% if float_debian_dist == 'stretch' %}
+deb http://deb.debian.org/debian {{ float_debian_dist }}-backports main
+{% endif %}
+deb http://deb.debian.org/debian {{ float_debian_dist }}-updates main contrib non-free
+deb http://security.debian.org/ {{ float_debian_dist }}/updates main contrib non-free

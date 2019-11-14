@@ -1,0 +1,22 @@
+groups:
+  - name: roles/prometheus/files/rules/alerts_services.conf
+    rules:
+      - alert: ServiceAvailabilityTooLow
+        expr: float_service:ok:ratio < 0.6
+        for: 5m
+        labels:
+          severity: page
+          scope: global
+        annotations:
+          description: 'Availability too low for service {{ $labels.float_service }}'
+          summary: 'Availability too low for service {{ $labels.float_service }}'
+
+      - alert: ServiceDegraded
+        expr: float_service:ok_by_host == 0
+        for: 10m
+        labels:
+          severity: warn
+          scope: host
+        annotations:
+          description: 'Service {{ $labels.float_service }} is failing or degraded on host {{ $labels.host }}'
+          summary: 'Service {{ $labels.float_service }} is failing or degraded on host {{ $labels.host }}'

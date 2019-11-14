@@ -1,0 +1,18 @@
+name: "{{ dataset_name }}"
+handler: "{% if dataset_type == 'pipe' %}{{ dataset_name }}{% else %}file{% endif %}"
+schedule: "{{ dataset.get('schedule', '@random_every 1d') }}"
+datasets:
+{% if dataset_type == 'file' %}
+  - atoms:
+    - {name: "data", path: "{{ dataset.path }}"}
+{% else %}
+{% if 'atoms' in dataset %}
+  - atoms: {{ dataset.atoms | to_json }}
+{% elif 'atoms_command' in dataset %}
+  - atoms_command: "{{ dataset.atoms_command }}"
+{% else %}
+  - atoms:
+    - {name: "data"}
+{% endif %}
+{% endif %}
+params: {{ dataset.params | default({}) | to_json }}

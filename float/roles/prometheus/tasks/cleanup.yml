@@ -1,0 +1,23 @@
+---
+
+# Clean up previous version's data and packages, which were installed
+# at the system level.
+- name: Uninstall system-level prometheus packages
+  apt:
+    name: "{{ packages }}"
+    state: absent
+  vars:
+    packages:
+      - prometheus
+      - prometheus-alertmanager
+      - prometheus-blackbox-exporter
+
+- name: Remove legacy system-level prometheus configs
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/etc/apt/preferences.d/200_role-prometheus.pref"
+    - "/etc/default/prometheus"
+    - "/etc/default/prometheus-blackbox-exporter"
+    - "/etc/systemd/system/prometheus-blackbox-exporter.service.d"

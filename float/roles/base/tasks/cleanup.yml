@@ -1,0 +1,13 @@
+---
+
+# Disable systemd services that should not be enabled (because the
+# associated service was rescheduled elsewhere).
+- name: Disable unwanted systemd units
+  systemd:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+    masked: yes
+    no_block: yes
+  ignore_errors: true
+  with_items: "{{ float_disabled_systemd_units }}"

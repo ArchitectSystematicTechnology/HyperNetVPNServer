@@ -1,0 +1,28 @@
+---
+
+# Playbook that sets up the basic infrastructure.
+
+- hosts: all
+  roles:
+    - base
+    - credentials
+    - vagrant-compat
+
+- hosts: net-overlay
+  roles:
+    - net-overlay
+
+- import_playbook: docker.yml
+
+- import_playbook: frontend.yml
+
+- import_playbook: prometheus.yml
+
+- hosts: log-collector
+  roles:
+    - log-collector
+
+- hosts: backup-metadata
+  roles:
+    - backup-metadata
+

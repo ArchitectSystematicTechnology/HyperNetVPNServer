@@ -1,0 +1,7 @@
+---
+
+{#
+   This will include data we don't need (like ssh keys), but it's simple
+   and the auth-server will just ignore the extra data.
+#}
+{{ admins | to_nice_yaml }}

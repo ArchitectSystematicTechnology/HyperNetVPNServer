@@ -1,0 +1,56 @@
+---
+
+# Configure a replds instance (replds@acme) to store ACME-generated
+# certificates.
+
+- name: Install the replds package
+  apt:
+    name: replds
+    state: present
+
+# The following command also creates the 'replds-acme' user.
+- name: Setup 'acme' replds instance
+  command: replds-instance-create -g public-credentials acme
+  args:
+    creates: /var/lib/replds/acme
+
+- name: Add the replds-acme user to its credentials group
+  user:
+    name: replds-acme
+    groups: replds-acme-credentials
+    append: yes
+  notify: "restart replds@acme"
+
+- name: Configure 'acme' replds instance
+  template:
+    src: replds.j2
+    dest: /etc/replds/acme.yml
+  notify: "restart replds@acme"
+
+- name: Start 'acme' replds instance
+  systemd:
+    name: "replds@acme"
+    state: started
+    enabled: yes
+    masked: no
+    daemon_reload: yes
+
+# A cron job periodically checks if ACME has taken ownership
+# of a certificate and switches it over from the default
+# self-signed cert.
+- name: Install the acme-switch-certs script
+  copy:
+    src: acme-switch-certs
+    dest: /usr/sbin/acme-switch-certs
+    mode: 0755
+
+- name: Install the acme-switch-certs cron job
+  copy:
+    dest: /etc/cron.d/acme-switch-certs
+    content: "3-59/15 * * * * root /usr/sbin/acme-switch-certs >/dev/null 2>&1\n"
+
+- name: Create the ACME reload hooks directory
+  file:
+    path: /etc/acme-storage/reload-hooks
+    state: directory
+

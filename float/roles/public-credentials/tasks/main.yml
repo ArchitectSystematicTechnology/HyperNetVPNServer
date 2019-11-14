@@ -1,0 +1,7 @@
+---
+
+- include_tasks: by_service.yml
+  when: credentials_service != ''
+
+- include_tasks: by_type.yml
+  when: credentials_service == ''

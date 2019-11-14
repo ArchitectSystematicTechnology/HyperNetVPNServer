@@ -1,0 +1,14 @@
+[Unit]
+Description=Backup Agent
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/tabacco metadb
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+User=backup-metadata
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

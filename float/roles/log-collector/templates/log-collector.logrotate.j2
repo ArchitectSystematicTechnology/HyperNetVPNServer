@@ -1,0 +1,17 @@
+/var/log/remote/*/*.log {
+	daily
+	missingok
+	rotate {{ log_collector_retention_days|default(15) }}
+	compress
+	compresscmd /usr/bin/lz4c
+	compressoptions -z
+	compressext .lz4
+	notifempty
+	create 0600 log-collector adm
+	sharedscripts
+
+	postrotate
+		kill -HUP `cat /var/run/rsyslog-collector/rsyslogd.pid`
+	endscript
+}
+

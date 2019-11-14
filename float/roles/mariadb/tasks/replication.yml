@@ -1,0 +1,15 @@
+---
+
+- name: Grant replica permissions
+  command: "{{ mariadb_client }} -e \"GRANT SELECT, REPLICATION SLAVE ON *.* TO '{{ mariadb_replication_user }}'@'%' IDENTIFIED BY '{{ mariadb_replication_password }}'\""
+
+- name: Install replication manager script
+  copy:
+    src: mariadb-replicator
+    dest: /usr/sbin/mariadb-replicator
+    mode: 0755
+
+- name: Setup MariaDB replication
+  command: "/usr/sbin/mariadb-replicator --defaults-file={{ mariadb_config }} --master-host={{ mariadb_master_host }} --master-port={{ mariadb_master_port }} --replication-user={{ mariadb_replication_user }} --replication-password={{ mariadb_replication_password }} {{ '--master' if mariadb_is_master else '--slave' }}"
+  register: mariadb_replicator_result
+  changed_when: "mariadb_replicator_result.stdout != 'Nothing to do.'"

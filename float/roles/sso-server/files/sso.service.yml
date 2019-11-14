@@ -1,0 +1,12 @@
+sso:
+  backends:
+    - backend: file
+      params:
+        src: users.yml
+      static_groups: [admins]
+  rate_limits:
+    - ip_ratelimit
+    - failed_login_blacklist
+    - anti_bruteforce_blacklist
+  challenge_response: true
+  enable_device_tracking: true

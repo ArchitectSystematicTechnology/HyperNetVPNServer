@@ -1,0 +1,10 @@
+---
+
+- apt:
+    name: firewall
+    state: present
+
+- template:
+    src: firewall/10float.j2
+    dest: /etc/firewall/filter.d/10float
+  notify: reload firewall

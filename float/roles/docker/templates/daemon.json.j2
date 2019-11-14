@@ -1,0 +1,2 @@
+{% set tmp_config = docker_daemon_config_testing if testing|default(True) else {} %}
+{{ docker_daemon_config | combine(tmp_config) | to_json }}

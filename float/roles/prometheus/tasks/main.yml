@@ -1,0 +1,5 @@
+---
+
+- import_tasks: cleanup.yml
+- import_tasks: prometheus.yml
+- import_tasks: grafana.yml

@@ -1,0 +1,43 @@
+---
+
+backends_dir: /etc/auth-server/backends.d
+services_dir: /etc/auth-server/services.d
+services: {}
+
+user_meta_server:
+  url: "https://user-meta-server.{{ domain }}:5505"
+  tls:
+    cert: "/etc/credentials/x509/auth-server/client/cert.pem"
+    key: "/etc/credentials/x509/auth-server/client/private_key.pem"
+    ca: "/etc/credentials/x509/auth-server/ca.pem"
+
+rate_limits:
+  # Generic per-IP rate limiter.
+  ip_ratelimit:
+    limit: {{ auth_server_ip_ratelimit.limit }}
+    period: {{ auth_server_ip_ratelimit.period }}
+    keys: [ip]
+
+  # Failed logins, per-user.
+  failed_login_blacklist:
+    limit: {{ auth_server_failed_login_blacklist.limit }}
+    period: {{ auth_server_failed_login_blacklist.period }}
+    blacklist_for: {{ auth_server_failed_login_blacklist.blacklist_for }}
+    on_failure: true
+    keys: [user]
+
+  # Failed logins, per-IP.
+  anti_bruteforce_blacklist:
+    limit: {{ auth_server_anti_bruteforce_blacklist.limit }}
+    period: {{ auth_server_anti_bruteforce_blacklist.period }}
+    blacklist_for: {{ auth_server_anti_bruteforce_blacklist.blacklist_for }}
+    keys: [ip]
+    on_failure: true
+    bypass:
+      - key: ip
+        value: "127.0.0.1"
+      - key: ip
+        value: "::1"
+
+memcache_servers:
+  - "auth-cache.{{ domain }}:11212"

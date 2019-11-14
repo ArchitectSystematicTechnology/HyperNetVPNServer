@@ -1,0 +1,46 @@
+server:
+  addr: ":5005"
+  path: "/var/lib/replds/acme"
+{# Generating valid YAML is quite annoying here... #}
+{% if inventory_hostname not in groups[replds_acme_primary_group] %}
+  readonly: true
+  peers:
+{% for h in groups[replds_acme_primary_group]|sort %}
+    - https://{{ h }}.frontend.{{ domain }}:5005
+{% endfor %}
+{% else %}
+{% if groups[replds_acme_primary_group]|length > 1 %}
+  peers:
+{% for h in groups[replds_acme_primary_group]|sort %}{% if h != inventory_hostname %}
+    - https://{{ h }}.frontend.{{ domain }}:5005
+{% endif %}{% endfor %}
+{% else %}
+  peers: []
+{% endif %}
+{% endif %}
+  tls_client:
+    cert: "/etc/credentials/x509/replds-acme/client/cert.pem"
+    key: "/etc/credentials/x509/replds-acme/client/private_key.pem"
+    ca: "/etc/credentials/x509/replds-acme/ca.pem"
+client:
+  url: "https://replds.{{ domain }}:5005"
+  tls:
+    cert: "/etc/credentials/x509/replds-acme/client/cert.pem"
+    key: "/etc/credentials/x509/replds-acme/client/private_key.pem"
+    ca: "/etc/credentials/x509/replds-acme/ca.pem"
+{% if inventory_hostname in groups[replds_acme_primary_group] %}
+http_server:
+  tls:
+    cert: "/etc/credentials/x509/replds-acme/server/cert.pem"
+    key: "/etc/credentials/x509/replds-acme/server/private_key.pem"
+    ca: "/etc/credentials/x509/replds-acme/ca.pem"
+    acl:
+      allow:
+        - path: "/api/internal/.*"
+          cn: "replds-acme.{{ domain }}"
+        - path: "/api/set_nodes"
+          cn: "acme.{{ domain }}"
+        - path: "/metrics"
+          cn: ".*"
+  max_inflight_requests: 100
+{% endif %}

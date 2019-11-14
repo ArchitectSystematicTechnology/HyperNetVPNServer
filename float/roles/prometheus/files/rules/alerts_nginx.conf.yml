@@ -1,0 +1,25 @@
+groups:
+- name: roles/prometheus/files/rules/alerts_nginx.conf
+  rules:
+
+  - alert: HTTPErrorRatioHigh
+    expr: (global:nginx_http_requests_errs:ratio > 0.02 and global:nginx_http_requests_total:rate5m > 0.1)
+    for: 5m
+    labels:
+      scope: global
+      service: nginx
+      severity: page
+    annotations:
+      summary: 'High HTTP error ratio for {{$labels.vhost}} globally'
+      description: 'We are serving lots of 5xx errors for {{$labels.vhost}} on all frontends.'
+
+  - alert: HTTPErrorRatioHigh
+    expr: (host:nginx_http_requests_errs:ratio > 0.02 and host:nginx_http_requests_total:rate5m > 0.1)
+    for: 10m
+    labels:
+      scope: host
+      service: nginx
+      severity: page
+    annotations:
+      summary: 'High HTTP error ratio for {{$labels.vhost}} on {{$labels.host}}'
+      description: 'We are serving lots of 5xx errors for {{$labels.vhost}} on {{$labels.host}}.'

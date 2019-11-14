@@ -1,0 +1,67 @@
+{% macro config_location(pe_config, shard) %}
+{% set upstream = float_http_upstreams[pe_config.float_upstream_name] %}
+{% if pe_config.path != '/' %}
+        location = {{ pe_config.path.rstrip('/') }} {
+                return 301 {{ pe_config.path }}?$query_string;
+        }
+{% endif %}
+        location {{ pe_config.path }} {
+                include /etc/nginx/snippets/block.conf;
+                include /etc/nginx/snippets/proxy.conf;
+{% if not upstream.enable_sso_proxy and pe_config.get('scheme', 'https') == 'https' %}
+                proxy_pass https://{{ pe_config.float_upstream_name }}{% if upstream.sharded and shard %}_{{ shard }}{% endif %};
+                include /etc/nginx/snippets/proxy-ssl.conf;
+                proxy_ssl_name {{ upstream.service_name }}.{{ domain }};
+{% else %}
+                proxy_pass http://{{ pe_config.float_upstream_name }}{% if upstream.sharded and shard %}_{{ shard }}{% endif %};
+{% endif %}
+{% if not upstream.enable_sso_proxy %}
+                proxy_cache global;
+{% endif %}
+        }
+{% endmacro -%}
+
+{% macro config_vhost(endpoint, shard=None) %}
+server {
+        listen [::]:443 http2;
+{% if endpoint.domains %}
+        server_name {{ endpoint.domains | join(' ') }};
+{% else %}
+        server_name {% for d in domain_public %}{% if shard %}{{ shard }}.{% endif %}{{ endpoint.name }}.{{ d }} {% endfor %}{% if shard %}{{ shard }}.{% endif %}{{ endpoint.name }}.{{ domain }};
+{% endif %}
+
+        ssl on;
+        ssl_certificate /etc/credentials/public/{{ endpoint.name }}.{{ domain_public[0] }}/fullchain.pem;
+        ssl_certificate_key /etc/credentials/public/{{ endpoint.name }}.{{ domain_public[0] }}/privkey.pem;
+
+        include /etc/nginx/snippets/site-common.conf;
+
+{#
+    When multiple locations are defined, we must make sure
+    that / comes last.
+#}
+{% set pe_list = endpoint.float_path_map.values() | sort(attribute='path', reverse=True) %}
+{% for pe_config in pe_list %}
+{{ config_location(pe_config, shard) }}
+{% endfor %}
+}
+{% endmacro -%}
+
+{% for endpoint in float_http_endpoints.values() | sort(attribute='name') %}
+{% if endpoint.get('autoconfig', True) %}
+{% if endpoint.sharded %}
+{#
+    For sharded domains, what matters is the sharding of /.
+
+    Similarly, setting autoconfig=False on the / endpoint will
+    disable generation of the entire virtual host.
+#}
+{% set root_upstream = float_http_upstreams[endpoint.float_path_map['/'].float_upstream_name] %}
+{% for h in groups[root_upstream.service_name]|sort %}
+{{ config_vhost(endpoint, hostvars[h]['shard_id']) }}
+{% endfor %}
+{% else %}
+{{ config_vhost(endpoint) }}
+{% endif %}
+{% endif %}
+{% endfor %}

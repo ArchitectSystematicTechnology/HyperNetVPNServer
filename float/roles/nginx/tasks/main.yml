@@ -1,0 +1,5 @@
+---
+
+# Only set up nginx if there are public_endpoints defined.
+- import_tasks: nginx.yml
+  when: float_enable_http_frontend

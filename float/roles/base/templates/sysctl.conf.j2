@@ -1,0 +1,74 @@
+### Generically useful settings
+
+# Enable reboots on kernel panic
+kernel.panic=10
+kernel.panic_on_oops=1
+
+# Stop low-level messages from cluttering the console.
+kernel.printk=3 4 1 3
+
+# Increase the port range available for client connections.
+net.ipv4.ip_local_port_range=20000 65535
+
+### Server-oriented settings
+
+# Decrease the time closed connections spend in the FIN state.
+# We want this number to be low so that connection slots are
+# freed quickly.
+net.ipv4.tcp_fin_timeout=30
+
+# Reduce slightly the TCP keepalive parameters, so that dead
+# connections are expired quickly and do not use resources.
+net.ipv4.tcp_keepalive_time=1800
+net.ipv4.tcp_keepalive_intvl=30
+net.ipv4.tcp_keepalive_probes=5
+
+# Keep more SYNs in queue to improve handling of connection bursts.
+net.ipv4.tcp_max_syn_backlog=8192
+net.ipv4.tcp_synack_retries=2
+net.ipv4.tcp_syn_retries=2
+
+# Make TCP sizes quite bigger than the default.
+net.core.rmem_max=8738000
+net.core.wmem_max=6553600
+net.ipv4.tcp_rmem=8192 873800 8738000
+net.ipv4.tcp_wmem=4096 655360 6553600
+
+# Increase the max number of connection requests queued on a single socket.
+net.core.somaxconn=4000
+net.core.netdev_max_backlog=4000
+
+# TCP socket recycling.
+# The tcp_tw_reuse setting is particularly useful in environments where
+# numerous short connections are open and left in TIME_WAIT state, such
+# as web servers. Reusing the sockets can be very effective in reducing
+# server load.
+net.ipv4.tcp_tw_reuse=1
+
+# Required by Elasticsearch and other JVM-based Docker images.
+vm.max_map_count=262144
+
+### Miscellaneous hardening settings
+
+# Restrict core dumps for SUID binaries.
+fs.suid_dumpable=0
+
+# Disable source routed packet acceptance.
+net.ipv4.conf.all.accept_source_route=0
+net.ipv4.conf.default.accept_source_route=0
+
+# Do not accept ICMP redirects.
+net.ipv4.conf.all.accept_redirects=0
+net.ipv4.conf.default.accept_redirects=0
+net.ipv4.conf.all.secure_redirects=0
+net.ipv4.conf.default.secure_redirects=0
+
+# Do not send ICMP redirects.
+net.ipv4.conf.all.send_redirects=0
+
+# Enable bad ICMP error message protection.
+net.ipv4.icmp_ignore_bogus_error_responses=1
+
+# Enable RFC-recommended source route validation.
+net.ipv4.conf.all.rp_filter=1
+net.ipv4.conf.default.rp_filter=1

@@ -1,0 +1,70 @@
+---
+
+- name: reload ssh
+  systemd:
+    name: ssh.service
+    state: restarted
+
+- name: restart auditd
+  systemd:
+    name: auditd.service
+    state: restarted
+
+- name: restart mtail
+  systemd:
+    name: mtail.service
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+    masked: no
+
+- name: restart rsyslog
+  systemd:
+    name: rsyslog.service
+    state: restarted
+
+- name: flush routing cache
+  shell: echo 1 > /proc/sys/net/ipv4/route/flush
+
+- name: reload alias maps
+  command: newaliases
+
+- name: restart fail2ban
+  systemd:
+    name: fail2ban.service
+    state: restarted
+
+- name: reload prometheus-node-exporter
+  systemd:
+    name: prometheus-node-exporter.service
+    state: restarted
+
+- name: restart osquery
+  systemd:
+    name: osqueryd.service
+    state: restarted
+
+- name: reload firewall
+  systemd:
+    name: firewall.service
+    state: restarted
+
+- name: reload backup agent
+  systemd:
+    name: tabacco-agent.service
+    state: reloaded
+  when: enable_backup
+
+- name: restart backup agent
+  systemd:
+    name: tabacco-agent.service
+    state: restarted
+  when: enable_backup
+
+- name: restart journald
+  systemd:
+    name: systemd-journald.service
+    state: restarted
+
+- name: reload sysctl
+  shell: "/sbin/sysctl --system"

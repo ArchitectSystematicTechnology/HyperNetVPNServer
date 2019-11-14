@@ -1,0 +1,20 @@
+groups:
+- name: roles/prometheus/files/rules/alerts_smart.conf
+  rules:
+    - alert: DiskUnhealthy
+      expr: smartmon_device_smart_healthy < 1
+      for: 2h
+      labels:
+        severity: warn
+      annotations:
+        summary: "Disk {{ $labels.disk }} on {{ $labels.host }} is unhealthy"
+        description: "Disk {{ $labels.disk }} on {{ $labels.host }} is reporting unhealthy SMART status and might need to be replaced."
+
+    - alert: RAIDDeviceUnhealthy
+      expr: node_md_degraded > 0
+      for: 15m
+      labels:
+        severity: warn
+      annotations:
+        summary: "RAID device {{ $labels.md_device }} on {{ $labels.host }} is unhealthy"
+        description: "The RAID device {{ $labels.md_device }} on {{ $labels.host }} is reporting a degraded state, which means that probably one or more of the disks in the array have failed."

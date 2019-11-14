@@ -1,0 +1,35 @@
+groups:
+- name: roles/prometheus/files/rules/alerts_net.conf
+  rules:
+  - alert: ConntrackTableFull
+    expr: instance:conntrack_full:ratio > 0.9
+    for: 15m
+    labels:
+      severity: page
+    annotations:
+      description: 'Conntrack table on {{ $labels.instance }} is more than 90% full.'
+      summary: 'Conntrack table on {{ $labels.instance }} is almost full'
+  - alert: NetworkErrors
+    expr: instance:node_network_errs:rate5m > 1
+    for: 15m
+    labels:
+      severity: page
+    annotations:
+      summary: 'High rate of packet errors on {{ $labels.instance }}/{{ $labels.device }}'
+      description: 'High rate of packet errors on {{ $labels.instance }} device {{ $labels.device }}.'
+  - alert: NetworkDrops
+    expr: instance:node_network_drop:rate5m > 1
+    for: 15m
+    labels:
+      severity: page
+    annotations:
+      summary: 'High rate of packet drops on {{ $labels.instance }}/{{ $labels.device }}'
+      description: 'High rate of packet drops on {{ $labels.instance }} device {{ $labels.device }}.'
+  - alert: HostUnreachable
+    expr: probe_success{job="blackbox_ping"} < 1
+    for: 5m
+    labels:
+      severity: page
+    annotations:
+      summary: 'Host {{ $labels.instance }} is unreachable'
+      description: 'Host {{ $labels.instance }} is unreachable (does not respond to icmp).'

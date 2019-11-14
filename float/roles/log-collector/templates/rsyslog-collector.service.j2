@@ -1,0 +1,16 @@
+[Unit]
+Description=Log Collector Service
+After=network.target
+
+[Service]
+Type=notify
+ExecStart=/usr/sbin/rsyslogd -f /etc/rsyslog-collector.conf -i /run/rsyslog-collector/rsyslogd.pid -n
+StandardOutput=null
+Restart=always
+RestartSec=3
+User=log-collector
+LimitNOFILE=65535
+RuntimeDirectory=rsyslog-collector
+
+[Install]
+WantedBy=multi-user.target

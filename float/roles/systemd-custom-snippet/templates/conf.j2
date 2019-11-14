@@ -1,0 +1,8 @@
+[Service]
+{% if fix_restart == 'yes' %}
+Restart=on-failure
+RestartSec=3s
+{% endif %}
+{% for key, value in settings | dictsort %}
+{{ key }}={{ value }}
+{% endfor %}

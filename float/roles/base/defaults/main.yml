@@ -1,0 +1,23 @@
+apt_proxy_enable_https: false
+admins: []
+enable_ssh: true
+enable_osquery: true
+ssh_host_key_types:
+  - ed25519
+mail_relay: {}
+auditd_action_mail_acct: root
+enable_fail2ban: false
+bantime_fail2ban: 43200
+
+# These should be set externally to activate backups. NOTE that
+# backup_repository_restic_password is a third-party credential, and
+# should *not* be automatically managed through passwords.yml!
+backup_repository_uri: ""
+backup_repository_restic_password: ""
+
+# A fallback SSH key that can be used in an emergency to login as root.
+emergency_ssh_key: ""
+
+# The Debian distribution that we are using as the basis.
+float_debian_dist: "stretch"
+

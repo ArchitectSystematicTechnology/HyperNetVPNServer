@@ -1,0 +1,13 @@
+digraph sso {
+  {
+    rank=min
+    user [color=gray]
+  }
+
+  user -> roundcube
+  roundcube -> IP [label="sso:rc"]
+  IP -> roundcube [label="sso:dovecot"]
+  roundcube -> dovecot
+  dovecot -> keylookupd
+  keylookupd -> keystore
+}

@@ -1,0 +1,20 @@
+Name = {{ inventory_hostname }}
+
+# Bind to all v4/v6 interfaces.
+AddressFamily = any
+
+# Use a TUN device (IP-level).
+Device = /dev/net/tun
+DeviceType = tun
+
+# Disable broadcasts.
+Broadcast = no
+
+# Larger replay window for high-traffic networks.
+ReplayWindow = 32
+
+# Connect to all other known nodes (full mesh).
+{% for host in groups['overlay-' + tinc_net]|sort %}
+ConnectTo = {{ host }}
+{% endfor %}
+

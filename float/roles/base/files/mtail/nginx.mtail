@@ -1,0 +1,45 @@
+# Define the exported metrics.
+counter nginx_http_request_total
+counter nginx_http_requests by host, vhost, method, code, backend
+counter nginx_http_requests_cache by host, vhost, cache_status
+counter nginx_http_bytes by host, vhost, method, code, backend
+counter nginx_http_bytes_cache by host, vhost, cache_status
+counter nginx_http_requests_ms by le, host, vhost, method, code, backend 
+
+/(?P<hostname>[-0-9A-Za-z._:]+) nginx_access: (?P<vhost>[-0-9A-Za-z._:]+) (?P<remote_addr>[0-9a-f\.:]+) - - \[[^\]]+\] "(?P<request_method>[A-Z]+) (?P<request_uri>\S+) (?P<http_version>HTTP\/[0-9\.]+)" (?P<status>\d{3}) ((?P<response_size>\d+)|-) "[^"]*" "[^"]*" (?P<upstream_addr>[-0-9A-Za-z._:]+) ((?P<ups_resp_seconds>\d+\.\d+)|-) (?P<request_seconds>\d+)\.(?P<request_milliseconds>\d+) (?P<cache_status>\S+)/ {
+
+	nginx_http_request_total++
+
+	nginx_http_requests[$hostname][$vhost][$request_method][$status][$upstream_addr]++
+	nginx_http_requests_cache[$hostname][$vhost][$cache_status]++
+	nginx_http_bytes[$hostname][$vhost][$request_method][$status][$upstream_addr] += $response_size
+	nginx_http_bytes_cache[$hostname][$vhost][$cache_status] += $response_size
+
+        $request_seconds * 1000 + $request_milliseconds < 5 {
+	    nginx_http_requests_ms["5"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
+        }
+
+        $request_seconds * 1000 + $request_milliseconds < 10 {
+	    nginx_http_requests_ms["10"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
+        }
+
+        $request_seconds * 1000 + $request_milliseconds < 50 {
+	    nginx_http_requests_ms["50"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
+        }
+
+        $request_seconds * 1000 + $request_milliseconds < 100 {
+	    nginx_http_requests_ms["100"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
+        }
+
+        $request_seconds * 1000 + $request_milliseconds < 500 {
+	    nginx_http_requests_ms["500"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
+        }
+
+        $request_seconds * 1000 + $request_milliseconds < 1000 {
+	    nginx_http_requests_ms["1000"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
+        }
+
+	nginx_http_requests_ms["inf"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
+
+}
+

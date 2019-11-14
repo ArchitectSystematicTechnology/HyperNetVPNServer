@@ -1,0 +1,15 @@
+---
+
+FRONTENDS4:
+{% for h in groups['frontend']|sort if hostvars[h].get('traffic', 1) %}
+  - {{ hostvars[h]['public_ip'] | default(hostvars[h]['ip']) }}
+{% endfor %}
+
+{% for h in groups['frontend']|sort if (hostvars[h].get('traffic', 1) and (hostvars[h].get('public_ip6') or hostvars[h].get('ip6'))) %}
+{% if loop.first %}
+FRONTENDS6:
+{% endif %}
+  - {{ hostvars[h].public_ip6 | default(hostvars[h].ip6) }}
+{% else %}
+FRONTENDS6: []
+{% endfor %}

@@ -1,0 +1,5 @@
+---
+
+# Define the 'rollback' variable to bypass rollback protection.
+skip_rollback_protection: "{{ rollback | default(False) | bool }}"
+

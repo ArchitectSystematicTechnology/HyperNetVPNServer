@@ -1,0 +1,79 @@
+# Configure SSH host keys and sign them with a centralized CA.
+# The CA key should be in the ssh subdirectory of the configuration repository.
+
+---
+
+# User-friendly check: if we do not have the CA key, fail with a
+# custom message.
+- local_action: stat path="{{ credentials_dir }}/ssh/key"
+  register: ssh_ca_key_stat
+- local_action: fail msg="The SSH CA private key is missing. You should probably run the float 'init-credentials.yml' playbook first."
+  when: "not ssh_ca_key_stat.stat.exists"
+
+# First, we have to ensure that the host keys exist on the remote host.
+- name: Generate SSH host key
+  command: ssh-keygen -N '' -t {{ item }} -f /etc/ssh/ssh_host_{{ item }}_key
+  args:
+    creates: /etc/ssh/ssh_host_{{ item }}_key
+  with_items: "{{ ssh_host_key_types }}"
+  notify:
+    - reload ssh
+
+# The CA private key never leaves the local host, so in order to sign the
+# remote host keys, we need to transfer them over, sign them, and copy the
+# resulting certificate back to the original host.
+
+# Sign each host key.
+- name: Sign SSH host key
+  sshca_sign:
+    ca: "{{ credentials_dir }}/ssh/key"
+    pubkey: "/etc/ssh/ssh_host_{{ item }}_key.pub"
+  with_items: "{{ ssh_host_key_types }}"
+  notify:
+    - reload ssh
+
+- name: Generate ssh_known_hosts
+  copy:
+    dest: /etc/ssh/ssh_known_hosts
+    content: "@cert-authority {{ lookup('file', credentials_dir + '/ssh/key.pub') }}"
+
+# Copy the configuration files.
+- name: Install SSH configuration (files)
+  copy:
+    src: "ssh/{{ item }}"
+    dest: "/etc/ssh/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - moduli
+  notify:
+    - reload ssh
+
+- name: Install SSH configuration (templates)
+  template:
+    src: "ssh/{{ item }}.j2"
+    dest: "/etc/ssh/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - ssh_config
+    - sshd_config
+  notify:
+    - reload ssh
+
+- name: Create /etc/ssh/authorized_keys
+  file:
+    path: /etc/ssh/authorized_keys
+    state: directory
+
+# Configure root's authorized_keys with the admin keys.
+- name: Install admin public keys
+  authorized_key:
+    user: root
+    key: "{% if emergency_ssh_key %}{{ emergency_ssh_key }}\n{% endif %}{% for a in admins %}{% for k in a.get('ssh_keys', []) %}{{ k }}\n{% endfor %}{% endfor %}"
+    path: /etc/ssh/authorized_keys/root
+    manage_dir: no
+    state: present
+    exclusive: yes

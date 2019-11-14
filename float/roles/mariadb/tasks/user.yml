@@ -1,0 +1,11 @@
+# Create a user named 'user' on 'mariadb_instance' with access granted via
+# unix socket (i.e. no passwords, the user must be known to nss)
+#
+# Note the mysql_user module is not yet able to create a user identified via
+# unix_socket, hence the 'command' invocation.
+
+- name: Create user
+  command: "{{ mariadb_client }} -e 'create or replace user \"{{ user }}\"@\"localhost\" identified via unix_socket;'"
+
+- name: Set user limits
+  command: "{{ mariadb_client }} -e 'grant usage on *.* to \"{{ user }}\"@\"localhost\" with max_user_connections {{ mariadb_max_user_connections }};'"

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+Usage () {
+  cat <<USAGE
+Usage: splay <ARG>
+Wait a random amount of time between 0 and <ARG> seconds (the argument
+must be an integer number).
+USAGE
+  exit 1
+}
+
+test -z "$1" && Usage
+echo "$1" | grep -q '^[0-9][0-9]*$' || Usage
+
+random_amount_of_time=$(( $RANDOM % $1 ))
+sleep ${random_amount_of_time}
+
+exit 0
+

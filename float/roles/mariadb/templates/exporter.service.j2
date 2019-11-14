@@ -1,0 +1,10 @@
+[Unit]
+Description=Prometheus exporter for MySQL server (%I)
+
+[Service]
+Restart=always
+User=prometheus
+ExecStart=/usr/bin/prometheus-mysqld-exporter -web.listen-address {{ mariadb_metrics_address }}:{{ mariadb_metrics_port }} -config.my-cnf {{ mariadb_metrics_config }} -collect.info_schema.tables=false -collect.info_schema.tablestats=false
+
+[Install]
+WantedBy=multi-user.target

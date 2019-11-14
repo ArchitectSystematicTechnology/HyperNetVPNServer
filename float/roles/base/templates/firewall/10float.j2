@@ -1,0 +1,40 @@
+# Create a number of general-purpose chains to allow traffic from
+# specific sets of hosts.
+
+{% macro allow_host_ips(h, chain) %}
+add_rule4 -A {{ chain }} -s {{ hostvars[h]['ip'] }} -j ACCEPT
+{% if hostvars[h].get('ip6') %}
+add_rule6 -A {{ chain }} -s {{ hostvars[h]['ip6'] }} -j ACCEPT
+{% endif %}
+{% endmacro %}
+
+{% macro create_chain_from_host_group(chain, group) %}
+create_chain {{ chain }}
+{% for h in groups.get(group, [])|sort %}
+{% if h != inventory_hostname %}
+{{ allow_host_ips(h, chain) }}
+{% endif %}
+{% endfor %}
+{% endmacro %}
+
+# Chain that allows traffic from all hosts in the inventory.
+{{ create_chain_from_host_group('allow-cluster', 'all') }}
+
+# Chain to allow traffic from hosts running monitoring probers.
+{{ create_chain_from_host_group('allow-monitoring', 'prometheus') }}
+
+# Allow traffic from monitoring probers to local services (on the
+# public IP).
+allow_port tcp 3909 -j allow-monitoring # cgroups-exporter
+allow_port tcp 3903 -j allow-monitoring # mtail
+allow_port tcp 9100 -j allow-monitoring # node-exporter
+allow_port tcp 9323 -j allow-monitoring # docker
+allow_port tcp 5331 -j allow-monitoring # backup-agent (tabacco)
+{% for s in float_enabled_services|sort %}
+{% for port in services[s].get('ports', []) %}
+allow_port tcp {{ port }} -j allow-cluster
+{% endfor %}
+{% for ep in services[s].get('monitoring_endpoints', []) %}
+allow_port tcp {{ ep.port }} -j allow-monitoring
+{% endfor %}
+{% endfor %}
