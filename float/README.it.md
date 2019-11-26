@@ -16,7 +16,7 @@ a qualcosa di più sofisticato, come Kubernetes.
 # Funzionalità
 
 Alcune di queste, specialmente se comparate con soluzioni più sofisticate,
-come Kubernetes, sono anti-caratteristiche:
+come Kubernetes, sono non-funzionalità:
 
 * *allocazione statica dei servizi* - lo scheduler del servizio non
   migra i container a runtime in caso di fallimento di un host, tutti
@@ -45,10 +45,9 @@ riusciti...
 
 # Obiettivo
 
-Dovrebbe essere chiaro dalla lista delle "Funzionalità" qui sopra:
-questo sistema non offre *high availability* senza adoperare alcune
-accortezze nei servizi stessi. La principale limitazione, rispetto a
-sistemi più evoluti, è il requisito di un'operazione manuale in caso
+Dovrebbe essere chiaro dalla lista delle "funzionalità" qui sopra:
+questo sistema non punta ad offrire *alta disponibilità*, ma ad avere qualche automazione nei servizi stessi. 
+La principale limitazione, rispetto asistemi più evoluti, è il requisito di un'operazione manuale in caso
 di cambiamenti dell'ambiente ad alto livello (fallimento di macchine,
 cambiamenti nella richiesta/offerta): per fare un esempio, se avete
 configurato un servizio con un'unica istanza su un server che poi si
@@ -70,21 +69,22 @@ Una documentazione più dettagliata è disponible nella sottocartella
 
 ### Documentazione generale
 
-* [Guida di partenza](docs/quickstart.md)
-* [Guida all'integrazione con Ansible](docs/ansible.md)
-* [Configurationi](docs/configuration.md)
-* [Protocollo Service discovery](docs/service_mesh.md)
-* [HTTP router](docs/http_router.md)
-* [Usare Docker](roles/docker/README.md)
-* [Usare gli strumenti da CLI](docs/cli.md)
-* [Sperimentazione](docs/testing.md)
+* [Guida di partenza rapida](docs/quickstart.it.md)
+* [Guida all'integrazione con Ansible](docs/ansible.it.md)
+* [Note sull'uso in produzione](docs/running.it.md)
+* [Riferimenti per le configurazioni](docs/configuration.it.md)
+* [Protocollo Service discovery](docs/service_mesh.it.md)
+* [HTTP router](docs/http_router.it.md)
+* [Usare Docker](roles/docker/README.it.md)
+* [Usare gli strumenti da CLI](docs/cli.it.md)
+* [Sperimentazione](docs/testing.it.md)
 
 ### Documentazione dei servizi integrati
 
-* [Monitoring and alerting](roles/prometheus/README.md)
-* [Gestione ed analisi dei Log](roles/log-collector/README.md)
-* [DNS pubblici e autoritativi](roles/dns/README.md)
-* [Gestione dell'identità e delle autorizzazioni](docs/identity_management.md)
+* [Monitoring and alerting](roles/prometheus/README.it.md)
+* [Gestione ed analisi dei Log](roles/log-collector/README.it.md)
+* [DNS pubblici e autoritativi](roles/dns/README.it.md)
+* [Gestione dell'identità e delle autorizzazioni](docs/identity_management.it.md)
 
 I servizi integrati sono implementati con ruoli Ansible, e non sono
 necessariamente eseguiti dentro container. Ma questo è giusto un
@@ -111,5 +111,5 @@ Nonostante non siano dei requisiti obbligatori, probabilmente vorrete
 usare alcuni servizi esterni che non sono forniti da *float* stesso:
 
 * git repository hosting
-* un sistema di CI per creare in proprio le immagini dei container
+* un sistema di CI (continuos integration) per creare in proprio le immagini dei container
 * un registro Docker

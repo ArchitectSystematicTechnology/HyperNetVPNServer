@@ -38,7 +38,7 @@
 - name: Install node-exporter-cron cron job
   copy:
     dest: "/etc/cron.d/node-exporter-scripts"
-    content: "32 * * * * root /usr/local/bin/node-exporter-cron\n"
+    content: "2-59/5 * * * * root /usr/local/bin/node-exporter-cron\n"
 
 - name: Create node-exporter scripts directory
   file:

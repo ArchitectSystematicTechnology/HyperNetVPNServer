@@ -15,9 +15,6 @@ class ActionModule(ActionBase):
     TRANSFERS_FILES = False
 
     def run(self, tmp=None, task_vars=None):
-        # Recover important data from Ansible facts.
-        hostname = self._templar.template('{{inventory_hostname}}')
-
         # Retrieve action parameters.
         credentials_name = self._task.args['credentials_name']
         domain = self._task.args['domain']
@@ -38,10 +35,10 @@ class ActionModule(ActionBase):
         elif mode == 'server':
             is_server = True
             # For each name, use the short version and the FQDN.
-            for n in params['names']:
+            for n in params.get('names', []):
                 names.append('%s.%s' % (n, domain))
                 names.append(n)
-            ip_addrs = params['addrs']
+            ip_addrs = params.get('addrs', [])
         else:
           raise Exception('mode must be client or server')
 

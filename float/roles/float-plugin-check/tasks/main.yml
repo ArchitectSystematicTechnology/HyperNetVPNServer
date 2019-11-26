@@ -1,0 +1,6 @@
+---
+
+- fail:
+    msg: "The 'float' plugin was not loaded! This could be due to multiple reasons: wrong paths in ansible.cfg, problems with the Python version used by Ansible, etc..."
+  when: "not float_plugin_loaded | default(False)"
+

@@ -1,0 +1,11 @@
+groups:
+- name: roles/prometheus/files/rules/alerts_backup.conf
+  rules:
+  - alert: BackupFailed
+    expr: backup_ok != 1
+    for: 15m
+    labels:
+      severity: warn
+    annotations:
+      summary: '{{ $labels.dataset }} backup failure on {{ $labels.host }}'
+      description: 'Dataset {{ $labels.dataset }} has failed its backups on {{ $labels.host }}.'
