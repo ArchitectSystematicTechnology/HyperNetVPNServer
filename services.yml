@@ -20,6 +20,17 @@ openvpn:
   #   1) set scheduling_group=frontend,
   #   2) create a 'vpn' group, intended for horizontal scaling of the public vpn nodes,
   #      and run this service there (so you can keep assuming that 'backend' hosts are 'private')
+  #
+  # we want to schedule the openvpn-frontend role on the 'frontend' groups,
+  # there is no openvpn-frontend service, but instead we are customizing the
+  # 'frontend' role
+  #
+  # We do not want to use public_tcp_endpoints for openvpn/shapeshifter, because
+  # that results in haproxy being setup for the port. Reverse proxies are
+  # connection based, and we want to also be able to do UDP, so we do not really
+  # want to have a reverse proxy for openvpn, instead we want to set it up as a
+  # user-facing service, and just rely on DNS for request routing and balancing.
+
   scheduling_group: frontend
   num_instances: 1
   containers:

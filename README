@@ -1,0 +1,42 @@
+Why is there 'openvpn' and 'openvpn-frontend'?
+
+The "openvpn-frontend" group is completely unrelated to float at all, its there
+to solve an ansible problem: modules/roles can't export "facts" for other roles
+to consume. So, how do you customize a role with data that belongs to something
+else?
+
+In our situation, we want to customize DNS with openvpn-specific data. The
+"openvpn" group, where the "openvpn" role runs, might not overlap with the hosts
+where dns-servers are running. So we create a new role, and tell ansible to run
+it on *top* of the *other* one. The "openvpn-frontend" thus has 'hosts:
+frontend', which is the ansible group corresponding to the role that runs dns
+servers. If ansible had a way to allow a group to indicate "we have this DNS
+information, dns-role please consume it", then this would not be necessary.
+
+The problematic bit is that we want to schedule the openvpn-frontend role on the
+'frontend' groups, and there is no openvpn-frontend service, so instead we are
+customizing the 'frontend' role
+
+If you did not define any groups in hosts.yml, float would still work, it would
+turn up nginx somewhere, backends somewhere else, and all work. But it turns
+out, when deploying to the real-world, people do care where their frontends run,
+as this is your public footprint.  So float comes with the assumption that there
+will be a "frontend" group in your invetory, and just relies on the fact that
+the "frontend" role is scheduled there with num_instances=all
+
+Why is there a '[openvpn]' group, but no host attached to it?
+
+You might have noticed that site.yml has a hosts parameter with roles assigned
+to them, and the actual hosts defined in site.yml are connected to the hosts.yml
+groups parameter. The hosts.yml has floatrp1 with the groups: [frontend], but
+there is no host which has the '[openvpn]' group attached to it.
+
+For the 'openvpn' service, there is a scheduling_group, which sets the *scope*
+of the possible hosts that the service will be scheduled onto. Float will create
+automatically a 'openvpn' group, containing just the hosts that 'openvpn' is
+running on. We did not define an 'openvpn' group in the hosts.yml ansible
+inventory, yet such a group is automatically created by float, and you can use
+it in Ansible. This 'openvpn' group is a subset of the scheduling_group.
+
+"where can I run openvpn" -> scheduling_group (frontend)
+"where is openvpn actually running" -> "openvpn" group
