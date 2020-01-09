@@ -1,0 +1,12 @@
+# Allow incoming connections to port 1194 for both udp and tcp
+allow_port tcp 1194
+allow_port udp 1194
+# there is nothing special with regard to networking here, openvpn is just a process
+# iptables by default in float prevents us from forwarding packets (DROP policy on FORWARD)
+# so we need something in the FORWARD table that says "allow packets to / from this vpn"
+#
+# let vpn hosts reach the internet
+add_rule -A FORWARD -s 10.41.0.0/24 -o eth0 -j ACCEPT
+# allow re/established *inbound* to vpn hosts
+add_rule -A FORWARD -d 10.41.0.0/24 -m state --state RELATED,ESTABLISHED -j ACCEPT
+add_rule -t nat -A POSTROUTING -s 10.41.0.0/24 -o eth0 -j MASQUERADE

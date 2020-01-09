@@ -42,7 +42,7 @@ those accounts.
 # Target
 
 It should be clear from the list of "features" above, but this system
-isn't meant to provide high availability without some smartness in the
+isn't meant to provide *high availability* without some smartness in the
 services themselves. Its major limitation is the requirement for
 manual operator action in face of high-level environmental changes
 (loss of machines, changes in load/demand), so for instance it won't

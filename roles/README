@@ -1,0 +1,10 @@
+Roles:
+
+openvpn: this role conains the firewall modifications for openvpn (the firewall
+should go with the services, because the port, eg. 1194, "belongs" to the
+openvpn service, regardless of where it is scheduled), along with the general
+openvpn configuration information
+
+
+openvpn-frontend: this role will be scheduled on http/dns servers, so this role
+contains the dns modifications

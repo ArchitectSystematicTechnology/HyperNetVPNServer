@@ -91,7 +91,7 @@ files for Ansible and Vagrant, with default values filled in by
 * `ansible.cfg` is the Ansible configuration file, which tells Ansible
   where to find the float plugins
 * `Vagrantfile` is the Vagrant configuration file describing our
-  single VM.
+  single VM (SO, ip, memory,...).
 * `config.yml` is the main *float* configuration file, which mostly
   just points at the location of the other configs. There is nothing
   to change here, as *create-env* already wrote sensible defaults.
@@ -249,6 +249,22 @@ Obviously you can also log in the virtual machine itself (*vagrant ssh
 host1*) and examine the state of things there. On testing
 environments, syslog logs are also dumped to files below
 */var/log/remote/*, which might be simpler than using the Kibana UI.
+
+To manage the VM running, for example to suspend the VM for lack of memory,
+you can use this commands:
+
+```shell
+vagrant suspend
+vagrant resume
+```
+
+When you finish the testing, not forget to destroy the virtual machine, running this command 
+in the CLI (always inside of the directory of test enviroment):
+
+```shell
+vagrant destroy -f
+```
+
 
 # Next steps
 

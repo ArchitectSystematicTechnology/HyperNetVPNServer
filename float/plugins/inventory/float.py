@@ -339,7 +339,7 @@ def _build_horizontal_upstreams_map(services):
         for ep in svc.get('horizontal_endpoints', []):
             upstream_name = 'be_%s_%s_%s' % (name, ep['port'], service_name)
             upstreams[upstream_name] = {
-                'namme': upstream_name,
+                'name': upstream_name,
                 'service_name': service_name,
                 'port': ep['port'],
                 'enable_sso_proxy': False,
@@ -530,6 +530,7 @@ def run_scheduler(config):
     all_vars = inventory.setdefault('group_vars', {}).setdefault('all', {})
     all_vars.update(config['vars'])
     all_vars.update({
+        'float_plugin_loaded': True,
         'services': services,
         'default_service_credentials': DEFAULT_SERVICE_CREDENTIALS,
         'float_global_dns_map': _global_dns_map(inventory),

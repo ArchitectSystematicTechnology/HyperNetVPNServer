@@ -20,6 +20,7 @@
     - /etc/tabacco/sources
     - /etc/tabacco/handlers
     - /var/lib/tabacco
+    - /var/cache/tabacco
 
 - name: Create backup agent config
   template:
@@ -28,13 +29,6 @@
     mode: 0600
   notify:
     - reload backup agent
-
-- name: Install backup agent systemd unit
-  template:
-    src: tabacco/agent.service.j2
-    dest: /etc/systemd/system/tabacco-agent.service
-  notify:
-    - restart backup agent
 
 - name: Enable backup agent systemd unit
   systemd:

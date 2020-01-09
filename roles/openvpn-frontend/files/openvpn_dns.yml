@@ -1,0 +1,1 @@
+{{ domain }}: openvpn: "{{ groups['openvpn'] | map(attribute='ip') | tojson }}"

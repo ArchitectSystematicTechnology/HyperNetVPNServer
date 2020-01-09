@@ -1,0 +1,5 @@
+{{ domain }}:
+  _:
+{% for h in groups['openvpn'] %}
+    - {{ hostvars[h].ip }}
+{% endfor %}
