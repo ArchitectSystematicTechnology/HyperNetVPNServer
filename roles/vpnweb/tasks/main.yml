@@ -1,0 +1,20 @@
+# this is a recursive copy
+- name: Install credentails vpnweb
+  copy:
+    src: "{{ credentials_dir }}/vpnweb/"
+    dest: "/etc/leap/"
+    owner: vpnweb
+    mode: 0600
+
+- name: Install firewall config for vpnweb 
+  copy:
+    src: "50vpnweb.firewall"
+    dest: "/etc/firewall/filter.d/50vpnweb"
+  notify: "reload firewall"
+
+- name: Make sure cert file ownership is correct
+  file:
+    path: "/etc/leap/certs/"
+    owner: vpnweb
+    mode: 0600
+
