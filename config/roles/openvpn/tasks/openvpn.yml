@@ -1,0 +1,35 @@
+- name: Create openvpn directory
+  file:
+    path: /etc/openvpn
+    state: directory
+    group: docker-openvpn
+    mode: 0750
+
+- name: Install OpenVPN key
+  copy:
+    src: "{{ credentials_dir }}/openvpn/{{ domain_public[0] }}_private.key"
+    dest: /etc/leap/keys/leap.key
+    mode: 0640
+
+- name: Install OpenVPN cert
+  copy:
+    src: "{{ credentials_dir }}/openvpn/{{ domain_public[0] }}_leap.crt"
+    dest: /etc/leap/certs/leap.crt
+    mode: 0444
+
+- name: Install firewall config for openvpn
+  copy:
+    src: "50openvpn.firewall"
+    dest: "/etc/firewall/filter.d/50openvpn"
+  notify: "reload firewall"
+
+- name: Install openvpn configs
+  template:
+    src: "{{ item }}"
+    dest: "/etc/openvpn"
+    mode: 0644
+  with_items:
+    - udp.conf
+    - tcp.conf
+  notify:
+    - "restart docker-openvpn-openvpn"

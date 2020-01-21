@@ -1,7 +1,7 @@
 ---
 plugin: float
-services_file: services.yml
+services_file: config/services.common.yml
 hosts_file: hosts.yml
-passwords_file: passwords.yml
+passwords_file: config/passwords.common.yml
 credentials_dir: credentials
 vars_dir: group_vars/all

@@ -1,0 +1,25 @@
+# this is a recursive copy
+- name: Install shapeshifter state
+  copy:
+    src: "{{ credentials_dir }}/shapeshifter/"
+    dest: "/srv/leap/shapeshifter-state"
+    owner: docker-openvpn
+    mode: 0600
+
+- name: Install firewall config for shapeshifter
+  copy:
+    src: "50shapeshifter.firewall"
+    dest: "/etc/firewall/filter.d/50shapeshifter"
+  notify: "reload firewall"
+
+- name: Make sure shapeshifter state file ownership is correct
+  file:
+    path: "/srv/leap/shapeshifter-state/obfs4_state.json"
+    owner: docker-openvpn
+    mode: 0600
+
+- name: Make sure shapeshifter obfs4_bridgeline.txt file ownership is correct
+  file:
+    path: "/srv/leap/shapeshifter-state/obfs4_cert.txt"
+    owner: docker-openvpn
+    mode: 0600

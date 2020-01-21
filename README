@@ -1,3 +1,95 @@
+Getting started
+
+0. Install the float and LEAP platform pre-requisites:
+
+    # sudo apt-get install golang bind9utils python3-pysodium ansible git
+    $ go get -u git.autistici.org/ale/x509ca
+    $ go get -u git.autistici.org/ale/ed25519gen
+    $ export PATH=$PATH:$HOME/go/bin
+
+1. initialize the ansible vault by creating a password and then setting
+ANSIBLE_VAULT_PASSWORD_FILE= to the location of where the file is
+
+2. generate CA private key and generate CA, and shapeshifter credentials by
+running the init-credentials playbook. This will run float's built-in x509_ca
+under float/plugins/action/x509_ca.py which will call the go binary x509ca and
+then it will ansible-vault-encrypt the resulting key. The resulting bits will be
+created under credentials/. Note: this is not the built-in float
+init-credentials, rather this is the LEAP provided one, which will instantiate
+the float init-credentials when it is finished.
+
+    $ float run init-credentials
+
+3. generate the provider.json (this will be done in init-credentials)
+
+    $ vpnweb/scripts/simplevpn.py <someargs>
+    $ python3 ~/dev/leap/vpnweb/scripts/simplevpn.py -f provider -c ~/dev/leap/vpnweb/config/demo.yaml -t ~/dev/leap/vpnweb/scripts/templates/provider.json.jinja 
+
+4. generate the eip-service.json (this will be done in init-credentials):
+    $ vpnweb/scripts/simplevpn.py <someargs>
+    $ python3 ../../vpnweb/scripts/simplevpn.py -f eip -c ~/dev/leap/vpnweb/config/demo.yaml -t ~/dev/leap/vpnweb/scripts/templates/eip-service.json.jinja
+
+5. ansible-vault encrypt:
+    a. ANSIBLE_VAULT_PASSWORD_FILE=/some/path/to the password/file ansible-vault-encrypt obfs4_state.json
+    b. private key for CA
+
+
+Testing
+-------
+Certificate authority from provider: leap.ca
+Make a CSR/key
+sign cert against CA
+make sure the x509 v3 extensions exist: x509.ExtKeyUsageClientAuth x509.KeyUsageDigitalSignature
+     $ /usr/sbin/openvpn --client --remote-cert-tls server --tls-client --remote 37.218.241.84 1194 --proto tcp --verb 3 --auth SHA1 --keepalive 10 30 --tls-version-min 1.0 --dev tun --tun-ipv6 --ca ./ca.pem --cert ./testopenvpn.crt --key ./testopenvpn.key
+
+Reference: https://0xacab.org/leap/vpnweb/blob/master/certs.go#L37
+
+                ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+                KeyUsage:    x509.KeyUsageDigitalSignature,
+                CommonName: UNLIMITED
+                subjectkeyID: random
+                serial: random
+
+Integration Testing
+Integration tests can be run to:
+            * check that public endpoints for built-in services are reachable
+            * check that no Prometheus alerts are firing
+
+These tests can be run from your Ansible directory using the *float*
+command-line tool:
+
+```shell
+/path/to/float/float run integration-test
+```
+
+The test suite requires a small amount of configuration in order to
+run on a non-test environment, as it needs admin credentials in order
+to automatically test SSO-protected services. This is stored in a YAML
+file, you can point the test suite at your own test parameters using
+the `TEST_PARAMS` environment variable, e.g.:
+
+```shell
+env TEST_PARAMS=my-params.yml /path/to/float/float run integration-test
+```
+
+The built-in test parameters configuration uses the credentials for
+the default admin user used in test environments (*admin*/*password*):
+
+```yaml
+---
+priv_user:
+  name: admin
+  password: password
+```
+
+
+Testing float:
+        # apt install qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils vagrant vagrant-libvirt
+        # adduser micah libvirt
+        # adduser micah libvirt-quemu
+        $ float create-env --vagrant --num-hosts 2 test
+        $ cd test; vagrant up
+
 Why is there 'openvpn' and 'openvpn-frontend'?
 
 The "openvpn-frontend" group is completely unrelated to float at all, its there
@@ -40,3 +132,4 @@ it in Ansible. This 'openvpn' group is a subset of the scheduling_group.
 
 "where can I run openvpn" -> scheduling_group (frontend)
 "where is openvpn actually running" -> "openvpn" group
+

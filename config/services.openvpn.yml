@@ -1,6 +1,4 @@
 ---
-include:
-  - ../../float/services.yml.default
 
 geoip:
   scheduling_group: backend

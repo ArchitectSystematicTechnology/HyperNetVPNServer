@@ -1,5 +1,6 @@
 ---
 - import_playbook: ../../float/playbooks/all.yml
+- import_playbook: config/playbooks/all.yml
 
 - hosts: openvpn
   roles: [openvpn]
