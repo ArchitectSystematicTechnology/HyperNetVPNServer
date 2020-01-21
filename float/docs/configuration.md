@@ -289,6 +289,12 @@ alternative or in addition to specifying a short *name*.
 
 `scheme`: HTTP scheme for the service endpoint. The default is *https*.
 
+`autoconfig`: If False, disable generation of the NGINX configuration
+for this host - it is assumed that some other automation will do it.
+
+`extra_nginx_config`: Additional NGINX directives that should be
+included (at the *server* level) in the generated configuration.
+
 #### HTTP (All domains)
 
 `horizontal_endpoints`: List of HTTP endpoints exported by the
@@ -376,6 +382,8 @@ command.
 
 `volumes`: Map of *source*:*target* paths to bind-mount in the
 container.
+If the *source* is literally `tmpfs`, we will mount a tmpfs
+filesystem (with a default size of 64MB) instead.
 
 `root` (boolean, default: false): if set, the container will run as
 root, instead of the dedicated service-level user. Enabling this
@@ -471,6 +479,9 @@ attribute.
 `on_master_only`: If this attribute is true, and the service's
 *master_election* attribute is also true, the backup job will only be
 run on the master host for the service.
+
+`owner`: For filesystem paths, the user that will own the files upon
+restore.
 
 ### Volumes
 

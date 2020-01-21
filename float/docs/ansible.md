@@ -166,9 +166,7 @@ arguments, so you should use its *run* command whenever you would use
 
 The ansible-vault setup is mandatory, so you are going to have to pass
 the location of the ansible-vault encryption passphrase to Ansible via
-the environment. Just use the `ANSIBLE_VAULT_PASSWORD_FILE` variable
-as you normally would, with one additional feature: if the filename
-ends in *.gpg*, the passphrase will be decrypted using GPG.
+the environment variable `ANSIBLE_VAULT_PASSWORD_FILE`.
 
 With respect to the previous example:
 
@@ -188,7 +186,7 @@ the playbook in *playbooks/init-credentials.yml*:
 
 ```shell
 $ ANSIBLE_VAULT_PASSWORD_FILE=vault-pw \
-    ../float/float run --config=config.yml init-credentials
+    ../float/float run init-credentials
 ```
 
 This will write a bunch of files in your *credentials_dir*, including

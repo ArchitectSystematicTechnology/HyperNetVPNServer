@@ -1,0 +1,32 @@
+# TODO: switch to keyserver once the apt_key --no-tty bug in Ansible is fixed.
+- name: Install docker.com GPG key
+  apt_key:
+    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+
+- name: Install docker.com package repository
+  apt_repository:
+    repo: "deb [arch=amd64] {% if apt_proxy is defined %}http://{{ apt_proxy }}/HTTPS/{% else %}https:{% endif %}//download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+    state: present
+
+- file:
+    path: "/etc/docker"
+    state: directory
+
+- name: Configure docker daemon
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+  notify:
+    - restart docker
+
+- name: Install docker packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - docker-ce
+      - systemd-docker
+

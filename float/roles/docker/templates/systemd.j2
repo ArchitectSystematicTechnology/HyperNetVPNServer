@@ -1,25 +1,28 @@
 [Unit]
-Description={{ service.name }}/{{ container.name }}
+Description={{ item.service }}/{{ item.container.name }}
+{% if container_runtime == 'docker' %}
 After=docker.service
 Requires=docker.service
+{% endif %}
 
 [Service]
-EnvironmentFile=-/etc/default/{{ service.name }}-{{ container.name }}
-ExecStart=/usr/lib/float/docker/run-{{ service.name }}-{{ container.name }}.sh
+EnvironmentFile=-/etc/default/{{ item.service }}-{{ item.container.name }}
+ExecStart=/usr/lib/float/docker/run-{{ item.service }}-{{ item.container.name }}.sh
 Restart=always
 RestartSec=3s
 Type=simple
-SyslogIdentifier={{ service.name }}-{{ container.name }}
+SyslogIdentifier={{ item.service }}-{{ item.container.name }}
 
-{% if container.resources is defined %}
-{% if container.resources.ram is defined %}
-MemoryHigh={{ container.resources.ram }}
+{% if item.container.resources is defined %}
+{% if item.container.resources.ram is defined %}
+MemoryHigh={{ item.container.resources.ram }}
 {% endif %}
-{% if container.resources.cpu is defined %}
-CPUQuota={{ 100 * container.resources.cpu }}%
+{% if item.container.resources.cpu is defined %}
+CPUQuota={{ 100 * item.container.resources.cpu }}%
 {% endif %}
 {% endif %}
 LimitNOFILE=65535
 
 [Install]
-WantedBy=multi-user.target docker.service
+WantedBy=multi-user.target {{ 'docker.service' if container_runtime == 'docker' else '' }}
+Alias={{ item.service }}-{{ item.container.name }}

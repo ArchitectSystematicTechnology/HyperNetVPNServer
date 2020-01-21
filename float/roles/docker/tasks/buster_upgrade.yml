@@ -1,0 +1,28 @@
+- name: Remove docker.com GPG key
+  apt_key:
+    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+    url: https://download.docker.com/linux/debian/gpg
+    state: absent
+
+- name: Remove docker.com package repository
+  apt_repository:
+    repo: "deb [arch=amd64] {% if apt_proxy is defined %}http://{{ apt_proxy }}/HTTPS/{% else %}https:{% endif %}//download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+    state: absent
+
+- name: Remove docker packages
+  apt:
+    name: "{{ packages }}"
+    state: absent
+  vars:
+    packages:
+      - docker-ce
+      - systemd-docker
+
+- name: Remove docker files
+  file:
+    dest: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/docker
+    - /usr/local/bin/docker-cleanup
+    - /etc/cron.d/docker-cleanup

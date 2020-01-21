@@ -175,6 +175,11 @@
     dest: /etc/acme-storage/reload-hooks/nginx
     mode: 0755
 
+- name: Install nginx.mtail script
+  template:
+    src: "nginx.mtail.j2"
+    dest: "/etc/mtail/nginx.mtail"
+
 # Misc cleanup of old files.
 - name: Remove obsolete files
   file:

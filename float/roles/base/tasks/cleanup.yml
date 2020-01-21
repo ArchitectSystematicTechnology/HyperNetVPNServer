@@ -11,3 +11,9 @@
     no_block: yes
   ignore_errors: true
   with_items: "{{ float_disabled_systemd_units }}"
+
+# Also clear failed status if any for disabled units
+- name: Reset failed unwanted systemd units
+  command: "systemctl reset-failed {{ item }}"
+  ignore_errors: true
+  with_items: "{{ float_disabled_systemd_units }}"

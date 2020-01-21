@@ -16,6 +16,9 @@ silences one should use "amtool" inside the container, i.e.:
 $ in-container prometheus-alertmanager amtool alert
 ```
 
+On the read path, [Thanos](https://thanos.io) is used to merge results from
+multiple Prometheus instances.
+
 ## Customizing alerts
 
 A few alerting rules are provided by default

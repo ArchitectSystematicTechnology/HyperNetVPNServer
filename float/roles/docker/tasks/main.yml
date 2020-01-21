@@ -1,36 +1,20 @@
 ---
 
-# TODO: switch to keyserver once the apt_key --no-tty bug in Ansible is fixed.
-- name: Install docker.com GPG key
-  apt_key:
-    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
-    url: https://download.docker.com/linux/debian/gpg
-    state: present
+- set_fact:
+    container_runtime: "podman"
 
-- name: Install docker.com package repository
-  apt_repository:
-    repo: "deb [arch=amd64] {% if apt_proxy is defined %}http://{{ apt_proxy }}/HTTPS/{% else %}https:{% endif %}//download.docker.com/linux/debian stretch stable"
-    state: present
+- set_fact:
+    container_runtime: "docker"
+  when: "float_debian_dist == 'stretch'"
 
-- file:
-    path: "/etc/docker"
-    state: directory
+- include_tasks: buster_upgrade.yml
+  when: "float_debian_dist == 'buster'"
 
-- name: Configure docker daemon
-  template:
-    src: daemon.json.j2
-    dest: /etc/docker/daemon.json
-  notify:
-    - restart docker
+- include_tasks: docker.yml
+  when: "container_runtime == 'docker'"
 
-- name: Install docker packages
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - docker-ce
-      - systemd-docker
+- include_tasks: podman.yml
+  when: "container_runtime == 'podman'"
 
 - name: Login to the Docker registry
   command: docker login -u "{{ docker_registry_username }}" -p "{{ docker_registry_password }}" "{{ docker_registry_url }}"
@@ -43,7 +27,6 @@
     state: directory
 
 - include_tasks: start.yml
-  with_items: "{{ float_enabled_containers }}"
 
 # Grab the list of currently running containers, and stop / cleanup
 # the ones that are not specified in services.yml.

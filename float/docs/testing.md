@@ -9,10 +9,11 @@ packages (such as *apt-cacher-ng*).
 
 ## Networking
 
-The virtual machines used in tests make use of the 192.168.10.0/24
-network. If it is already in use by your local environment, you're
-going to have trouble unfortunately. On this network, the local (host)
-machine will have the address 192.168.10.1.
+The virtual machines used in tests make use of a randomly determined
+/24 network (so we can run multiple overlapping tests in the same
+host). To pick a specific network you can use the *--network* option
+to *run-test.sh*. On this network, the local (host) machine will have
+the address "x.x.x.1".
 
 ## Running tests
 
@@ -20,11 +21,12 @@ To run a test, go to the *test* subdirectory of this repository, and
 run the *run-test.sh* command, with the name of the test
 environment. Right now only two such test environments are defined,
 *base* (including just the *frontend* role and a sample HTTP server),
-and *full* (including all builtin services):
+and *full* (including all builtin services) (replace x.x.x with the
+test network):
 
 ```shell
 cd test
-./run-test.sh --apt-proxy 192.168.10.1:3142 base
+./run-test.sh --apt-proxy x.x.x.1:3142 base
 ```
 
 These tests will set up a very simple Vagrant environment, turn up

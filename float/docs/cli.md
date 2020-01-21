@@ -50,14 +50,6 @@ The *run* command executes a playbook, and it's basically a wrapper to
 variables required for the *float* plugins to work. In practical
 terms, this means:
 
-* support for GPG encryption of the Ansible Vault passphrase file:
-  when the `ANSIBLE_VAULT_PASSWORD_FILE` environment variable points
-  at a file with a *.gpg* extension, *float run* will reset the
-  variable to point at the
-  [get-vault-password](../scripts/get-vault-password) script and set
-  another environment variable (FLOAT_VAULT_PASSWORD_FILE) to point at
-  the original file.
-
 * auto-location of built-in playbooks: if the playbook path passed to
   *float run* does not exist, the tool will look for it in the
   [playbooks](../playbooks) directory of the float source repository,
@@ -75,13 +67,26 @@ The *run* command will read the float configuration from the
 *--config* command-line flag to point it at a different configuration
 file.
 
-Some *ansible-playbook* options are supported, though not many,
+Some *ansible-playbook* options are supported, though not all of them,
 including *--diff*, *--check*, and *--verbose*.
 
-## `init-credentials`
+The above command is pretty much equivalent to:
 
-The *init-credentials* command is just a shorthand notation for *run
-init-credentials*, which invokes the Ansible playbook
-[init-credentials.yml](../playbooks/init-credentials.yml) to
-initialize the long-term credentials associated with a float
-environment.
+```shell
+ansible-playbook -i config.yml playbooks/docker.yml
+```
+
+so it is possible that, as functionality is removed from the wrapper,
+the *run* command might eventually disappear.
+
+### Built-in playbooks
+
+You can invoke any valid Ansible playbook with "float run", but there
+are specific playbooks bundled with *float* that are meant to perform
+specific tasks:
+
+* `init-credentials.yml` initializes the long-term credentials
+  associated with a float environment. Must be run first thing before
+  any other float playbooks can run.
+
+* `apt-upgrade.yml` upgrades all packages and removes unused ones.

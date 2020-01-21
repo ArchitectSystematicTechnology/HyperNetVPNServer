@@ -8,6 +8,8 @@
     dataset: "{{ item.1 }}"
     dataset_name: "{{ item.0.name }}/{{ item.1.name }}"
     dataset_filename: "{{ item.0.name }}_{{ item.1.name }}"
+    dataset_owner: "{{ item.1.get('owner', '') }}"
+    dataset_path: "{{ item.1.get('path', '') }}"
     dataset_type: "{% if 'backup_command' in item.1 %}pipe{% else %}file{% endif %}"
     dataset_should_backup: "{{ item.0.name in float_enabled_services and ((not item.1.get('on_master_only', False)) or (item.0.get('master_host') == inventory_hostname)) }}"
 
@@ -45,6 +47,19 @@
     src: "tabacco/restore-script.j2"
     dest: "/usr/lib/float/datasets/restore-{{ dataset_filename }}"
     mode: 0755
+  when: dataset_should_backup
+
+- name: Create restore service unit
+  template:
+    src: "tabacco/restore-service.j2"
+    dest: "/etc/systemd/system/restore-{{ dataset_filename }}.service"
+    mode: 0444
+  when: dataset_should_backup
+
+- name: Enable restore service unit
+  systemd:
+    name: "restore-{{ dataset_filename }}.service"
+    enabled: yes
   when: dataset_should_backup
 
 - name: Wipe dataset restore guard file

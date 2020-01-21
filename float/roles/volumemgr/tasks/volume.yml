@@ -19,6 +19,7 @@
     vg: "{{ volumes_vg | default('vg0') }}"
     lv: "{{ lv_name }}"
     size: "{{ volume.size | default('10g') }}"
+    shrink: false
 
 - name: "Create a filesystem on {{ lv_name }}"
   filesystem:

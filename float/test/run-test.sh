@@ -50,9 +50,11 @@ check_hosts_ready() {
 }
 
 setup_ansible_env() {
-    test -e create-env.${test_name}.sh \
+    create_env_cmd=$(PATH=$PATH:. command -v create-env.${test_name}.sh)
+    test -n "$create_env_cmd" \
          || die "there is no setup script for test environment $name"
-    ./create-env.${test_name}.sh ${test_dir} \
+    ${create_env_cmd} ${test_dir} \
+         --net ${private_network} \
          ${LIBVIRT:+--libvirt=${LIBVIRT}} \
          ${MITOGEN:+--mitogen=${MITOGEN}} \
          || die "error creating test environment"
@@ -106,6 +108,9 @@ Known options:
   --keep            Do not destroy the VMs after running tests.
   --apt-proxy ADDR  Use the specified APT proxy (host:port).
   --wait-time SECS  Wait some time before running tests (default: 30 seconds).
+  --network ADDR    Use the given private network (default: pick one at random
+                    in the 10.0.0.0/8 range). ADDR must end in '.0' as the
+                    network is always a /24.
   --help            Print this help message.
 
 Environment variables can also be used to control the runtime setup:
@@ -124,11 +129,6 @@ Environment variables can also be used to control the runtime setup:
 * The MODE variable can be set to either 'local' or 'docker and has
   the same effect as passing the --local or --docker options.
 
-For convenience when integrating with CI systems, if the environment
-variable FLOAT_TEST_SSH_PRIVATE_KEY is set, its contents are assumed
-to be a SSH private key: the test runner will start a new SSH agent,
-and load the key into it.
-
 EOF
 }
 
@@ -136,6 +136,7 @@ keep_vms=0
 apt_proxy=${APT_PROXY:-}
 wait_time=30
 mode=${MODE:-local}
+private_network="10.$(( 1 + ($RANDOM % 254) )).$(( 1 + ($RANDOM % 254) )).0"
 while [ $# -gt 0 ]; do
     case "$1" in
         --keep)
@@ -158,6 +159,9 @@ while [ $# -gt 0 ]; do
             ;;
         --docker)
             mode=docker
+            ;;
+        --network)
+            private_network="$1"
             ;;
         -*)
             echo "Unknown option '$1'" >&2
@@ -184,16 +188,6 @@ case $test_name in
 esac
 test_dir="${PWD}/test-${test_name}"
 
-# Set up our SSH private key if necessary.
-if [ -n "${FLOAT_TEST_SSH_PRIVATE_KEY}" ]; then
-    eval `ssh-agent -s`
-    ( umask 077 ;
-      mkdir /tmp/priv-$$ ;
-      echo "${FLOAT_TEST_SSH_PRIVATE_KEY}" > /tmp/priv-$$/key ;
-      ssh-add /tmp/priv-$$/key ;
-      rm -f /tmp/priv-$$/key )
-fi
-
 if [ ${keep_vms} -eq 0 ]; then
     trap "stop_vagrant; rm -fr \"$test_dir\"" EXIT SIGINT SIGTERM
 fi
@@ -209,14 +203,12 @@ run_integration_test ${mode}
 popd
 
 # Execute the env-specific tests, if any.
-if [ -e test.${test_name}.sh ]; then
-    ./test.${test_name}.sh \
-        || die "env-specific test suite failed"
-fi
-
-# Set up our SSH private key if necessary.
-if [ -n "${FLOAT_TEST_SSH_PRIVATE_KEY}" ]; then
-    ssh-agent -k
+test_cmd=$(PATH=$PATH:. command -v test.${test_name}.sh)
+if [ -n "$test_cmd" ]; then
+    export NETWORK=${private_network}
+    export TEST_DIR=${test_dir}
+    $test_cmd \
+        || die "env-specific test suite failed: $test_cmd"
 fi
 
 exit 0

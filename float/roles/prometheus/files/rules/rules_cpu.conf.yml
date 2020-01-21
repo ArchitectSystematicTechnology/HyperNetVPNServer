@@ -2,10 +2,10 @@ groups:
 - name: roles/prometheus/files/rules/rules_cpu.conf
   rules:
   - record: instance:node_cpus:count
-    expr: count(node_cpu{mode="idle"}) by (host, instance)
+    expr: count(node_cpu_seconds_total{mode="idle"}) by (host, instance)
   - record: instance_mode:node_cpu:rate5m
-    expr: sum(rate(node_cpu[5m])) by (host, instance, mode)
+    expr: sum(rate(node_cpu_seconds_total[5m])) by (host, instance, mode)
   - record: instance_utilization:node_cpu:rate5m
-    expr: sum(rate(node_cpu{mode!="idle"}[5m])) by (host, instance)
+    expr: sum(rate(node_cpu_seconds_total{mode!="idle"}[5m])) by (host, instance)
   - record: instance_utilization:rate5m
     expr: instance_utilization:node_cpu:rate5m / instance:node_cpus:count

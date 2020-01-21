@@ -45,7 +45,7 @@ strategy = mitogen_linear
 enable_plugins = float
 
 [ssh_connection]
-ssh_args = -C -o ControlMaster=auto -o ControlPersist=120s
+ssh_args = -C -o ControlMaster=auto -o ControlPersist=10s
 control_path_dir = ~/.ansible/cp
 control_path = %(directory)s/%%h-%%r
 pipelining = True
@@ -121,6 +121,7 @@ Vagrant.configure(2) do |config|
 
     libvirt.cpus = 1
     libvirt.memory = {{ ram }}
+    libvirt.random_hostname = true
   end
 {% else %}
   config.vm.provider :libvirt do |libvirt|
@@ -142,13 +143,13 @@ end
 }
 
 
-def support_ansible_vault_gpg_passphrase():
-    """Support GPG-encrypted Ansible Vault passphrases.
+def check_ansible_vault_password_file():
+    """Check the ANSIBLE_VAULT_PASSWORD_FILE environment var.
 
-    We do this by rewriting the ANSIBLE_VAULT_PASSWORD_FILE
-    environment variable and pointing it at a wrapper script.
+    We set it to an absolute path, to avoid confusion when running
+    playbooks in different directories.
 
-    The function does not return anything but as a side effect it will
+    The function does not return anything but as a side effect it might
     modify os.environ (so that the subprocess modulee will pick up the
     changes).
 
@@ -158,7 +159,7 @@ def support_ansible_vault_gpg_passphrase():
         raise Exception(
             'The environment variable ANSIBLE_VAULT_PASSWORD_FILE is not '
             'defined. You should point it at the file containing your '
-            'Ansible Vault passphrase (possibly encrypted with GPG).')
+            'Ansible Vault passphrase (or a script that will output it).')
     if not os.path.exists(pwfile):
         raise Exception(
             'The ANSIBLE_VAULT_PASSWORD_FILE (%s) does not exist.' % (
@@ -168,16 +169,6 @@ def support_ansible_vault_gpg_passphrase():
     # which the shell would not do otherwise in environment variables.
     # Then ensure it is an absolute path.
     pwfile = os.path.abspath(os.path.expanduser(pwfile))
-
-    # If the file has a .gpg extension, wrap it with our decoding
-    # script: Ansible will execute the script due to its +x
-    # permissions, which in turn will use gpg to decrypt the
-    # passphrase (using another environment variable to find the
-    # original file).
-    if pwfile.endswith('.gpg'):
-        os.environ['FLOAT_VAULT_PASSWORD_FILE'] = pwfile
-        pwfile = os.path.abspath(
-            os.path.join(srcdir, 'scripts', 'get-vault-password'))
 
     os.environ['ANSIBLE_VAULT_PASSWORD_FILE'] = pwfile
 
@@ -207,7 +198,7 @@ def command_run(config, playbooks,
         print('Running playbook %s...' % (arg,))
 
         os.environ['LC_ALL'] = 'C'
-        support_ansible_vault_gpg_passphrase()
+        check_ansible_vault_password_file()
         cmd = [os.getenv('ANSIBLE_PLAYBOOK', 'ansible-playbook'),
                '-i', config]
         if ansible_verbosity > 0:
@@ -220,10 +211,6 @@ def command_run(config, playbooks,
             cmd.append('--extra-vars=' + v)
         cmd.append(arg)
         subprocess.check_call(cmd)
-
-
-def command_init_credentials(config):
-    command_run(config, ['init-credentials.yml'])
 
 
 def _parse_network(s):
@@ -422,14 +409,6 @@ themselves.
         '-e', '--extra-vars', dest='ansible_extra_vars',
         action='append', default=[],
         help='Extra variables for Ansible')
-
-    init_credentials_parser = subparsers.add_parser(
-        'init-credentials',
-        help='initialize credentials',
-        description='Initialize credentials.')
-    init_credentials_parser.add_argument(
-        '--config', metavar='file', default='config.yml',
-        help='Path to the configuration file')
 
     kwargs = vars(parser.parse_args())
     cmd = kwargs.pop('subparser')

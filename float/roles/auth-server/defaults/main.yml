@@ -12,5 +12,5 @@ auth_server_failed_login_blacklist:
 
 auth_server_anti_bruteforce_blacklist:
   limit: 50
-  period: 3600
+  period: 7200
   blacklist_for: 86400

@@ -61,7 +61,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "instance:network_receive_bytes:rate5m * 8",
+          "expr": "instance:network_receive_bytes_total:rate5m * 8",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{host}}",
@@ -146,7 +146,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "instance:public_network_receive_bytes:rate5m * 8",
+          "expr": "instance:public_network_receive_bytes_total:rate5m * 8",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -232,7 +232,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(instance:public_network_receive_bytes:rate5m) * 8",
+          "expr": "sum(instance:public_network_receive_bytes_total:rate5m) * 8",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -241,7 +241,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(instance:network_receive_bytes:rate5m) * 8",
+          "expr": "sum(instance:network_receive_bytes_total:rate5m) * 8",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -328,7 +328,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "instance:network_transmit_bytes:rate5m * 8",
+          "expr": "instance:network_transmit_bytes_total:rate5m * 8",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{host}}",
@@ -413,7 +413,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "instance:public_network_transmit_bytes:rate5m * 8",
+          "expr": "instance:public_network_transmit_bytes_total:rate5m * 8",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{host}}",
@@ -498,7 +498,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(instance:public_network_transmit_bytes:rate5m) * 8",
+          "expr": "sum(instance:public_network_transmit_bytes_total:rate5m) * 8",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -507,7 +507,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(instance:network_transmit_bytes:rate5m) * 8",
+          "expr": "sum(instance:network_transmit_bytes_total:rate5m) * 8",
           "format": "time_series",
           "instant": false,
           "interval": "",

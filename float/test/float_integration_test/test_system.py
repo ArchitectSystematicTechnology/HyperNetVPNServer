@@ -40,7 +40,7 @@ class TestBuiltinServiceURLs(URLTestBase):
         if service_name not in ANSIBLE_VARS['services']:
             self.skipTest('service %s not enabled' % service_name)
         self._assert_endpoint_ok(public_endpoint_name)
-    
+
     def test_admin_dashboard(self):
         self._assert_endpoint_ok_if_enabled('admin-dashboard', 'admin')
 
@@ -52,6 +52,9 @@ class TestBuiltinServiceURLs(URLTestBase):
 
     def test_grafana(self):
         self._assert_endpoint_ok_if_enabled('prometheus', 'grafana')
+
+    def test_thanos(self):
+        self._assert_endpoint_ok_if_enabled('prometheus', 'thanos')
 
     def test_kibana(self):
         if not ANSIBLE_VARS.get('enable_elasticsearch', True):

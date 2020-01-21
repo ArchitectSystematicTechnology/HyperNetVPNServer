@@ -104,9 +104,9 @@
   register: mariadb_systemd_unit
 
 - name: Bootstrap data directory
-  command: "/usr/bin/mysql_install_db --defaults-file={{ mariadb_config }} --datadir={{ mariadb_data_dir }} --user=mysql --auth-root-authentication-method=socket --skip-auth-anonymous-user"
+  shell: "/usr/bin/mysql_install_db --defaults-file={{ mariadb_config }} --datadir={{ mariadb_data_dir }} --user=mysql --auth-root-authentication-method=socket {{ float_debian_dist == 'stretch' and '--skip-auth-anonymous-user' or '' }} && date > {{ mariadb_data_dir }}/.float-bootstrap-ok"
   args:
-    creates: "{{ mariadb_data_dir }}"
+    creates: "{{ mariadb_data_dir }}/.float-bootstrap-ok"
 
 # Explicitly start the service after bootstrapping data directory
 # instead of using a restart handler, so that the database is available

@@ -217,6 +217,11 @@ scrape_configs:
     metrics_path: "{{ target.metrics_path | default('/metrics') }}"
     static_configs:
       - targets: {{ target.targets | to_json }}
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: host
+        regex: "([^.]*).*:[0-9]+"
+        replacement: "${1}"
 {% endfor %}
 
 rule_files:

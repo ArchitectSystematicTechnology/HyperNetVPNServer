@@ -183,8 +183,12 @@ below the *float-test/credentials/* directory (the value of
 
 ```shell
 cd $HOME/float-test
-$HOME/float/float init-credentials --config=config.yml
+$HOME/float/float run init-credentials
 ```
+
+Float will look for its configuration file in *config.yml* in the
+current directory by default, so there is no need to pass a
+*--config=* option in this case.
 
 Which will result in the creation of a number of files below
 *float-test/credentials/*, with secrets encrypted with your Ansible
@@ -198,7 +202,7 @@ it with our service:
 ```shell
 cd $HOME/float-test
 vagrant up
-$HOME/float/float run --config=config.yml site.yml
+$HOME/float/float run site.yml
 ```
 
 > \[libvirt\] You should pass the *--provider=libvirt* option to the

@@ -10,7 +10,7 @@ groups:
       description: 'Conntrack table on {{ $labels.instance }} is more than 90% full.'
       summary: 'Conntrack table on {{ $labels.instance }} is almost full'
   - alert: NetworkErrors
-    expr: instance:node_network_errs:rate5m > 1
+    expr: instance:node_network_errs_total:rate5m > 1
     for: 15m
     labels:
       severity: page
@@ -18,7 +18,7 @@ groups:
       summary: 'High rate of packet errors on {{ $labels.instance }}/{{ $labels.device }}'
       description: 'High rate of packet errors on {{ $labels.instance }} device {{ $labels.device }}.'
   - alert: NetworkDrops
-    expr: instance:node_network_drop:rate5m > 1
+    expr: instance:node_network_drop_total:rate5m > 1
     for: 15m
     labels:
       severity: page

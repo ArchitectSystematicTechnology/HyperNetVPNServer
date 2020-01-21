@@ -1,5 +1,13 @@
 ---
 
+# mtail 3.0.0~rc19-2 on Buster is broken when reading from named pipes
+# Pin mtail to ai3 repo that ships mtail 3.0.0~rc5-1~bpo9+1
+- name: Force mtail version on buster
+  copy:
+    src: "mtail.apt-preferences"
+    dest: "/etc/apt/preferences.d/99float-syslog"
+  when: float_debian_dist == 'buster'
+
 # Install rsyslog from the backports repository. This isn't strictly
 # necessary but it is done to have the same version of rsyslog on all
 # hosts, including the log-collector.

@@ -44,6 +44,9 @@ server {
 {% for pe_config in pe_list %}
 {{ config_location(pe_config, shard) }}
 {% endfor %}
+
+{# Output any custom configuration #}
+{% if endpoint.extra_nginx_config | default(None) %}{{ endpoint.extra_nginx_config }}{% endif %}
 }
 {% endmacro -%}
 

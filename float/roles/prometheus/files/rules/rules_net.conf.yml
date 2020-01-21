@@ -3,27 +3,27 @@ groups:
   rules:
   - record: instance:conntrack_full:ratio
     expr: node_nf_conntrack_entries / node_nf_conntrack_entries_limit
-  - record: instance:node_network_errs
-    expr: node_network_receive_errs + node_network_transmit_errs
-  - record: instance:node_network_drop
-    expr: node_network_receive_drop + node_network_transmit_drop
-  - record: instance:node_network_errs:rate5m
-    expr: rate(instance:node_network_errs[5m])
-  - record: instance:node_network_drop:rate5m
-    expr: rate(instance:node_network_drop[5m])
-  - record: instance:network_transmit_bytes:rate5m
-    expr: sum(rate(node_network_transmit_bytes{device!="lo"}[5m])) without (device)
-  - record: instance:network_receive_bytes:rate5m
-    expr: sum(rate(node_network_receive_bytes{device!="lo"}[5m])) without (device)
-  - record: instance:public_network_transmit_bytes:rate5m
-    expr: sum(rate(node_network_transmit_bytes{device=~"(eth|e[nl][op]).*"}[5m])) without (device)
-  - record: instance:public_network_receive_bytes:rate5m
-    expr: sum(rate(node_network_receive_bytes{device=~"(eth|e[nl][op]).*"}[5m])) without (device)
-  - record: global:public_network_transmit_bytes:rate5m
-    expr: sum(instance:public_network_transmit_bytes:rate5m) without (instance, host)
-  - record: global:public_network_receive_bytes:rate5m
-    expr: sum(instance:public_network_receive_bytes:rate5m) without (instance, host)
-  - record: global:network_transmit_bytes:rate5m
-    expr: sum(instance:network_transmit_bytes:rate5m) without (instance, host)
-  - record: global:network_receive_bytes:rate5m
-    expr: sum(instance:network_receive_bytes:rate5m) without (instance, host)
+  - record: instance:node_network_errs_total
+    expr: node_network_receive_errs_total + node_network_transmit_errs_total
+  - record: instance:node_network_drop_total
+    expr: node_network_receive_drop_total + node_network_transmit_drop_total
+  - record: instance:node_network_errs_total:rate5m
+    expr: rate(instance:node_network_errs_total[5m])
+  - record: instance:node_network_drop_total:rate5m
+    expr: rate(instance:node_network_drop_total[5m])
+  - record: instance:network_transmit_bytes_total:rate5m
+    expr: sum(rate(node_network_transmit_bytes_total{device!="lo"}[5m])) without (device)
+  - record: instance:network_receive_bytes_total:rate5m
+    expr: sum(rate(node_network_receive_bytes_total{device!="lo"}[5m])) without (device)
+  - record: instance:public_network_transmit_bytes_total:rate5m
+    expr: sum(rate(node_network_transmit_bytes_total{device=~"(eth|e[nl][op]).*"}[5m])) without (device)
+  - record: instance:public_network_receive_bytes_total:rate5m
+    expr: sum(rate(node_network_receive_bytes_total{device=~"(eth|e[nl][op]).*"}[5m])) without (device)
+  - record: global:public_network_transmit_bytes_total:rate5m
+    expr: sum(instance:public_network_transmit_bytes_total:rate5m) without (instance, host)
+  - record: global:public_network_receive_bytes_total:rate5m
+    expr: sum(instance:public_network_receive_bytes_total:rate5m) without (instance, host)
+  - record: global:network_transmit_bytes_total:rate5m
+    expr: sum(instance:network_transmit_bytes_total:rate5m) without (instance, host)
+  - record: global:network_receive_bytes_total:rate5m
+    expr: sum(instance:network_receive_bytes_total:rate5m) without (instance, host)

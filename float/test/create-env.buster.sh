@@ -2,7 +2,7 @@
 
 set -e
 
-../float create-env --vagrant --num-hosts 1 --domain example.com --net 192.168.10.0 \
+../float create-env --vagrant --num-hosts 1 --domain example.com \
     --debian-dist buster "$@"
 
 cat > "$1/services.yml" <<EOF

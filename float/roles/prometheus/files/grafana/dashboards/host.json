@@ -85,7 +85,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "100 - (avg by (cpu) (irate(node_cpu{mode=\"idle\", instance=~\"$server\"}[5m])) * 100)",
+          "expr": "100 - (avg by (cpu) (irate(node_cpu_seconds_total{mode=\"idle\", instance=~\"$server\"}[5m])) * 100)",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 3,
@@ -94,7 +94,7 @@
           "step": 200
         },
         {
-          "expr": "sum by (mode) (irate(node_cpu{mode!=\"idle\",instance=~\"$server\"}[5m])) / scalar(count(node_cpu{mode=\"idle\",instance=~\"$server\"}))",
+          "expr": "sum by (mode) (irate(node_cpu_seconds_total{mode!=\"idle\",instance=~\"$server\"}[5m])) / scalar(count(node_cpu_seconds_total{mode=\"idle\",instance=~\"$server\"}))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 3,
@@ -230,7 +230,7 @@
           "target": ""
         },
         {
-          "expr": "sum(count(node_cpu{job=\"node\",mode=\"idle\",instance=~\"$server\"}) by (cpu))",
+          "expr": "sum(count(node_cpu_seconds_total{job=\"node\",mode=\"idle\",instance=~\"$server\"}) by (cpu))",
           "format": "time_series",
           "intervalFactor": 4,
           "legendFormat": "CPUs",
@@ -239,7 +239,7 @@
           "target": ""
         },
         {
-          "expr": "sum(count(node_cpu{job=\"node\",mode=\"idle\",instance=~\"$server\"}) by (cpu))/2",
+          "expr": "sum(count(node_cpu_seconds_total{job=\"node\",mode=\"idle\",instance=~\"$server\"}) by (cpu))/2",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 4,
@@ -348,7 +348,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_memory_MemTotal{instance=~\"$server\"}",
+          "expr": "node_memory_MemTotal_bytes{instance=~\"$server\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Total",
@@ -358,7 +358,7 @@
           "target": ""
         },
         {
-          "expr": "node_memory_Cached{instance=~\"$server\"}",
+          "expr": "node_memory_Cached_bytes{instance=~\"$server\"}",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -369,7 +369,7 @@
           "target": ""
         },
         {
-          "expr": "node_memory_MemTotal{instance=~\"$server\"} - node_memory_Writeback{instance=~\"$server\"} - node_memory_Cached{instance=~\"$server\"} - node_memory_Buffers{instance=~\"$server\"} - node_memory_MemFree{instance=~\"$server\"}",
+          "expr": "node_memory_MemTotal_bytes{instance=~\"$server\"} - node_memory_Writeback_bytes{instance=~\"$server\"} - node_memory_Cached_bytes{instance=~\"$server\"} - node_memory_Buffers_bytes{instance=~\"$server\"} - node_memory_MemFree_bytes{instance=~\"$server\"}",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -380,7 +380,7 @@
           "target": ""
         },
         {
-          "expr": "node_memory_MemFree{instance=~\"$server\"}",
+          "expr": "node_memory_MemFree_bytes{instance=~\"$server\"}",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -491,7 +491,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_memory_MemTotal{instance=~\"$server\"}",
+          "expr": "node_memory_MemTotal_bytes{instance=~\"$server\"}",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -502,7 +502,7 @@
           "target": ""
         },
         {
-          "expr": "1 - (node_memory_SwapFree{instance=~\"$server\"} / node_memory_SwapTotal{instance=~\"$server\"})",
+          "expr": "1 - (node_memory_SwapFree_bytes{instance=~\"$server\"} / node_memory_SwapTotal_bytes{instance=~\"$server\"})",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -513,7 +513,7 @@
           "target": ""
         },
         {
-          "expr": "node_memory_Dirty{instance=~\"$server\"}",
+          "expr": "node_memory_Dirty_bytes{instance=~\"$server\"}",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -524,7 +524,7 @@
           "target": ""
         },
         {
-          "expr": "node_memory_WritebackTmp{instance=~\"$server\"}",
+          "expr": "node_memory_WritebackTmp_bytes{instance=~\"$server\"}",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -546,7 +546,7 @@
           "target": ""
         },
         {
-          "expr": "node_memory_Writeback{instance=~\"$server\"}",
+          "expr": "node_memory_Writeback_bytes{instance=~\"$server\"}",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -661,7 +661,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "8*sum(irate(node_network_receive_bytes{instance=~\"$server.*\",device=~\"(e.+)[0-9]*\"}[5m]) > 0)",
+          "expr": "8*sum(irate(node_network_receive_bytes_total{instance=~\"$server.*\",device=~\"(e.+)[0-9]*\"}[5m]) > 0)",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -671,7 +671,7 @@
           "target": ""
         },
         {
-          "expr": "8*sum(irate(node_network_transmit_bytes{instance=~\"$server.*\",device=~\"(e.+)[0-9]*\"}[5m]) > 0)",
+          "expr": "8*sum(irate(node_network_transmit_bytes_total{instance=~\"$server.*\",device=~\"(e.+)[0-9]*\"}[5m]) > 0)",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -681,7 +681,7 @@
           "target": ""
         },
         {
-          "expr": "8*sum(irate(node_network_transmit_packets{instance=~\"$server.*\",device=~\"(e.+)[0-9]*\"}[5m]) > 0)",
+          "expr": "8*sum(irate(node_network_transmit_packets_total{instance=~\"$server.*\",device=~\"(e.+)[0-9]*\"}[5m]) > 0)",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -692,7 +692,7 @@
           "target": ""
         },
         {
-          "expr": "8*sum(irate(node_network_receive_packets{instance=~\"$server.*\",device=~\"(e.+)[0-9]*\"}[5m]) > 0)",
+          "expr": "8*sum(irate(node_network_receive_packets_total{instance=~\"$server.*\",device=~\"(e.+)[0-9]*\"}[5m]) > 0)",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -785,7 +785,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "irate(node_network_transmit_drop{instance=~\"$server.*\",device=~\"(eth|en[0-9a-z]+)[0-9]*\"}[5m]) + irate(node_network_receive_drop{instance=~\"$server.*\",device=~\"(eth|en[0-9a-z]+)[0-9]*\"}[5m])",
+          "expr": "irate(node_network_transmit_drop_total{instance=~\"$server.*\",device=~\"(eth|en[0-9a-z]+)[0-9]*\"}[5m]) + irate(node_network_receive_drop_total{instance=~\"$server.*\",device=~\"(eth|en[0-9a-z]+)[0-9]*\"}[5m])",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -796,7 +796,7 @@
           "target": ""
         },
         {
-          "expr": "irate(node_network_transmit_errs{instance=~\"$server.*\",device=~\"(eth|en[0-9a-z]+)[0-9]*\"}[5m]) + irate(node_network_receive_errs{instance=~\"$server.*\",device=~\"(eth|en[0-9a-z]+)[0-9]*\"}[5m])",
+          "expr": "irate(node_network_transmit_errs_total{instance=~\"$server.*\",device=~\"(eth|en[0-9a-z]+)[0-9]*\"}[5m]) + irate(node_network_receive_errs_total{instance=~\"$server.*\",device=~\"(eth|en[0-9a-z]+)[0-9]*\"}[5m])",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -904,7 +904,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "irate(node_disk_reads_completed{instance=~\"$server.*\",device=~\"[vs]d[a-z]+\"}[5m])",
+          "expr": "irate(node_disk_reads_completed_total{instance=~\"$server.*\",device=~\"([vs]d[a-z]+|nvme.+)\"}[5m])",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 4,
@@ -914,7 +914,7 @@
           "step": 1200
         },
         {
-          "expr": "irate(node_disk_writes_completed{instance=~\"$server.*\",device=~\"[vs]d[a-z]+\"}[5m])",
+          "expr": "irate(node_disk_writes_completed_total{instance=~\"$server.*\",device=~\"([vs]d[a-z]+|nvme.+)\"}[5m])",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 4,
@@ -924,7 +924,7 @@
           "step": 1200
         },
         {
-          "expr": "irate(node_disk_io_time_ms{instance=~\"$server\",device=~\"[vs]d[a-z]+\"}[5m])irate(node_disk_io_time_ms{instance=~\"$server\",device=~\"[vs]d[a-z]+\"}[5m])",
+          "expr": "irate(node_disk_io_time_seconds_total{instance=~\"$server\",device=~\"([vs]d[a-z]+|nvme.+)\"}[5m])irate(node_disk_io_time_seconds_total{instance=~\"$server\",device=~\"([vs]d[a-z]+|nvme.+)\"}[5m])",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 4,
@@ -934,7 +934,7 @@
           "step": 20
         },
         {
-          "expr": "irate(node_disk_io_time_ms{instance=~\"$server\",device=~\"[vs]d[a-z]+\"}[5m]) / 1000",
+          "expr": "irate(node_disk_io_time_seconds_total{instance=~\"$server\",device=~\"([vs]d[a-z]+|nvme.+)\"}[5m]) / 1000",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{device}}",
@@ -1038,7 +1038,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_disk_io_now{instance=~\"$server.*\",device=~\"[vs]d[a-z]+\"}",
+          "expr": "node_disk_io_now{instance=~\"$server.*\",device=~\"([vs]d[a-z]+|nvme.+)\"}",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 4,
@@ -1048,7 +1048,7 @@
           "step": 60
         },
         {
-          "expr": "irate(node_disk_io_time_ms{instance=~\"$server\",device=~\"[vs]d[a-z]+\"}[5m])",
+          "expr": "irate(node_disk_io_time_seconds_total{instance=~\"$server\",device=~\"([vs]d[a-z]+|nvme.+)\"}[5m])",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 4,
@@ -1581,7 +1581,7 @@
           "target": "isNonNull()"
         },
         {
-          "expr": "rate(node_forks{instance=~\"$server.*\"}[5m])",
+          "expr": "rate(node_forks_total{instance=~\"$server.*\"}[5m])",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -1592,7 +1592,7 @@
           "target": "isNonNull()"
         },
         {
-          "expr": "rate(node_intr{instance=~\"$server.*\"}[5m])",
+          "expr": "rate(node_intr_total{instance=~\"$server.*\"}[5m])",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -1703,7 +1703,7 @@
           "target": "isNonNull()"
         },
         {
-          "expr": "rate(node_intr{instance=~\"$server.*\"}[5m])",
+          "expr": "rate(node_intr_total{instance=~\"$server.*\"}[5m])",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 2,
@@ -1808,7 +1808,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1- (node_filesystem_avail{instance=~\"$server\",fstype!~\"(tmpfs|rpc_pipefs|debugfs)\"} / node_filesystem_size{instance=~\"$server\"})",
+          "expr": "1- (node_filesystem_avail_bytes{instance=~\"$server\",fstype!~\"(tmpfs|rpc_pipefs|debugfs)\"} / node_filesystem_size_bytes{instance=~\"$server\"})",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 4,
@@ -1827,7 +1827,7 @@
           "step": 60
         },
         {
-          "expr": "node_filesystem_size",
+          "expr": "node_filesystem_size_bytes",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 4,
@@ -1900,7 +1900,7 @@
         "multi": false,
         "name": "server",
         "options": [],
-        "query": "label_values(node_boot_time, instance)",
+        "query": "label_values(node_boot_time_seconds, instance)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,

@@ -20,7 +20,11 @@ ruleset(name="incoming") {
   if ($syslogfacility-text == "local4") then stop
 
   # Send a copy of everything to mtail.
-  action(type="ompipe" Pipe="/run/mtail.fifo")
+  action(type="ompipe"
+         Pipe="/run/mtail.fifo"
+         action.resumeRetryCount="-1"
+         action.resumeInterval="2"
+         action.resumeIntervalMax="30")
 
   # Send everything to remote peer, do not write anything locally.
   action(type="omfwd"

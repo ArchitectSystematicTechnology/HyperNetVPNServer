@@ -5,30 +5,37 @@
 opts="$opts --{{ name }}={{ value }}"
 {% endmacro %}
 
-# Start the docker container for {{ service.name }}-{{ container.name }}.
+# Start the docker container for {{ item.service }}-{{ item.container.name }}.
 
 # Include by default tmpfs mounts for standard Debian locations (/tmp,
 # /run/lock), and a bind mount for the syslog socket in /dev/log.
 
-opts="{{ container.docker_options | default('') }}"
+opts="{{ item.container.docker_options | default('') }}"
 
 {{ opt('network', 'host') }}
 
 {# Port configuration, and bind mounts #}
-{% if container.get('ports', []) %}
-{% for port in container.get('ports',[]) %}{{ opt('expose', port) }}{% endfor %}
-{% elif container.get('port') %}
-{{ opt('expose', container.port) }}
+{% if item.container.get('ports', []) %}
+{% for port in item.container.get('ports',[]) %}{{ opt('expose', port) }}{% endfor %}
+{% elif item.container.get('port') %}
+{{ opt('expose', item.container.port) }}
 {% endif %}
+
 {{ opt('mount', 'type=tmpfs,destination=/tmp,tmpfs-mode=01777,tmpfs-size=64M') }}
 {{ opt('mount', 'type=tmpfs,destination=/run/lock,tmpfs-mode=01777,tmpfs-size=64M') }}
 {{ opt('mount', 'type=bind,source=/dev/log,destination=/dev/log') }}
-{% for creds in service.get('service_credentials', []) %}
+
+{% for creds in services[item.service].get('service_credentials', []) %}
 {{ opt('mount', 'type=bind,source=/etc/credentials/x509/' + creds.name + ',destination=/etc/credentials/x509/' + creds.name) }}
 {% endfor %}
-{% for mount in container.get('volumes', []) %}
+
+{% for mount in item.container.get('volumes', []) %}
 {% for k, v in mount.items() %}
+{% if k == 'tmpfs' %}
+{{ opt('mount', 'type=tmpfs,destination=%s,tmpfs-mode=01777,tmpfs-size=64M' % v) }}
+{% else %}
 {{ opt('mount', 'type=bind,source=%s,destination=%s' % (k, v)) }}
+{% endif %}
 {% endfor %}
 {% endfor %}
 
@@ -38,24 +45,46 @@ if [ -d /etc/tracing ]; then
 fi
 
 {# Security options (unless root=True) #}
-{% if container.get('drop_capabilities', not container.get('root')) %}
+{% if item.container.get('drop_capabilities', not item.container.get('root')) %}
 opts="$opts --security-opt no-new-privileges --cap-drop all"
 {% endif %}
 
 {# User setup #}
-{% if not container.get('root') %}
-container_uid=$(id -u {{ container_user }})
-container_gid=$(id -g {{ container_user }})
+{% if not item.container.get('root') %}
+container_uid=$(id -u docker-{{ item.service }})
+container_gid=$(id -g docker-{{ item.service }})
 opts="$opts --user=$container_uid:$container_gid"
 # Add additional groups that the user is a member of.
-for gid in $(id -G {{ container_user }}); do
+for gid in $(id -G docker-{{ item.service }}); do
     if [ $gid -ne $container_gid ]; then
         opts="$opts --group-add=$gid"
     fi
 done
 {% endif %}
 
-exec /usr/bin/systemd-docker --env run \
-  --rm --name {{ service.name }}-{{ container.name }} \
+{% if container_runtime == 'podman' %}
+# Remove 'created' (but never started) and 'exited' containers to avoid name conflicts
+podman ps --quiet --all \
+  --filter status=created \
+  --filter name={{ item.service }}-{{ item.container.name }} \
+  | xargs --no-run-if-empty podman rm
+
+podman ps --quiet --all \
+  --filter status=exited \
+  --filter name={{ item.service }}-{{ item.container.name }} \
+  | xargs --no-run-if-empty podman rm
+
+exec /usr/bin/podman run --env-host \
+  --cgroup-manager=cgroupfs \
+  --cgroup-parent /system.slice/docker-{{ item.tag }} \
+  --rm --name {{ item.service }}-{{ item.container.name }} \
   $opts \
-  {{ container.image }} {{ container.get('args', '') }}
+  {{ item.container.image }} {{ item.container.get('args', '') }}
+{% endif %}
+
+{% if container_runtime == 'docker' %}
+exec /usr/bin/systemd-docker --env run \
+  --rm --name {{ item.service }}-{{ item.container.name }} \
+  $opts \
+  {{ item.container.image }} {{ item.container.get('args', '') }}
+{% endif %}

@@ -74,6 +74,16 @@ prometheus:
       volumes:
         - /etc/grafana: /etc/grafana
         - /var/lib/grafana: /var/lib/grafana
+    - name: thanos
+      image: registry.git.autistici.org/ai3/docker/thanos:master
+      ports:
+        - 10901 # sidecar grpc
+        - 10902 # sidecar http
+        - 10903 # query grpc
+        - 10904 # query http
+      env:
+        QUERY_FLAGS: "--query.replica-label=monitor {% for h in groups['prometheus']|sort %} --store={{ h }}.prometheus.{{ domain }}:10901{% endfor %}"
+        SIDECAR_FLAGS: ""
   public_endpoints:
     - name: monitor
       port: 9090
@@ -91,6 +101,10 @@ prometheus:
       port: 2929
       scheme: https
       enable_sso_proxy: true
+    - name: thanos
+      port: 10904
+      scheme: http
+      enable_sso_proxy: true
   monitoring_endpoints:
     - job_name: prometheus
       port: 9090
@@ -101,8 +115,15 @@ prometheus:
     - job_name: grafana
       port: 2929
       scheme: https
+    - job_name: thanos-query
+      port: 10904
+      scheme: http
+    - job_name: thanos-sidecar
+      port: 10902
+      scheme: http
   ports:
     - 9094
+    - 10901
   volumes:
     - name: metrics
       path: /var/lib/prometheus
@@ -161,6 +182,7 @@ user-meta-server:
   datasets:
     - name: db
       path: /var/lib/user-meta-server
+      owner: user-meta-server
 
 admin-dashboard:
   scheduling_group: frontend

@@ -3,6 +3,8 @@
 docker_registry_url: ""
 docker_registry_username: ""
 docker_registry_password: ""
+
+# The following options are not used on >= Buster
 docker_daemon_config:
   log-driver: "local"
   log-opts:

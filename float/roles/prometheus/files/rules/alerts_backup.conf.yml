@@ -9,3 +9,11 @@ groups:
     annotations:
       summary: '{{ $labels.dataset }} backup failure on {{ $labels.host }}'
       description: 'Dataset {{ $labels.dataset }} has failed its backups on {{ $labels.host }}.'
+  - alert: BackupFailed
+    expr: backup_ok != 1
+    for: 2d
+    labels:
+      severity: page
+    annotations:
+      summary: '{{ $labels.dataset }} backup failure on {{ $labels.host }}'
+      description: 'Dataset {{ $labels.dataset }} has failed its backups on {{ $labels.host }} for two days.'

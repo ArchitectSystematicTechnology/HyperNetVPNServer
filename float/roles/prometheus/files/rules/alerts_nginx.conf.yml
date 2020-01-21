@@ -3,7 +3,7 @@ groups:
   rules:
 
   - alert: HTTPErrorRatioHigh
-    expr: (global:nginx_http_requests_errs:ratio > 0.02 and global:nginx_http_requests_total:rate5m > 0.1)
+    expr: (global:nginx_http_requests_errs:ratio > 0.2 and global:nginx_http_requests_total:rate5m > 0.1)
     for: 5m
     labels:
       scope: global
@@ -14,7 +14,7 @@ groups:
       description: 'We are serving lots of 5xx errors for {{$labels.vhost}} on all frontends.'
 
   - alert: HTTPErrorRatioHigh
-    expr: (host:nginx_http_requests_errs:ratio > 0.02 and host:nginx_http_requests_total:rate5m > 0.1)
+    expr: (host:nginx_http_requests_errs:ratio > 0.2 and host:nginx_http_requests_total:rate5m > 0.1)
     for: 10m
     labels:
       scope: host

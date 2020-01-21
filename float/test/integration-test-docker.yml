@@ -13,6 +13,11 @@
       docker_image:
         name: registry.git.autistici.org/ai3/float:integration-test
         force: true
+      when: "float_debian_dist == 'stretch'"
+
+    - name: Setup test Docker image
+      command: "podman pull registry.git.autistici.org/ai3/float:integration-test"
+      when: "float_debian_dist != 'stretch'"
 
     - name: Run tests
-      command: docker run --mount type=bind,source=/tmp/test-config.yml,destination=/test-config.yml registry.git.autistici.org/ai3/float:integration-test
+      command: docker run --net host --mount type=bind,source=/tmp/test-config.yml,destination=/test-config.yml registry.git.autistici.org/ai3/float:integration-test

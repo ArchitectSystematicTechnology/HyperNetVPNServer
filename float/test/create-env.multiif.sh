@@ -2,10 +2,10 @@
 
 set -e
 
-../float create-env --vagrant --num-hosts 2 --domain example.com --net 192.168.10.0 "$@"
+../float create-env --vagrant --num-hosts 2 --domain example.com "$@"
 
 # Patch the Vagrantfile to add a second private network.
-sed -i -e 's/^\(.*m.vm.network.*\)/\1\n        m.vm.network "private_network", ip: "192.168.20.#{9+i}", libvirt__dhcp_enabled: false/' "$1/Vagrantfile"
+sed -i -e 's/^\(.*m.vm.network.*\)/\1\n        m.vm.network "private_network", ip: "192.168.144.#{9+i}", libvirt__dhcp_enabled: false/' "$1/Vagrantfile"
 
 cat > "$1/services.yml" <<EOF
 ---

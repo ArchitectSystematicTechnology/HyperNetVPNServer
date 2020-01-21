@@ -27,12 +27,16 @@ if [ "x${ds}" = "x[]" ]; then
     echo "nothing to restore, skipping..." >&2
 else
     echo "starting restore of ${ds_pattern}..." >&2
-    tabacco restore "${ds_pattern}"
+    tabacco restore --target / "${ds_pattern}"
     if [ $? -gt 0 ]; then
         echo "ERROR: restore failed!" >&2
         exit 1
     fi
 fi
+
+{% if dataset_owner %}
+chown -R "{{ dataset_owner }}":"{{ dataset_owner }}" "{{ dataset_path }}"
+{% endif %}
 
 echo "marking restore successful" >&2
 touch "${guard_file}"

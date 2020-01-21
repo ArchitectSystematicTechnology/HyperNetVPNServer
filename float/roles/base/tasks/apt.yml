@@ -61,15 +61,12 @@
     state: present
   vars:
     packages:
-      - apt-transport-https
       - unattended-upgrades
       - rsync
       - git
       - python-pip
-      - python-docker
       - ntp
       - openssl
-      - liblz4-tool
       - curl
       - lsof
       - cgroups-exporter
@@ -78,6 +75,26 @@
       - tabacco
       - restic
       - runcron
+
+- name: Install Stretch packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - apt-transport-https
+      - liblz4-tool
+      - python-docker
+  when: float_debian_dist == 'stretch'
+
+- name: Install Buster packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - lz4
+  when: float_debian_dist == 'buster'
 
 - name: Install extra packages
   apt:

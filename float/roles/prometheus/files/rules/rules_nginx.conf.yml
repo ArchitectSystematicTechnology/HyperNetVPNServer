@@ -13,3 +13,6 @@ groups:
     expr: sum(rate(nginx_http_requests{code=~"5.*"}[5m])) by (vhost)
   - record: global:nginx_http_requests_errs:ratio
     expr: (global:nginx_http_requests_errs:rate5m / global:nginx_http_requests_total:rate5m)
+  - record: global:nginx_http_cached_requests:ratio
+    expr: clamp_max(sum(rate(nginx_http_requests_cache[5m])) by (vhost, cache_status) / ignoring (cache_status) group_left global:nginx_http_requests_total:rate5m, 1)
+

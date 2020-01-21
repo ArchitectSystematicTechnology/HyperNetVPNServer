@@ -15,8 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
-  "id": 2,
-  "iteration": 1560275101593,
+  "iteration": 1577011457110,
   "links": [],
   "panels": [
     {
@@ -26,6 +25,7 @@
       "dashes": false,
       "datasource": "localhost",
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 6,
         "w": 12,
@@ -46,6 +46,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -111,6 +114,7 @@
       "dashes": false,
       "datasource": "localhost",
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 6,
         "w": 12,
@@ -131,6 +135,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -141,11 +148,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "topk(10, global:nginx_http_requests_errs:rate5m{vhost=~\"^$vhost$\"})",
+          "expr": "topk(10, sum(rate(nginx_http_requests{vhost=~\"^$vhost\",code=~\"[45].*\"}[5m])) by (code))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{vhost}}",
+          "legendFormat": "{{code}}",
           "refId": "A"
         }
       ],
@@ -153,7 +160,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Errors by host",
+      "title": "Errors by code",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -197,6 +204,7 @@
       "dashes": false,
       "datasource": "localhost",
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 6,
         "w": 12,
@@ -217,6 +225,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -282,6 +293,7 @@
       "dashes": false,
       "datasource": "localhost",
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 6,
         "w": 12,
@@ -302,6 +314,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -324,7 +339,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Error percentage",
+      "title": "Error percentage (5XX)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -368,6 +383,7 @@
       "dashes": false,
       "datasource": "localhost",
       "fill": 0,
+      "fillGradient": 0,
       "gridPos": {
         "h": 6,
         "w": 12,
@@ -388,6 +404,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -460,10 +479,97 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "localhost",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": 11,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "global:nginx_http_cached_requests:ratio{vhost=~\"^$vhost\"}",
+          "legendFormat": "{{cache_status}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Cache Status",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": null,
+          "format": "percentunit",
+          "label": null,
+          "logBase": 1,
+          "max": "1",
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
   "refresh": "10s",
-  "schemaVersion": 18,
+  "schemaVersion": 20,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -528,5 +634,5 @@
   "timezone": "",
   "title": "HTTP",
   "uid": "xCSUMFnmz",
-  "version": 4
+  "version": 5
 }

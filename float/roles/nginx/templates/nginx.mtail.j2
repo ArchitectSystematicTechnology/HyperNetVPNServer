@@ -15,30 +15,12 @@ counter nginx_http_requests_ms by le, host, vhost, method, code, backend
 	nginx_http_bytes[$hostname][$vhost][$request_method][$status][$upstream_addr] += $response_size
 	nginx_http_bytes_cache[$hostname][$vhost][$cache_status] += $response_size
 
-        $request_seconds * 1000 + $request_milliseconds < 5 {
-	    nginx_http_requests_ms["5"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
+{# 10ms-20s buckets, with factor=sqrt(2) #}
+{% for bucket_ms in [10, 14, 20, 28, 40, 57, 80, 113, 160, 226, 320, 453, 640, 905, 1280, 1810, 2560, 3620, 5119, 7239, 10238, 14479] %}
+        $request_seconds * 1000 + $request_milliseconds < {{ bucket_ms }} {
+	    nginx_http_requests_ms["{{ bucket_ms }}"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
         }
-
-        $request_seconds * 1000 + $request_milliseconds < 10 {
-	    nginx_http_requests_ms["10"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
-        }
-
-        $request_seconds * 1000 + $request_milliseconds < 50 {
-	    nginx_http_requests_ms["50"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
-        }
-
-        $request_seconds * 1000 + $request_milliseconds < 100 {
-	    nginx_http_requests_ms["100"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
-        }
-
-        $request_seconds * 1000 + $request_milliseconds < 500 {
-	    nginx_http_requests_ms["500"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
-        }
-
-        $request_seconds * 1000 + $request_milliseconds < 1000 {
-	    nginx_http_requests_ms["1000"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
-        }
-
+{% endfor %}
 	nginx_http_requests_ms["inf"][$hostname][$vhost][$request_method][$status][$upstream_addr]++
 
 }

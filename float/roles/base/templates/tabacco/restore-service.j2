@@ -1,0 +1,13 @@
+{% set required_by = service.systemd_services | default([]) %}
+
+[Unit]
+Description=Restore dataset {{ dataset_name }}
+Before={{ required_by | join(' ') }}
+
+[Service]
+ExecStart=/usr/lib/float/datasets/restore-{{ dataset_filename }}
+Type=oneshot
+RemainAfterExit=true
+
+[Install]
+RequiredBy={{ required_by | join(' ') }}

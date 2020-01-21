@@ -21,7 +21,7 @@ The list might vary but currently includes:
 * [Monitoring](../roles/prometheus/README.md), based on Prometheus,
   with automatic collection of your service's *monitoring_endpoints*
   and generic per-service availability alerts.
-  
+
   There are dashboards at `https://grafana.your_public_domain/` and
   Prometheus itself is accessible at
   `https://monitor.your_public_domain/`.
@@ -30,7 +30,7 @@ The list might vary but currently includes:
   service, using rsyslog and Elasticsearch/Kibana. Collects (and
   anonymizes) all logs, either syslog or stderr, produced by your
   services, with configurable retention policies.
-  
+
   The Elasticsearch API is available internally at
   `http://log-collector.your_internal_domain:9200/`, and can be
   queried on all machines using the
@@ -45,9 +45,9 @@ $ logcat --from=-48h --iso 'program:auth-server AND "user@example.com"'
   administrators, and eventually users, of your services to
   authenticate with a single system, that supports OTP and hardware
   tokens.
-  
+
   The necessary bits are available for integration:
-  
+
   * The SSO public key is on all hosts at */etc/sso/public.key*
   * The SSO login server by default will be located at
     `https://login.your_public_domain/`.

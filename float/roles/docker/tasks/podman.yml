@@ -1,0 +1,33 @@
+---
+
+# TODO: switch to keyserver once the apt_key --no-tty bug in Ansible is fixed.
+- name: Install project atomic PPA GPG key
+  apt_key:
+    id: 018BA5AD9DF57A4448F0E6CF8BECF1637AD8C79D
+    url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x8becf1637ad8c79d'
+    state: present
+
+- name: Install project atomic PPA repository
+  apt_repository:
+    repo: "deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu disco main"
+    state: present
+
+- name: Install podman packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - podman
+
+- name: Symlink podman to docker
+  file:
+    src: /usr/bin/podman
+    dest: /usr/bin/docker
+    state: link
+    force: true
+
+- name: Install podman registries.conf
+  copy:
+    dest: /etc/containers/registries.conf
+    src: registries.conf
