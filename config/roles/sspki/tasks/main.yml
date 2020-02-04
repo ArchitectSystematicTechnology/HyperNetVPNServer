@@ -43,11 +43,5 @@
     name: x509ca
     state: present
 
-# Create the root directory for public credentials.
-- file:
-    path: /etc/credentials/public
-    state: directory
-
-- import_tasks: install_credentials.yml
 - import_tasks: install_certs.yml
 

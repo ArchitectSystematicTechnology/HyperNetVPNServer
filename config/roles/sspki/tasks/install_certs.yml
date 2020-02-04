@@ -1,60 +1,85 @@
-- name: Set up service-specific PKI credentials
-  block:
+---
 
-    - file:
-        path: "/etc/credentials/public/{{ item.service.name }}/{{ item.sspki.name }}"
-        state: directory
+# This role expects the following variables to be defined:
+#
+# sspki:
+#  name: service-name
+#  ca: path-to-public-ca-certificate
+#  ca_key: path-to-ca-private-key
 
-    - name: "Check the status of the certificate for {{ item.sspki.name }}/{{ ansible_hostname }}"
-      x509_csr:
-        credentials_name: "{{ item.sspki.name }}"
-        domain: "{{ domain }}"
-        mode: "{{ item.mode }}"
-        params:
-          - names: [ "{{ ansible_hostname }}" ]
-        private_key_path: "/etc/credentials/public/{{ item.service.name }}/{{ item.sspki.name }}/private.key"
-        cert_path: "/etc/credentials/public/{{ item.service.name }}/cert.pem"
-        ca_cert_path: "{{ credentials_dir }}/common/{{ item.sspki.name }}_ca.crt"
-        check: true
-      check_mode: no
-      register: sspki_should_update
+# Since this is a separate PKI from the public one and the internal
+# one, we give it its own directory below /etc/credentials.
+- set_fact:
+    sspki_dir: "/etc/credentials/sspki"
 
-    - name: "Create the CSR for {{ item.sspki.name }}/{{ ansible_hostname }}"
-      x509_csr:
-        credentials_name: "{{ item.sspki.name }}"
-        domain: "{{ domain }}"
-        mode: "{{ item.mode }}"
-        params:
-          - names: [ "{{ ansible_hostname }}" ]
-        private_key_path: "/etc/credentials/public/{{ item.service.name }}/{{ item.sspki.name }}/private.key"
-        check: false
-      when: sspki_should_update
-      register: sspki_csr
+- name: "Create credentials group"
+  group:
+    name: "{{ sspki.name }}-sspki"
+    system: true
 
-    - name: "Create the certificate for {{ item.sspki.name }}/{{ ansible_hostname }}"
-      x509_sign:
-        csr: "{{ item.csr }}"
-        mode: "{{ item.mode }}"
-        ca_cert_path: "{{ credentials_dir }}/common/{{ item.sspki.name }}_ca.crt"
-        ca_key_path: "{{ credentials_dir }}/common/{{ item.sspki.name }}_ca.key"
-      when: sspki_csr
-      register: sspki_sign
+- name: "Create credentials dir"
+  file:
+    path: "{{ sspki_dir }}/{{ sspki.name }}"
+    state: directory
 
-    - name: "Install the signed certificate for {{ item.sspki.name }}/{{ ansible_hostname }}"
-      copy:
-        dest: "/etc/credentials/public/{{ item.service.name }}/{{ item.sspki.name }}/cert.pem"
-        content: "{{ item.cert }}"
-        mode: 0644
-      when: sspki_sign
-      register: sspki_install
+- name: "Install CA"
+  copy:
+    src: "{{ sspki.ca }}"
+    dest: "{{ sspki_dir }}/ca.crt"
 
-    - name: Set permissions on the private key
-      file:
-        path: "/etc/credentials/public/{{ item.service.name }}/{{ item.sspki.name }}/private.key"
-        group: "{{ item.sspki.name }}-credentials"
-        mode: 0640
+# The following will create a certificate with a CN of
+# "inventory_hostname.domain" (the x509 plugin isn't very
+# flexible). We use inventory_hostname in the hope that it is a
+# "short" (not fully qualified) hostname...
+#
+# Run in check mode first, to verify that the certificate parameters
+# haven't changed.
+- name: "Check the status of the certificate for {{ sspki.name }}/{{ inventory_hostname }}"
+  x509_csr:
+    credentials_name: "{{ sspki.name }}" # Only used for client certs.
+    domain: "{{ domain }}"
+    mode: "server"
+    params:
+      - names: [ "{{ inventory_hostname }}" ]
+    private_key_path: "{{ sspki_dir }}/{{ sspki.name }}/private.key"
+    cert_path: "{{ sspki_dir }}/cert.pem"
+    ca_cert_path: "{{ sspki_dir }}/ca.crt"
+    check: true
+  check_mode: no
+  register: sspki_should_update
 
-  rescue:
-    - debug:
-        msg: "Failed to set up one or more credentials"
+# Second invocation of x509_csr with 'check: false', with the same
+# parameters as above: this will actually generate a new CSR.
+- name: "Create the CSR for {{ item.sspki.name }}/{{ inventory_hostname }}"
+  x509_csr:
+    credentials_name: "{{ sspki.name }}"
+    domain: "{{ domain }}"
+    mode: "server"
+    params:
+      - names: [ "{{ inventory_hostname }}" ]
+    private_key_path: "{{ sspki_dir }}/{{ sspki.name }}/private.key"
+    check: false
+  when: sspki_should_update.changed
+  register: sspki_csr
 
+- name: "Create the certificate for {{ sspki.name }}/{{ inventory_hostname }}"
+  x509_sign:
+    csr: "{{ sspki_csr.csr }}"
+    mode: "server"
+    ca_cert_path: "{{ sspki.ca }}"
+    ca_key_path: "{{ sspki.ca_key }}"
+  when: sspki_csr.changed
+  register: sspki_sign
+
+- name: "Install the signed certificate for {{ sspki.name }}/{{ inventory_hostname }}"
+  copy:
+    dest: "{{ sspki_dir }}/{{ sspki.name }}/cert.pem"
+    content: "{{ sspki_sign.cert }}"
+    mode: 0644
+  when: sspki_sign.changed
+
+- name: Set permissions on the private key
+  file:
+    path: "{{ sspki_dir }}/{{ sspki.name }}/private.key"
+    group: "{{ sspki.name }}-sspki"
+    mode: 0640
