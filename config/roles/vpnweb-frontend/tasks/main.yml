@@ -1,0 +1,12 @@
+- name: Install vpnweb nginx configuration
+  template:
+    src: vpnweb.conf.j2
+    dest: /etc/nginx/sites-available/vpnweb.conf
+  notify: reload NGINX
+
+- name: Enable vpnweb nginx configuration
+  file:
+    dest: /etc/nginx/sites-enabled/vpnweb.conf
+    src: ../sites-available/vpnweb.conf
+    state: link
+  notify: reload NGINX

@@ -1,2 +1,4 @@
 ---
-- import_playbook: common.yml
+- import_playbook: openvpn.yml
+- import_playbook: vpnweb.yml
+

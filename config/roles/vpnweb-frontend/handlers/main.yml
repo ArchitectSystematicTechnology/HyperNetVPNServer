@@ -1,0 +1,5 @@
+
+- listen: reload NGINX
+  systemd:
+    name: nginx.service
+    state: restarted

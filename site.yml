@@ -8,3 +8,8 @@
 - hosts: frontend
   roles: [openvpn-frontend]
 
+- hosts: vpnweb
+  roles: [vpnweb]
+
+- hosts: frontend
+  roles: [vpnweb-frontend]
