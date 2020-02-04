@@ -1,0 +1,60 @@
+- name: Set up service-specific PKI credentials
+  block:
+
+    - file:
+        path: "/etc/credentials/public/{{ item.service.name }}/{{ item.sspki.name }}"
+        state: directory
+
+    - name: "Check the status of the certificate for {{ item.sspki.name }}/{{ ansible_hostname }}"
+      x509_csr:
+        credentials_name: "{{ item.sspki.name }}"
+        domain: "{{ domain }}"
+        mode: "{{ item.mode }}"
+        params:
+          - names: [ "{{ ansible_hostname }}" ]
+        private_key_path: "/etc/credentials/public/{{ item.service.name }}/{{ item.sspki.name }}/private.key"
+        cert_path: "/etc/credentials/public/{{ item.service.name }}/cert.pem"
+        ca_cert_path: "{{ credentials_dir }}/common/{{ item.sspki.name }}_ca.crt"
+        check: true
+      check_mode: no
+      register: sspki_should_update
+
+    - name: "Create the CSR for {{ item.sspki.name }}/{{ ansible_hostname }}"
+      x509_csr:
+        credentials_name: "{{ item.sspki.name }}"
+        domain: "{{ domain }}"
+        mode: "{{ item.mode }}"
+        params:
+          - names: [ "{{ ansible_hostname }}" ]
+        private_key_path: "/etc/credentials/public/{{ item.service.name }}/{{ item.sspki.name }}/private.key"
+        check: false
+      when: sspki_should_update
+      register: sspki_csr
+
+    - name: "Create the certificate for {{ item.sspki.name }}/{{ ansible_hostname }}"
+      x509_sign:
+        csr: "{{ item.csr }}"
+        mode: "{{ item.mode }}"
+        ca_cert_path: "{{ credentials_dir }}/common/{{ item.sspki.name }}_ca.crt"
+        ca_key_path: "{{ credentials_dir }}/common/{{ item.sspki.name }}_ca.key"
+      when: sspki_csr
+      register: sspki_sign
+
+    - name: "Install the signed certificate for {{ item.sspki.name }}/{{ ansible_hostname }}"
+      copy:
+        dest: "/etc/credentials/public/{{ item.service.name }}/{{ item.sspki.name }}/cert.pem"
+        content: "{{ item.cert }}"
+        mode: 0644
+      when: sspki_sign
+      register: sspki_install
+
+    - name: Set permissions on the private key
+      file:
+        path: "/etc/credentials/public/{{ item.service.name }}/{{ item.sspki.name }}/private.key"
+        group: "{{ item.sspki.name }}-credentials"
+        mode: 0640
+
+  rescue:
+    - debug:
+        msg: "Failed to set up one or more credentials"
+
