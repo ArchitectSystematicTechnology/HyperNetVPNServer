@@ -53,3 +53,21 @@ openvpn:
         LHOST: "{{ ip }}"
         _CHAP_OPTIONS: --no-syslog
         LOGLEVEL: DEBUG
+
+vpnweb:
+  scheduling_group: backend
+  num_instances: 1
+  monitoring_endpoints:
+    - job_name: vpnweb
+      port: 9000
+      scheme: http
+  containers:
+    - name: vpnweb
+      image: registry.0xacab.org/leap/vpnweb:latest
+      port: 8001
+      volumes:
+        - /etc/leap: /etc/leap
+  public_endpoints:
+    - name: vpnweb
+      port: 8001
+      scheme: http
