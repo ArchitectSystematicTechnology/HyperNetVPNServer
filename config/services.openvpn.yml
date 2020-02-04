@@ -3,6 +3,10 @@
 geoip:
   scheduling_group: backend
   num_instances: 1
+  monitoring_endpoints:
+    - job_name: geoip
+      port: 9002
+      scheme: http
   containers:
     - name: geoip
       image: registry.0xacab.org/leap/getmyip:latest
@@ -28,9 +32,12 @@ openvpn:
   # connection based, and we want to also be able to do UDP, so we do not really
   # want to have a reverse proxy for openvpn, instead we want to set it up as a
   # user-facing service, and just rely on DNS for request routing and balancing.
-
   scheduling_group: frontend
   num_instances: 1
+  monitoring_endpoints:
+    - job_name: openvpn
+      port: 9176
+      scheme: http
   containers:
     - name: openvpn
       image: registry.0xacab.org/leap/container-platform/openvpn:latest
