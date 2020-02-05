@@ -50,7 +50,7 @@
 
 # Second invocation of x509_csr with 'check: false', with the same
 # parameters as above: this will actually generate a new CSR.
-- name: "Create the CSR for {{ item.sspki.name }}/{{ inventory_hostname }}"
+- name: "Create the CSR for {{ sspki.name }}/{{ inventory_hostname }}"
   x509_csr:
     credentials_name: "{{ sspki.name }}"
     domain: "{{ domain }}"
