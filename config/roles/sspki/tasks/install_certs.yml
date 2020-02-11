@@ -40,7 +40,7 @@
     domain: "{{ domain }}"
     mode: "server"
     params:
-      - names: [ "{{ inventory_hostname }}" ]
+      names: [ "{{ inventory_hostname }}" ]
     private_key_path: "{{ sspki_dir }}/{{ sspki.name }}/private.key"
     cert_path: "{{ sspki_dir }}/cert.pem"
     ca_cert_path: "{{ sspki_dir }}/ca.crt"
@@ -56,7 +56,7 @@
     domain: "{{ domain }}"
     mode: "server"
     params:
-      - names: [ "{{ inventory_hostname }}" ]
+      names: [ "{{ inventory_hostname }}" ]
     private_key_path: "{{ sspki_dir }}/{{ sspki.name }}/private.key"
     check: false
   when: sspki_should_update.changed
