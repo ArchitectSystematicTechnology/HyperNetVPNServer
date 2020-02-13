@@ -81,6 +81,9 @@ class ActionModule(ActionBase):
         config = produceEipConfig(config, obfs4_state_dir)
 
         result = super(ActionModule, self).run(tmp, task_vars)
+        result.update({
+            'changed': False,   # Always nice to return 'changed'.
+            'simplevpn_config': config, # Actual result.
+        })
 
-        result['changed'] = False
         return result
