@@ -41,23 +41,22 @@ class EIPConfig:
 #     return _d
 
 
-def patchObfs4Cert(config, cert):
-    for gw in config.gateways:
-        for options in config.gateways[gw]['transports']:
-            opts = {}
-            transport, _, _ = options
-            if transport == "obfs4":
-                opts['cert'] = cert
-                opts['iatMode'] = "0"
-            options.append(opts)
-    return config
+def patchObfs4Cert(transports, cert):
+    # Build a new list since we can't modify tuples in place.
+    out = []
+    for tr, proto, port, options in transports:
+        if tr == "obfs4":
+            options['cert'] = cert
+            options['iatMode'] = "0"
+        out.append((tr, proto, port, options))
+    return out
 
 
-def produceEipConfig(config, obfs4_state_dir):
+def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
     if obfs4_state_dir:
         obfs4_cert = open(
             obfs4_state_dir + '/obfs4_cert.txt').read().rstrip()
-        config = patchObfs4Cert(config, obfs4_cert)
+        transports = patchObfs4Cert(transports, obfs4_cert)
 
     # Build the JSON data structure that needs to end up in eip-service.json.
     eip_config = {
@@ -65,19 +64,14 @@ def produceEipConfig(config, obfs4_state_dir):
         "version": 3,
         "locations": config.locations,
         "gateways": dict((k, {
-            "host": v["host"],
-            "ip_address": v["ip_address"],
-            "location": v["location"],
+            "host": "%s.%s" % (v["inventory_hostname"], public_domain),
+            "ip_address": v["ip"],
+            "location": v.get("location", "Unknown"),
             "capabilities": {
                 "adblock": False,
                 "filter_dns": False,
                 "limited": False,
-                "transport": [{
-                    "type": tr,
-                    "protocols": proto,
-                    "options": options,
-                    "port": port,
-                } for tr, proto, port, options in v["transports"]],
+                "transport": transports,
             },
         }) for k, v in config.gateways),
         "openvpn_configuration": config.openvpn,
@@ -95,14 +89,19 @@ class ActionModule(ActionBase):
 
     def run(self, tmp=None, task_vars=None):
         # Get task arguments.
+        public_domain = self._task.args['domain']
         openvpn = self._task.args['openvpn']
         locations = self._task.args['locations']
         gateways = self._task.args['gateways']
         provider = self._task.args['provider']
         obfs4_state_dir = self._task.args.get('obfs4_state_dir')
+        transports = self._task.args.get('transports', [
+            ["openvpn", "tcp", "443", {}],
+            ["obfs4", "tcp", "23042", {}],
+        ])
 
         config = EIPConfig(openvpn, locations, gateways, provider)
-        config = produceEipConfig(config, obfs4_state_dir)
+        config = produceEipConfig(config, obfs4_state_dir, public_domain, transports)
 
         result = super(ActionModule, self).run(tmp, task_vars)
         result.update({
