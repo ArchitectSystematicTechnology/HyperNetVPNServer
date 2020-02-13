@@ -59,10 +59,34 @@ def produceEipConfig(config, obfs4_state_dir):
             obfs4_state_dir + '/obfs4_cert.txt').read().rstrip()
         config = patchObfs4Cert(config, obfs4_cert)
 
+    # Build the JSON data structure that needs to end up in eip-service.json.
+    eip_config = {
+        "serial": 3,
+        "version": 3,
+        "locations": config.locations,
+        "gateways": dict((k, {
+            "host": v["host"],
+            "ip_address": v["ip_address"],
+            "location": v["location"],
+            "capabilities": {
+                "adblock": False,
+                "filter_dns": False,
+                "limited": False,
+                "transport": [{
+                    "type": tr,
+                    "protocols": proto,
+                    "options": options,
+                    "port": port,
+                } for tr, proto, port, options in v["transports"]],
+            },
+        }) for k, v in config.gateways),
+        "openvpn_configuration": config.openvpn,
+    }
+        
     # Instead of calling the template here, we just return the
     # 'config' object so that Ansible can use it with its own template
     # module.
-    return config
+    return eip_config
 
 
 class ActionModule(ActionBase):
@@ -83,7 +107,7 @@ class ActionModule(ActionBase):
         result = super(ActionModule, self).run(tmp, task_vars)
         result.update({
             'changed': False,   # Always nice to return 'changed'.
-            'simplevpn_config': config, # Actual result.
+            'eip_config': eip_config, # Actual result.
         })
 
         return result
