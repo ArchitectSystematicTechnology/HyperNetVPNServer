@@ -2,6 +2,8 @@ import os
 import yaml
 from ansible.plugins.action import ActionBase
 
+# Should be able to extract the fingerprint of the ca_cert automatically with this
+from ansible.modules.crypto import openssl_publickey
 
 class EIPConfig:
 
@@ -82,31 +84,81 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
     # module.
     return eip_config
 
+def produceProviderConfig(config):
+
+    # Build the JSON data structure that needs to end up in provider.json.
+    provider_config = {
+        "api_url": config.provider_api_uri,
+        "api_version": 3,
+        "ca_cert_fingerprint": extract_from_file,
+        "ca_cert_uri": config.ca_cert_uri,
+        "default_language": "en",
+        "description": {
+            "en": "LEAP Provider"
+        },
+        "domain": "%s" % (public_domain),
+        "enrollment_policy": "open",
+        "languages": [
+            "en"
+        ],
+        "name": {
+            "en": "LEAP Provider"
+        },
+        "service": {
+            "allow_anonymous": True,
+            "allow_free": True,
+            "allow_limited_bandwidth": False,
+            "allow_paid": False,
+            "allow_registration": False,
+            "allow_unlimited_bandwidth": True,
+            "bandwidth_limit": 102400,
+            "default_service_level": 1,
+            "levels": {
+                "1": {
+                    "description": "Please donate.",
+                    "name": "free"
+                }
+            },
+            "services": [
+                "openvpn"
+                ]
+            }
+    }
+
+    # Instead of calling the template here, we just return the
+    # 'config' object so that Ansible can use it with its own template
+    # module.
+    return provider_config
 
 class ActionModule(ActionBase):
 
     TRANSFERS_FILES = False
 
     def run(self, tmp=None, task_vars=None):
-        # Get task arguments.
-        public_domain = self._task.args['domain']
-        openvpn = self._task.args['openvpn']
-        locations = self._task.args['locations']
-        gateways = self._task.args['gateways']
-        provider = self._task.args['provider']
+        # Get EIP config task arguments.
         obfs4_state_dir = self._task.args.get('obfs4_state_dir')
+        locations = self._task.args['locations']
+        public_domain = self._task.args['domain']
         transports = self._task.args.get('transports', [
             ["openvpn", "tcp", "443", {}],
             ["obfs4", "tcp", "23042", {}],
         ])
+        gateways = self._task.args['gateways']
+        openvpn = self._task.args['openvpn']
+
+        # Get provider config task elements
+        provider_api_uri = self._task.args['provider_api_uri']
+        ca_cert_uri = self._task.args['ca_cert_uri']
 
         config = EIPConfig(openvpn, locations, gateways, provider)
-        config = produceEipConfig(config, obfs4_state_dir, public_domain, transports)
+        eip_config = produceEipConfig(config, obfs4_state_dir, public_domain, transports)
+        provider_config = produceProviderConfig(provider_api_uri, ca_cert_uri)
 
         result = super(ActionModule, self).run(tmp, task_vars)
         result.update({
             'changed': False,   # Always nice to return 'changed'.
             'eip_config': eip_config, # Actual result.
+            'provider_config': provider_config, # Actual result.
         })
 
         return result
