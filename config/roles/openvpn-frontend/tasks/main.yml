@@ -1,6 +1,6 @@
 - name: Install Openvpn DNS records
-  file:
-    src: 'openvpn_dns.yml'
+  template:
+    src: 'openvpn_dns.j2'
     dest: '/etc/dns/manual/openvpn.yml'
   notify: reload openvpn DNS config
 
