@@ -78,6 +78,14 @@
     mode: 0644
   when: sspki_sign.changed
 
+# Create a fullchain cert bundle containing the CA and certificate
+- name: Create fullchain cert bundle of CA and generated certificate
+  shell:
+    cmd: /bin/cat {{ sspki_dir }}/ca.crt {{ sspki_dir }}/{{ sspki.name }}/cert.pem > {{ sspki_dir }}/{{ sspki.name }}/fullchain.crt
+  args:
+    creates: "{{ sspki_dir }}/{{ sspki.name }}/fullchain.crt"
+  when: sspki_sign.changed
+
 - name: Set permissions on the private key
   file:
     path: "{{ sspki_dir }}/{{ sspki.name }}/private.key"
