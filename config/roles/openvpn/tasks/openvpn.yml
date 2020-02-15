@@ -5,18 +5,6 @@
     group: docker-openvpn
     mode: 0750
 
-- name: Install OpenVPN key
-  copy:
-    src: "{{ credentials_dir }}/openvpn/{{ domain_public[0] }}_private.key"
-    dest: /etc/leap/keys/leap.key
-    mode: 0640
-
-- name: Install OpenVPN cert
-  copy:
-    src: "{{ credentials_dir }}/openvpn/{{ domain_public[0] }}_leap.crt"
-    dest: /etc/leap/certs/leap.crt
-    mode: 0444
-
 - name: Install firewall config for openvpn
   copy:
     src: "50openvpn.firewall"
