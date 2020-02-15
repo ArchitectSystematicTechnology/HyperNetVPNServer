@@ -59,15 +59,20 @@ vpnweb:
   num_instances: 1
   monitoring_endpoints:
     - job_name: vpnweb
-      port: 9000
+      port: 8001
       scheme: http
   containers:
     - name: vpnweb
       image: registry.0xacab.org/leap/vpnweb:latest
-      port: 8001
+      port: 8000
       volumes:
         - /etc/leap: /etc/leap
+      env:
+        VPNWEB_API_PATH: /etc/leap/config/vpnweb
+        VPNWEB_CACRT: /etc/leap/ca/client_ca.crt
+        VPNWEB_CAKEY: /etc/leap/keys/client_ca.key
+        VPNWEB_PROVIDER_CA: /etc/leap/ca/api_ca.crt
   public_endpoints:
     - name: vpnweb
-      port: 8001
+      port: 8000
       scheme: http
