@@ -1,9 +1,8 @@
 import os
 import yaml
 from ansible.plugins.action import ActionBase
+from ansible.module_utils.crypto import get_fingerprint
 
-# Should be able to extract the fingerprint of the ca_cert automatically with this
-from ansible.modules.crypto import openssl_publickey
 
 class EIPConfig:
 
@@ -84,14 +83,16 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
     # module.
     return eip_config
 
-def produceProviderConfig(config):
+
+def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_private_key_path):
+    ca_fp = get_fingerprint(ca_private_key_path)
 
     # Build the JSON data structure that needs to end up in provider.json.
     provider_config = {
-        "api_url": config.provider_api_uri,
+        "api_url": provider_api_uri,
         "api_version": 3,
-        "ca_cert_fingerprint": extract_from_file,
-        "ca_cert_uri": config.ca_cert_uri,
+        "ca_cert_fingerprint": ca_fp,
+        "ca_cert_uri": ca_cert_uri,
         "default_language": "en",
         "description": {
             "en": "LEAP Provider"
@@ -149,10 +150,11 @@ class ActionModule(ActionBase):
         # Get provider config task elements
         provider_api_uri = self._task.args['provider_api_uri']
         ca_cert_uri = self._task.args['ca_cert_uri']
+        ca_private_key_path = self._task.args['ca_private_key']
 
         config = EIPConfig(openvpn, locations, gateways, provider)
         eip_config = produceEipConfig(config, obfs4_state_dir, public_domain, transports)
-        provider_config = produceProviderConfig(provider_api_uri, ca_cert_uri)
+        provider_config = produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_private_key_path)
 
         result = super(ActionModule, self).run(tmp, task_vars)
         result.update({
