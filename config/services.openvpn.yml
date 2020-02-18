@@ -45,6 +45,8 @@ openvpn:
       drop_capabilities: false
       docker_options: '--cap-add=NET_ADMIN'
       volumes:
+        - /etc/leap: /etc/leap
+        - /etc/credentials/sspki: /etc/credentials/sspki
         - /srv/leap/shapeshifter-state: /srv/leap/shapeshifter-state
         - /etc/openvpn: /etc/openvpn
         - /dev/net: /dev/net
