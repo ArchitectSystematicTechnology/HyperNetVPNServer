@@ -84,8 +84,13 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
     return eip_config
 
 
-def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_private_key_path):
-    ca_fp = get_fingerprint(ca_private_key_path)
+def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_private_key):
+    # We have the key in memory, but 'get_fingerprint' wants
+    # a local file. Use a temporary file.
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(ca_private_key)
+        f.flush()
+        ca_fp = get_fingerprint(f.name)
 
     # Build the JSON data structure that needs to end up in provider.json.
     provider_config = {
@@ -152,9 +157,14 @@ class ActionModule(ActionBase):
         ca_cert_uri = self._task.args['ca_cert_uri']
         ca_private_key_path = self._task.args['ca_private_key']
 
+        # The private key might be encrypted with Ansible Vault,
+        # so use the 'lookup' module to obtain its contents
+        # instead of using the Python file primitives directly.
+        ca_private_key = self._templar.template('{{lookup("file","%s")}}' % ca_private_key_path)
+
         config = EIPConfig(openvpn, locations, gateways)
         eip_config = produceEipConfig(config, obfs4_state_dir, public_domain, transports)
-        provider_config = produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_private_key_path)
+        provider_config = produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_private_key)
 
         result = super(ActionModule, self).run(tmp, task_vars)
         result.update({
