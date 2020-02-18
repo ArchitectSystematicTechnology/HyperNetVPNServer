@@ -1,8 +1,9 @@
 import os
 import yaml
+import tempfile
 from ansible.plugins.action import ActionBase
 from ansible.module_utils.crypto import get_fingerprint
-
+from ansible.module_utils._text import to_bytes
 
 class EIPConfig:
 
@@ -88,7 +89,7 @@ def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_priva
     # We have the key in memory, but 'get_fingerprint' wants
     # a local file. Use a temporary file.
     with tempfile.NamedTemporaryFile() as f:
-        f.write(ca_private_key)
+        f.write(to_bytes(ca_private_key))
         f.flush()
         ca_fp = get_fingerprint(f.name)
 
