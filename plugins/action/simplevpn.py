@@ -63,17 +63,18 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
         "serial": 3,
         "version": 3,
         "locations": config.locations,
-        "gateways": dict((k, {
-            "host": "%s.%s" % (v["inventory_hostname"], public_domain),
-            "ip_address": v["ip"],
-            "location": v.get("location", "Unknown"),
-            "capabilities": {
-                "adblock": False,
-                "filter_dns": False,
-                "limited": False,
-                "transport": transports,
-            },
-        }) for k, v in config.gateways),
+        "gateways": dict((x["host"], x) for x in [
+            {
+                "host": "%s.%s" % (v["inventory_hostname"], public_domain),
+                "ip_address": v["ip"],
+                "location": v.get("location", "Unknown"),
+                "capabilities": {
+                    "adblock": False,
+                    "filter_dns": False,
+                    "limited": False,
+                    "transport": transports,
+                },
+            } for v in config.gateways]),
         "openvpn_configuration": config.openvpn,
     }
         
