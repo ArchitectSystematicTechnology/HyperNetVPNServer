@@ -6,11 +6,10 @@ from ansible.module_utils.crypto import get_fingerprint
 
 class EIPConfig:
 
-    def __init__(self, openvpn, locations, gateways, provider):
+    def __init__(self, openvpn, locations, gateways):
         self.openvpn = openvpn
         self.locations = locations
         self.gateways = gateways
-        self.provider = provider
 
 
 # def parseConfig(provider_config):
@@ -152,7 +151,7 @@ class ActionModule(ActionBase):
         ca_cert_uri = self._task.args['ca_cert_uri']
         ca_private_key_path = self._task.args['ca_private_key']
 
-        config = EIPConfig(openvpn, locations, gateways, provider)
+        config = EIPConfig(openvpn, locations, gateways)
         eip_config = produceEipConfig(config, obfs4_state_dir, public_domain, transports)
         provider_config = produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_private_key_path)
 
