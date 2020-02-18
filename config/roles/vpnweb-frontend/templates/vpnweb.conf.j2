@@ -1,6 +1,6 @@
 upstream be_openvpn {
 {% for host in groups['vpnweb']|sort %}
-  server http://{{ host }}.vpnweb.{{ domain }}:{{ services['vpnweb'].public_endpoints[0].port }};
+  server {{ host }}.vpnweb.{{ domain }}:{{ services['vpnweb'].public_endpoints[0].port }};
 {% endfor %}
 }
 
