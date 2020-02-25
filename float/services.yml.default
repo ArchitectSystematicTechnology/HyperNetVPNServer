@@ -102,6 +102,7 @@ prometheus:
       volumes:
         - /etc/prometheus: /etc/prometheus
       args: "--config.file /etc/prometheus/blackbox.yml"
+      docker_options: "--cap-add=NET_RAW"
       drop_capabilities: false
     - name: grafana
       image: registry.git.autistici.org/ai3/docker/grafana:master

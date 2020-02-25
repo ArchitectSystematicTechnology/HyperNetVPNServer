@@ -5,10 +5,10 @@
 
 - set_fact:
     container_runtime: "docker"
-  when: "float_debian_dist == 'stretch'"
+  when: "ansible_distribution_release == 'stretch'"
 
 - include_tasks: buster_upgrade.yml
-  when: "float_debian_dist == 'buster'"
+  when: "ansible_distribution_release == 'buster'"
 
 - include_tasks: docker.yml
   when: "container_runtime == 'docker'"

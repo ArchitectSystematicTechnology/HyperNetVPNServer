@@ -14,8 +14,9 @@ http_server:
           cn: "auth-server.{{ domain }}"
         - path: "/api/set_last_login"
           cn: "auth-server.{{ domain }}"
-        - path: "/api/get_user_.*"
-          cn: "accounts.{{ domain }}"
+        - path: "/api/get_.*"
+          cn: "(accounts|accountadmin).{{ domain }}"
         - path: "/metrics"
           cn: ".*"
   max_inflight_requests: 100
+  request_timeout: 10

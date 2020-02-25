@@ -1,14 +1,22 @@
 ---
 
 auth_server_ip_ratelimit:
-  limit: 10
+  limit: 20
   period: 30
+
+auth_server_account_recovery_ip_ratelimit:
+  limit: 3
+  period: 600
 
 auth_server_failed_login_blacklist:
   limit: 10
   period: 300
   blacklist_for: 3600
-  on_failure: true
+
+auth_server_failed_account_recovery_blacklist:
+  limit: 5
+  period: 900
+  blacklist_for: 10800
 
 auth_server_anti_bruteforce_blacklist:
   limit: 50

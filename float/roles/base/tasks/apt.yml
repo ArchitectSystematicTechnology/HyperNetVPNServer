@@ -75,6 +75,7 @@
       - tabacco
       - restic
       - runcron
+      - acpid
 
 - name: Install Stretch packages
   apt:

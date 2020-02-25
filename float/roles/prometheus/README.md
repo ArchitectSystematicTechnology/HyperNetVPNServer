@@ -3,7 +3,7 @@ prometheus
 
 This role sets up monitoring and alerting
 using [Prometheus](https://prometheus.io). It will scrape all
-*monitoring_targets* defined in your services.yml file, as well as a
+*monitoring_endpoints* defined in your services.yml file, as well as a
 number of host-level metrics for every host in the Ansible inventory.
 
 It also includes [Grafana](https://grafana.com) for dashboards.

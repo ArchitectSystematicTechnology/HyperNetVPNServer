@@ -1,14 +1,10 @@
 #!/bin/sh
+# Start the docker container for {{ item.service }}-{{ item.container.name }}.
 
 {# Macro to generate command-line options #}
 {% macro opt(name, value) %}
 opts="$opts --{{ name }}={{ value }}"
 {% endmacro %}
-
-# Start the docker container for {{ item.service }}-{{ item.container.name }}.
-
-# Include by default tmpfs mounts for standard Debian locations (/tmp,
-# /run/lock), and a bind mount for the syslog socket in /dev/log.
 
 opts="{{ item.container.docker_options | default('') }}"
 
@@ -21,22 +17,32 @@ opts="{{ item.container.docker_options | default('') }}"
 {{ opt('expose', item.container.port) }}
 {% endif %}
 
-{{ opt('mount', 'type=tmpfs,destination=/tmp,tmpfs-mode=01777,tmpfs-size=64M') }}
-{{ opt('mount', 'type=tmpfs,destination=/run/lock,tmpfs-mode=01777,tmpfs-size=64M') }}
-{{ opt('mount', 'type=bind,source=/dev/log,destination=/dev/log') }}
-
-{% for creds in services[item.service].get('service_credentials', []) %}
-{{ opt('mount', 'type=bind,source=/etc/credentials/x509/' + creds.name + ',destination=/etc/credentials/x509/' + creds.name) }}
-{% endfor %}
-
+{# Define mountpoints / volumes. We treat /tmp specially as the container
+   configuration might override it. #}
+{% set has_custom_tmp_volume = False %}
 {% for mount in item.container.get('volumes', []) %}
 {% for k, v in mount.items() %}
+{% if v == '/tmp' %}{% set has_custom_tmp_volume = True %}{% endif %}
 {% if k == 'tmpfs' %}
 {{ opt('mount', 'type=tmpfs,destination=%s,tmpfs-mode=01777,tmpfs-size=64M' % v) }}
 {% else %}
 {{ opt('mount', 'type=bind,source=%s,destination=%s' % (k, v)) }}
 {% endif %}
 {% endfor %}
+{% endfor %}
+
+{# System-level volumes that all containers have.
+   Include by default tmpfs mounts for standard Debian locations (/tmp,
+   /run/lock), and a bind mount for the syslog socket in /dev/log. #}
+{{ opt('mount', 'type=tmpfs,destination=/run/lock,tmpfs-mode=01777,tmpfs-size=64M') }}
+{{ opt('mount', 'type=bind,source=/dev/log,destination=/dev/log') }}
+{% if not has_custom_tmp_volume %}
+{{ opt('mount', 'type=tmpfs,destination=/tmp,tmpfs-mode=01777,tmpfs-size=64M') }}
+{% endif %}
+
+{# Mount the service credentials inside the container. #}
+{% for creds in services[item.service].get('service_credentials', []) %}
+{{ opt('mount', 'type=bind,source=/etc/credentials/x509/' + creds.name + ',destination=/etc/credentials/x509/' + creds.name) }}
 {% endfor %}
 
 {# Optionally mount the OpenCensus tracing config in the container #}
@@ -76,7 +82,7 @@ podman ps --quiet --all \
 
 exec /usr/bin/podman run --env-host \
   --cgroup-manager=cgroupfs \
-  --cgroup-parent /system.slice/docker-{{ item.tag }} \
+  --cgroup-parent /system.slice/docker-{{ item.tag }}.service \
   --rm --name {{ item.service }}-{{ item.container.name }} \
   $opts \
   {{ item.container.image }} {{ item.container.get('args', '') }}

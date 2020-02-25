@@ -11,8 +11,8 @@
 
 # Setup the Country GeoIP database.
 - name: Configure GeoIP downloader
-  copy:
-    src: GeoIP.conf
+  template:
+    src: GeoIP.conf.j2
     dest: /etc/GeoIP.conf
   when: geoip_account_id is defined
 

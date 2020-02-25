@@ -1,6 +1,7 @@
 db_driver: "sqlite3"
 db_uri: "/var/lib/tabacco-metadb/meta.db?_journal=WAL"
 http_server:
+  request_timeout: 30
   tls:
     cert: "/etc/credentials/x509/backup-metadata/server/cert.pem"
     key: "/etc/credentials/x509/backup-metadata/server/private_key.pem"
