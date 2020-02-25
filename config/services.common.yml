@@ -1,6 +1,4 @@
 ---
 include:
   - ../float/services.yml.default
-
-include:
   - "services.openvpn.yml"
