@@ -1,0 +1,5 @@
+- name: Ensure acpi support exists
+  apt:
+    name: acpi-support-base
+    state: present
+
