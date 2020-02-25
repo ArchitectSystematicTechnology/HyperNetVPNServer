@@ -42,7 +42,7 @@
     params:
       names: [ "{{ inventory_hostname }}" ]
     private_key_path: "{{ sspki_dir }}/{{ sspki.name }}/private.key"
-    cert_path: "{{ sspki_dir }}/cert.pem"
+    cert_path: "{{ sspki_dir }}/{{ sspki.name }}/cert.pem"
     ca_cert_path: "{{ sspki_dir }}/ca.crt"
     check: true
   check_mode: no
