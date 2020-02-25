@@ -22,9 +22,18 @@
     openvpn: "{{ openvpn_config }}"
     provider_api_uri: "{{ provider_config.api_uri }}"
     ca_cert_uri: "{{ provider_config.ca_cert_uri }}"
-    ca_private_key: "{{ credentials_dir }}/common/ca_private.key"
+    ca_private_key: "{{ credentials_dir }}/common/client_ca.key"
   run_once: true
   register: simplevpn_result
+
+# need to install the api dirs
+- name: "Create API versioned directories"
+  file:
+    path: "/etc/leap/config/vpnweb/{{ item }}"
+    state: directory
+  with_items:
+    - 1
+    - 3
 
 - name: "Render the eip-service.json template"
   template:
@@ -35,13 +44,4 @@
   template:
     src: provider-config.json.j2
     dest: /etc/leap/config/vpnweb/3/provider.json
-
-# need to install the api dirs
-- name: "Create API versioned directories"
-  file:
-    path: "/etc/leap/config/vpnweb/{{ item }}"
-    state: directory
-  with_items:
-    - 1
-    - 3
 
