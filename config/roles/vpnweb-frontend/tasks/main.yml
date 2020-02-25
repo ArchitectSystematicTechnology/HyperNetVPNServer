@@ -7,6 +7,12 @@
       ca_key: "{{ credentials_dir }}/common/api_ca.key"
   notify: reload NGINX
 
+- name: Add the nginx user to the vpnweb-sspki group
+  user:
+    name: nginx
+    groups: vpnweb-sspki
+    append: yes
+
 - name: Install vpnweb nginx configuration
   template:
     src: vpnweb.conf.j2
