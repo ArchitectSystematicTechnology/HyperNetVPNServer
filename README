@@ -7,31 +7,73 @@ Getting started
     $ go get -u git.autistici.org/ale/ed25519gen
     $ export PATH=$PATH:$HOME/go/bin
 
-1. initialize the ansible vault by creating a password and then setting
-ANSIBLE_VAULT_PASSWORD_FILE= to the location of where the file is
+1. Clone the float repository and enter it:
 
-2. generate CA private key and generate CA, and shapeshifter credentials by
-running the init-credentials playbook. This will run float's built-in x509_ca
-under float/plugins/action/x509_ca.py which will call the go binary x509ca and
-then it will ansible-vault-encrypt the resulting key. The resulting bits will be
-created under credentials/. Note: this is not the built-in float
-init-credentials, rather this is the LEAP provided one, which will instantiate
-the float init-credentials when it is finished.
+    $ git clone https://0xacab.org/leap/container-platform/float
+    $ cd float
+    
+2. initialize the ansible vault by creating a password and then setting
+ANSIBLE_VAULT_PASSWORD_FILE= to the location of where the file is:
 
-    $ float run init-credentials
+    $ tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 26 > .ansible_vault_pw
 
-3. generate the provider.json (this will be done in init-credentials)
+Optionally: gpg encrypt this file, so only trusted admins can read it. If you
+do *not* encrypt this file, then this repository should not be shared anywhere
+public:
+    $ gpg -e .ansible.vault_pw ; rm .ansible.vault_pw
 
-    $ vpnweb/scripts/simplevpn.py <someargs>
-    $ python3 ~/dev/leap/vpnweb/scripts/simplevpn.py -f provider -c ~/dev/leap/vpnweb/config/demo.yaml -t ~/dev/leap/vpnweb/scripts/templates/provider.json.jinja 
+Configure your local environment to know where the ansible vault password is
+located:
+    $ export ANSIBLE_VAULT_PASSWORD_FILE=.ansible_vault_pw
 
-4. generate the eip-service.json (this will be done in init-credentials):
-    $ vpnweb/scripts/simplevpn.py <someargs>
-    $ python3 ../../vpnweb/scripts/simplevpn.py -f eip -c ~/dev/leap/vpnweb/config/demo.yaml -t ~/dev/leap/vpnweb/scripts/templates/eip-service.json.jinja
+NOTE: if you performed the optional encryption step above, you will
+need to add .gpg to the end of the file name below:
+    $ export ANSIBLE_VAULT_PASSWORD_FILE=.ansible_vault_pw.gpg
 
-5. ansible-vault encrypt:
-    a. ANSIBLE_VAULT_PASSWORD_FILE=/some/path/to the password/file ansible-vault-encrypt obfs4_state.json
-    b. private key for CA
+This environment variable will only be set for this shell, you will need to add
+it to your shell environment initialization file so it will be set automatically
+everytime.
+
+3. Customize the environment by editing hosts.yaml. Change 'floatpp1' to your
+app host's hostname, and specify the ansible_host and ip values to be the IP
+addresses for that host. If you have more than one app server, then you would
+just create a copy of this block, modifying the values, being sure to keep the
+'backend' group assigned to each one. Configure the front-end reverse proxy with
+in the same way, change the 'floatrp1' hostname to your hostname, and the
+ansible_host and ip to the IP it should have, and set the location value to
+where this server is located.
+
+Then edit group_vars/all/config.yml, gateway_locations.yml, provider_config.yml
+to match your environment. Note that the config.yml contains a list of admins, a
+default hashed password, and a set of ssh keys that will be able to connect to
+the system as root. If you do not change this password, then the user 'admin'
+and password 'password' are used.
+
+4. generate credentials by running the init-credentials playbook. This will
+ansible-vault-encrypt the resulting secret files under credentials/. Note: this
+is not the built-in float init-credentials, rather this is the LEAP provided
+one, which will instantiate the float init-credentials when it is finished.
+
+    $ float/float run playbooks/init-credentials
+
+You should not see any *red* text in this process, if you do, stop now.
+
+5. Consider comitting the generated credentials to git, and pushing them to a
+repository. The secret material is encrypted with ansible-vault, so it cannot be
+read without the access to the .ansible_vault_pw. If you commit these files, and
+push them to a respository, then you can share them with other admins, but be
+aware that these are secrets that should not be shared with anyone but trusted
+admins. If you gpg encrypted the .ansible_vault_pw, then that file is also
+encrypted and could also be committed.
+
+6. Be sure you can ssh to the hosts as root with a public key that will not be
+prompting you for a password every time; you should have also verified and
+accepted the correct host key.
+
+7. Deploy the configuration by running float/float run site.yml. This will take
+some time to finish, as it needs to download packages and Docker images and
+configure everything.
+
 
 
 Testing
