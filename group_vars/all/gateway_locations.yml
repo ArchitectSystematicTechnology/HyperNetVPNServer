@@ -1,6 +1,6 @@
 ---
 locations:
   'Seattle':
-    'country_code': 'US',
+    'country_code': 'US'
     'hemisphere': 'N'
     'timezone': '-7'

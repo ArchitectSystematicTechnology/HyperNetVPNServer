@@ -2,4 +2,3 @@
 *.retry
 .vagrant
 ansible.log
-.ansible_vault_pw
