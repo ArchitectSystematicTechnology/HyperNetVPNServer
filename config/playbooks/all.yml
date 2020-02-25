@@ -1,5 +1,3 @@
 ---
-- import_playbook: base.yml
 - import_playbook: openvpn.yml
 - import_playbook: vpnweb.yml
-
