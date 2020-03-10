@@ -38,3 +38,9 @@
     dest: '/etc/dns/manual/vpnweb.yml'
   notify: reload vpnweb DNS config
 
+- name: Install firewall config for vpnweb
+  copy:
+    src: "50vpnweb.firewall"
+    dest: "/etc/firewall/filter.d/50vpnweb"
+  notify: "reload firewall"
+

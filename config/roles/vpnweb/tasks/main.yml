@@ -1,11 +1,5 @@
 - import_tasks: "credentials.yml"
 
-- name: Install firewall config for vpnweb 
-  copy:
-    src: "50vpnweb.firewall"
-    dest: "/etc/firewall/filter.d/50vpnweb"
-  notify: "reload firewall"
-
 - name: "Create configuration directory for API json files"
   local_action:
     module: file

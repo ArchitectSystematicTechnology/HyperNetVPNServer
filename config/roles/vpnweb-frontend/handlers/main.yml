@@ -7,3 +7,8 @@
 - listen: reload vpnweb DNS config
   shell: "/usr/sbin/update-dns && rndc reload"
 
+- name: reload firewall
+  systemd:
+    name: firewall.service
+    state: restarted
+
