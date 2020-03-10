@@ -25,3 +25,10 @@
     src: ../sites-available/vpnweb.conf
     state: link
   notify: reload NGINX
+
+- name: Install vpnweb DNS records
+  template:
+    src: 'vpnweb_dns.j2'
+    dest: '/etc/dns/manual/vpnweb.yml'
+  notify: reload vpnweb DNS config
+

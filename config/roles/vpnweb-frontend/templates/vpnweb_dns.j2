@@ -1,0 +1,6 @@
+{{ provider_config.domain }}:
+   {{ provider_config.api_uri_prefix }}:
+{% for h in groups['frontend'] %}
+    - {{ hostvars[h].ip }}
+{% endfor %}
+
