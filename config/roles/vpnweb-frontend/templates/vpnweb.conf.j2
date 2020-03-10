@@ -7,7 +7,7 @@ upstream be_openvpn {
 server {
   listen [::]:4430 ssl http2;
   
-  server_name {{ provider_config.api_uri }};
+  server_name {{ api_uri }};
   ssl_certificate /etc/credentials/sspki/vpnweb/fullchain.crt;
   ssl_certificate_key /etc/credentials/sspki/vpnweb/private.key;
 
