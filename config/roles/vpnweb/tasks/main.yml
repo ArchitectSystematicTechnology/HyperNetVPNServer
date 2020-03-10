@@ -37,11 +37,11 @@
 
 - name: "Render the eip-service.json template"
   template:
-    src: eip-config.json.j2
-    dest: /etc/leap/config/vpnweb/3/eip-service.json
+    src: 'eip-config.json.j2'
+    dest: '/etc/leap/config/vpnweb/3/eip-service.json'
 
 - name: "Render the provider.json template"
   template:
-    src: provider-config.json.j2
-    dest: /etc/leap/config/vpnweb/3/provider.json
+    src: 'provider-config.json.j2'
+    dest: '/etc/leap/config/vpnweb/provider.json'
 
