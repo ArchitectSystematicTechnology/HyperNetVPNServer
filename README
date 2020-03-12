@@ -2,7 +2,7 @@ Getting started
 
 0. Install the float and LEAP platform pre-requisites:
 
-    # sudo apt-get install golang bind9utils python3-pysodium ansible git
+    # sudo apt-get install golang bind9utils python3-pysodium python3-jinja2 ansible git
     $ go get -u git.autistici.org/ale/x509ca
     $ go get -u git.autistici.org/ale/ed25519gen
     $ export PATH=$PATH:$HOME/go/bin
