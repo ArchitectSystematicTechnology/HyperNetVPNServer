@@ -5,10 +5,16 @@
     group: docker-openvpn
     mode: 0750
 
-- name: Install firewall config for openvpn
+- name: Install firewall filter config for openvpn
   copy:
     src: "50openvpn.firewall"
     dest: "/etc/firewall/filter.d/50openvpn"
+  notify: "reload firewall"
+
+- name: Install firewall nat config for vpnweb
+  copy:
+    src: "50openvpn_nat.firewall"
+    dest: "/etc/firewall/nat.d/50openvpn"
   notify: "reload firewall"
 
 - name: Install openvpn configs
