@@ -1,0 +1,39 @@
+This is a dedicated, service-specific PKI (sspki).  It essentially re-uses the
+structure of the 'credentials' role, and its ansible modules.
+
+The purpose of this sspki is to generate the necessary certificates that are
+signed by the LEAP CA, which are needed for the API endpoint (vpnweb) and for
+the vpn gateway.
+
+Because these certs are user-visible certificates, we do not want to use our
+internal 'float' PKI CA. At the same time these certs are not "public" in the
+float meaning of the term (which implies letsencrypt). As a result, we require
+*yet another* PKI subsystem, which is this one.
+
+Overview of client bootstrapping flow, with regards to certificates:
+
+The client bootstraps by downloading https://url/provider.json, this is an
+endpoint that is secured by a Lets Encrypt TLS certificate (created/managed by
+float). Contained in provider.json is: the api URL, a URL to retrieve the LEAP
+CA (ca.crt), and a fingerprint of that CA.
+
+Once the client has the provider.json, it then retrieves the ca.crt over that
+same Lets Encrypt https endpoint. It then verifies the fingerprint of the CA
+with the fingerprint in provider.json. From then on, the client communicates
+to the API using the api URL which is secured with a cert generated from the
+LEAP ca.crt.
+
+This LEAP ca.crt is also the CA that is used to generate the specific openvpn
+'server' certificate for a gateway. Clients verify this cert against the
+ca.crt.
+
+This role works in combination with the 'x509' action plugin.
+
+X509 credentials are stored in /etc/credentials under directories named after
+the services. Every service directory contains a copy of the public CA
+certificate, so it can be bind-mounted in a container easily.
+
+Private keys have mode 440, are owned by root and by a dedicated
+group named <service>-sspki. When the service is actually
+installed, later, maybe by an Ansible role, it can add the service
+user to this group.
