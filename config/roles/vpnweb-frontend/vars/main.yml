@@ -1,1 +1,1 @@
-api_uri: "{{ provider_config.api_uri_prefix }}.{{ domain_public[0] }}"
+api_uri: "api.{{ domain_public[0] }}"
