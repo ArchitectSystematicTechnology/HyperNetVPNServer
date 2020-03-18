@@ -15,17 +15,31 @@ Overview of client bootstrapping flow, with regards to certificates:
 The client bootstraps by downloading https://url/provider.json, this is an
 endpoint that is secured by a Lets Encrypt TLS certificate (created/managed by
 float). Contained in provider.json is: the api URL, a URL to retrieve the LEAP
-CA (ca.crt), and a fingerprint of that CA.
+endpoint CA (ca.crt), and a fingerprint of that CA.
 
-Once the client has the provider.json, it then retrieves the ca.crt over that
-same Lets Encrypt https endpoint. It then verifies the fingerprint of the CA
-with the fingerprint in provider.json. From then on, the client communicates
-to the API using the api URL which is secured with a cert generated from the
-LEAP ca.crt.
+Once the client has the provider.json, it then retrieves the endpoint CA
+(ca.crt) over that same Lets Encrypt https endpoint. It then verifies the
+fingerprint of that CA with the fingerprint in provider.json. From then on, the
+client communicates to the API using the api URL which is secured with a cert
+generated from that CA.
 
-This LEAP ca.crt is also the CA that is used to generate the specific openvpn
-'server' certificate for a gateway. Clients verify this cert against the
+This LEAP endpoint CA is also the CA that is used to generate the specific
+openvpn 'server' certificate for a gateway. Clients verify this cert against the
 ca.crt.
+
+Clients then contact the vpnweb endpoint, using the endpoint CA to verify it, to
+request a certificate. This certificate is what is used to authenticate to
+openvpn. This certificate is generated from a second CA, the client certificate
+issuing CA, which is used to sign the VPN client certs. The desktop client only
+needs to know about the first one: for reaching the API and to pass to openvpn
+to verify the gateways. The second CA is used only in vpnweb to generate client
+certs, and configured in openvpn gateways to verify the client certificate, that
+the client presents, has been signed by the vpnweb.
+
+Why are there two CAs? This allows us to treat them differently for different
+threat models, the client issuing CA used for the client certificates needs to
+be online and available to the vpnweb application to generate client
+certificates for vpn connections. The endpoint CA can live offline.
 
 This role works in combination with the 'x509' action plugin.
 
@@ -37,3 +51,4 @@ Private keys have mode 440, are owned by root and by a dedicated
 group named <service>-sspki. When the service is actually
 installed, later, maybe by an Ansible role, it can add the service
 user to this group.
+
