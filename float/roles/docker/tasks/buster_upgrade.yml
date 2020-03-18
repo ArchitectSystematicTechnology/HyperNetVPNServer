@@ -4,11 +4,6 @@
     url: https://download.docker.com/linux/debian/gpg
     state: absent
 
-- name: Remove docker.com package repository
-  apt_repository:
-    repo: "deb [arch=amd64] {% if apt_proxy is defined %}http://{{ apt_proxy }}/HTTPS/{% else %}https:{% endif %}//download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
-    state: absent
-
 - name: Remove docker packages
   apt:
     name: "{{ packages }}"
@@ -23,6 +18,7 @@
     dest: "{{ item }}"
     state: absent
   with_items:
+    - /etc/apt/sources.list.d/download_docker_com_linux_debian.list
     - /etc/docker
     - /usr/local/bin/docker-cleanup
     - /etc/cron.d/docker-cleanup

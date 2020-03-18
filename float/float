@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
 
@@ -394,7 +394,7 @@ themselves.
         help='Path to the configuration file')
     run_parser.add_argument(
         '-v', '--verbose', dest='ansible_verbosity', action='count',
-        help='Increase ansible-playbook verbosity')
+        default=0, help='Increase ansible-playbook verbosity')
     run_parser.add_argument(
         '-C', '--check', dest='ansible_check', action='store_true',
         help='Run ansible-playbook with the --check flag')

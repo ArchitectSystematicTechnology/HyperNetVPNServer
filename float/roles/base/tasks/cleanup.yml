@@ -14,6 +14,5 @@
 
 # Also clear failed status if any for disabled units
 - name: Reset failed unwanted systemd units
-  command: "systemctl reset-failed {{ item }}"
+  command: "systemctl reset-failed {{ float_disabled_systemd_units | join(' ') }}"
   ignore_errors: true
-  with_items: "{{ float_disabled_systemd_units }}"

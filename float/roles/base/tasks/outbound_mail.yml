@@ -1,8 +1,12 @@
 ---
 
 - name: Install SSMTP
-  apt: name=ssmtp state=latest
+  apt:
+    name: ssmtp
+    state: present
 
 - name: Configure SSMTP
-  template: src=ssmtp.conf.j2 dest=/etc/ssmtp/ssmtp.conf
+  template:
+    src: ssmtp.conf.j2
+    dest: /etc/ssmtp/ssmtp.conf
 

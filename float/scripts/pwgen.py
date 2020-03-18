@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # pwgen.py
 # Creates and provides passwords to Ansible.
 #

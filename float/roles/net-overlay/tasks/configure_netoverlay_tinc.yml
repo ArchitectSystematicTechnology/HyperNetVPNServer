@@ -6,7 +6,9 @@
     tinc_netmask_cidr: 24
 
 - name: Install the tinc package
-  apt: package=tinc state=latest
+  apt:
+    name: tinc
+    state: present
 
 - file: path="{{ tinc_dir }}" state=directory
 - file: path="{{ tinc_dir }}/hosts" state=directory

@@ -112,15 +112,23 @@ replicates data across multiple identical nodes (the front-end hosts).
 The replds service is a multi-instance systemd service, the instance
 used by the acme service is called *replds@acme*.
 
-Certificates written by replds are then read by NGINX and by
-acmeserver itself. Note that there is no explicit communication
+This component is provided by the *acme-storage* Ansible role.
+
+## Reloading services
+
+Certificates written by replds are then read by the various front-end
+services (so at least NGINX in the default *float*
+configuration). There is unfortunately no explicit communication
 between replds and nginx (replds itself lacks a notification
 mechanism, mostly because it does not have transactions and we can't
 know when a set of certificate and private key will both be ready), so
-the expectation is that nginx will be reloaded at least once daily to
-pick up new certificates.
+the services are reloaded by cron jobs, that check if certificates
+used by each service have changed since the last execution. An example
+of such a script can be found in
+[../nginx/files/acme-reload-nginx](acme-reload-nginx).
 
-This component is provided by the *acme-storage* Ansible role.
+The execution interval of these cron jobs ultimately controls the
+propagation delay for new certificates.
 
 ## Notes
 

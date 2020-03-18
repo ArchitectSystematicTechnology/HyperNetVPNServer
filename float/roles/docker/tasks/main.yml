@@ -17,7 +17,7 @@
   when: "container_runtime == 'podman'"
 
 - name: Login to the Docker registry
-  command: docker login -u "{{ docker_registry_username }}" -p "{{ docker_registry_password }}" "{{ docker_registry_url }}"
+  command: 'echo -n "{{ docker_registry_password }}" | docker login -u "{{ docker_registry_username }}" --password-stdin "{{ docker_registry_url }}"'
   changed_when: False
   when: "docker_registry_url != ''"
 

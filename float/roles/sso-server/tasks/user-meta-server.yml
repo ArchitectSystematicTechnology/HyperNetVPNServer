@@ -1,7 +1,9 @@
 ---
 
 - name: Install user-meta-server package
-  apt: name=user-meta-server state=latest
+  apt:
+    name: user-meta-server
+    state: present
 
 - user:
     name: user-meta-server
@@ -24,4 +26,7 @@
   notify: restart user-meta-server
 
 - name: Enable user-meta-server systemd unit
-  systemd: name=user-meta-server.service enabled=yes masked=no
+  systemd:
+    name: user-meta-server.service
+    enabled: yes
+    masked: no

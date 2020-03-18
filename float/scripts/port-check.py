@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Check if a port is available, and also check that the configuration
 # is free of port conflicts (i.e. more than one service claims the

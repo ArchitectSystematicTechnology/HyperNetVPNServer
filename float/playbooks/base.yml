@@ -1,0 +1,11 @@
+---
+
+- hosts: all
+  roles:
+    - base
+    - credentials
+    - vagrant-compat
+
+- hosts: net-overlay
+  roles:
+    - net-overlay

@@ -2,15 +2,7 @@
 
 # Playbook that sets up the basic infrastructure.
 
-- hosts: all
-  roles:
-    - base
-    - credentials
-    - vagrant-compat
-
-- hosts: net-overlay
-  roles:
-    - net-overlay
+- import_playbook: base.yml
 
 - import_playbook: docker.yml
 
