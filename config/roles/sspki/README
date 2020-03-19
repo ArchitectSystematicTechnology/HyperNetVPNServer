@@ -47,8 +47,7 @@ X509 credentials are stored in /etc/credentials under directories named after
 the services. Every service directory contains a copy of the public CA
 certificate, so it can be bind-mounted in a container easily.
 
-Private keys have mode 440, are owned by root and by a dedicated
-group named <service>-sspki. When the service is actually
-installed, later, maybe by an Ansible role, it can add the service
-user to this group.
+Private keys have mode 440, are owned by root and by a dedicated group named
+<service>-sspki. When the service is actually installed, later, maybe by an
+Ansible role, it can add the service user to this group.
 
