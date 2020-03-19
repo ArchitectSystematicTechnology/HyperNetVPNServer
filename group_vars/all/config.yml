@@ -1,4 +1,5 @@
 ---
+float_debian_dist: buster
 testing: false
 domain: infra.bitmask.net
 domain_public:
