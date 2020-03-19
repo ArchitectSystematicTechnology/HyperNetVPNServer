@@ -16,7 +16,7 @@
   "editable": true,
   "gnetId": 10562,
   "graphTooltip": 0,
-  "id": 13,
+  "iteration": 1584637156570,
   "links": [
     {
       "icon": "external link",
@@ -73,7 +73,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "topk(6, sum(count_values(\"connection_time\", count_over_time(openvpn_server_client_received_bytes_total{common_name!=\"UNDEF\"}[1d]))by(common_name))by(common_name)>1)",
+          "expr": "topk(6, sum(count_values(\"connection_time\", count_over_time(openvpn_server_client_received_bytes_total{host=~\"$host\",common_name!=\"UNDEF\"}[1d]))by(common_name))by(common_name)>1)",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -187,10 +187,10 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": false
       },
-      "tableColumn": "__name__",
+      "tableColumn": "",
       "targets": [
         {
-          "expr": "openvpn_up{job=\"openvpn-metrics\"}",
+          "expr": "openvpn_up",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -524,7 +524,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "time()-openvpn_status_update_time_seconds{job=\"openvpn-metrics\"}",
+          "expr": "time()-openvpn_status_update_time_seconds",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -611,7 +611,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "count(openvpn_server_client_received_bytes_total{common_name=~\"server[0-9].example.com\"}) or absent(count(openvpn_server_client_received_bytes_total{common_name=~\"server[0-9].example.com\"}))-1",
+          "expr": "count(openvpn_server_client_received_bytes_total{host=~\"$host\"}) or absent(count(openvpn_server_client_received_bytes_total{host=~\"$host\"}))-1",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -791,7 +791,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "count(openvpn_server_client_received_bytes_total{common_name=~\"[a-z]+ee\"}) or absent(count(openvpn_server_client_received_bytes_total{common_name=~\"[a-z]+ee\"}))-1",
+          "expr": "count(openvpn_server_client_received_bytes_total{host=~\"$host\"}) or absent(count(openvpn_server_client_received_bytes_total{host=~\"$host\"}))-1",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -939,7 +939,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "topk(6, sum(increase(openvpn_server_client_received_bytes_total{common_name!=\"UNDEF\"}[1d])+increase(openvpn_server_client_sent_bytes_total{common_name!=\"UNDEF\"}[1d]))by(common_name))",
+          "expr": "topk(6, sum(increase(openvpn_server_client_received_bytes_total{host=~\"$host\",common_name!=\"UNDEF\"}[1d])+increase(openvpn_server_client_sent_bytes_total{host=~\"$host\",common_name!=\"UNDEF\"}[1d]))by(common_name))",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -1067,7 +1067,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "topk(6, sum(rate(openvpn_server_client_received_bytes_total{common_name!=\"UNDEF\"}[2m]))by(common_name))",
+          "expr": "topk(6, sum(rate(openvpn_server_client_received_bytes_total{host=~\"$host\",common_name!=\"UNDEF\"}[2m]))by(host,common_name))",
           "format": "time_series",
           "interval": "2m",
           "intervalFactor": 1,
@@ -1075,7 +1075,7 @@
           "refId": "A"
         },
         {
-          "expr": "topk(6, sum(rate(openvpn_server_client_sent_bytes_total{common_name!=\"UNDEF\"}[2m]))by(common_name))",
+          "expr": "topk(6, sum(rate(openvpn_server_client_sent_bytes_total{host=~\"$host\",common_name!=\"UNDEF\"}[2m]))by(host,common_name))",
           "format": "time_series",
           "interval": "2m",
           "intervalFactor": 1,
@@ -1083,7 +1083,7 @@
           "refId": "B"
         },
         {
-          "expr": "sum(bottomk(scalar(openvpn_openvpn_server_connected_clients)-6, sum(rate(openvpn_server_client_received_bytes_total{common_name!=\"UNDEF\"}[2m]))by(common_name)))",
+          "expr": "sum(bottomk(scalar(openvpn_openvpn_server_connected_clients{host=~\"$host\"})-6, sum(rate(openvpn_server_client_received_bytes_total{host=~\"$host\",common_name!=\"UNDEF\"}[2m]))by(host,common_name)))",
           "format": "time_series",
           "interval": "2m",
           "intervalFactor": 1,
@@ -1091,7 +1091,7 @@
           "refId": "E"
         },
         {
-          "expr": "sum(bottomk(scalar(openvpn_openvpn_server_connected_clients)-6, sum(rate(openvpn_server_client_sent_bytes_total{common_name!=\"UNDEF\"}[1m]))by(common_name)))",
+          "expr": "sum(bottomk(scalar(openvpn_openvpn_server_connected_clients{host=~\"$host\"})-6, sum(rate(openvpn_server_client_sent_bytes_total{host=~\"$host\",common_name!=\"UNDEF\"}[1m]))by(host,common_name)))",
           "format": "time_series",
           "interval": "2m",
           "intervalFactor": 1,
@@ -1176,7 +1176,7 @@
       "strokeWidth": 1,
       "targets": [
         {
-          "expr": "sort(sum(increase(openvpn_server_client_received_bytes_total{common_name!=\"UNDEF\"}[1d])+increase(openvpn_server_client_sent_bytes_total{common_name!=\"UNDEF\"}[1d]))by(common_name))",
+          "expr": "sort(sum(increase(openvpn_server_client_received_bytes_total{host=~\"$host\",common_name!=\"UNDEF\"}[1d])+increase(openvpn_server_client_sent_bytes_total{host=~\"$host\",common_name!=\"UNDEF\"}[1d]))by(common_name))",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -1233,7 +1233,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(openvpn_openvpn_server_connected_clients)",
+          "expr": "sum(openvpn_openvpn_server_connected_clients{host=~\"$host\"})",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -1292,7 +1292,45 @@
     "openvpn"
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "floatrp1",
+          "value": "floatrp1"
+        },
+        "datasource": "localhost",
+        "definition": "label_values(openvpn_up, host)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "host",
+        "multi": false,
+        "name": "host",
+        "options": [
+          {
+            "selected": false,
+            "text": "All",
+            "value": "$__all"
+          },
+          {
+            "selected": true,
+            "text": "floatrp1",
+            "value": "floatrp1"
+          }
+        ],
+        "query": "label_values(openvpn_up, host)",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
   },
   "time": {
     "from": "now-6h",
@@ -1326,5 +1364,5 @@
   "timezone": "",
   "title": "OpenVPN Stats",
   "uid": "_1DM17Hwk",
-  "version": 1
+  "version": 3
 }
