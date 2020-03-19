@@ -1,0 +1,13 @@
+- name: Install Grafana piechart plugin
+  copy:
+    src: "files/grafana/plugins/grafana-piechart-panel"
+    dest: "/var/lib/grafana/plugins/grafana-piechart-panel"
+  notify: "restart grafana-server"
+
+- name: Install Grafana dashboards
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/grafana/dashboards/"
+  with_fileglob: "files/grafana/dashboards/*.json"
+  notify: "restart grafana-server"
+

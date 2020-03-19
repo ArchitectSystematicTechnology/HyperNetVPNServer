@@ -9,7 +9,9 @@
   roles: [openvpn-frontend]
 
 - hosts: vpnweb
-  roles: [vpnweb]
+  roles:
+    - vpnweb
+    - leap-prometheus
 
 - hosts: frontend
   roles: [vpnweb-frontend]

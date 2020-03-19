@@ -1,0 +1,5 @@
+- name: restart grafana-server
+  systemd:
+    name: docker-prometheus-grafana.service
+    state: restarted
+  listen: "restart grafana"
