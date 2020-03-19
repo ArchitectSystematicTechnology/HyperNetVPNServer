@@ -1,9 +1,10 @@
 ---
 openvpn_config:
-  'auth': 'SHA1'
-  'cipher': 'AES-256-CBC'
+  'tls-version-min': '1.2'
+  'auth': 'SHA512'
+  'cipher': 'AES-256-GCM'
   'keepalive': '10 30'
-  'tls-cipher': 'DHE-RSA-AES128-SHA'
+  'tls-cipher': 'TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384'
   'tun-ipv6': true
   'dev': 'tun'
   'sndbuf': '0'
