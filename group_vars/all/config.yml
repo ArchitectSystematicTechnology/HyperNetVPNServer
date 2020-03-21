@@ -9,6 +9,7 @@ net_overlays:
     network: 172.16.1.0/24
 enable_ssh: true
 enable_osquery: false
+alert_email: root@bitmask.net
 admins:
   - name: admin
     email: "admin@bitmask.net"
