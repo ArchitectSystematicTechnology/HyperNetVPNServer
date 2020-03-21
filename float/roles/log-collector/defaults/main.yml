@@ -11,7 +11,7 @@ es_heap_size: "166m"
 # Each member of the following dictionary is the prefix of a logstash-like
 # timestamped index. The value is how many days of logs to keep.
 es_log_keep_days:
-  audit: 180
+  audit: 60
   logstash: 15
   http: 15
 

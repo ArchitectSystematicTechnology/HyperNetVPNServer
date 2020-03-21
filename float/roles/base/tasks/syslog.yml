@@ -11,10 +11,14 @@
 # Install rsyslog from the backports repository. This isn't strictly
 # necessary but it is done to have the same version of rsyslog on all
 # hosts, including the log-collector.
+#
+# This sources.list check must use float_debian_dist because otherwise
+# Ansible complains about the unknown source on dist upgrades.
+# TODO: drop this check when stretch is obsolete.
 - name: Install rsyslog packages from backports
   apt:
     name: "{{ packages }}"
-    default_release: "{{ 'stretch-backports' if ansible_distribution_release == 'stretch' else '' }}"
+    default_release: "{{ 'stretch-backports' if float_debian_dist == 'stretch' else '' }}"
     state: present
   vars:
     packages:

@@ -23,7 +23,7 @@ multiple Prometheus instances.
 
 A few alerting rules are provided by default
 in
-[rules/prometheus/files/rules/](rules/prometheus/files/rules/). This
+[roles/prometheus/files/rules/](roles/prometheus/files/rules/). This
 includes:
 
 * host-level alerts (high CPU usage, disk full, network errors...)

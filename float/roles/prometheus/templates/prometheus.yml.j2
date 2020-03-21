@@ -73,7 +73,6 @@ alerting:
 scrape_configs:
 {{ job_static_config('cgroups-exporter', 'all', 3909) }}
 {{ job_static_config('mtail', 'all', 3903) }}
-{{ job_static_config('docker', 'all', 9323) }}
 
 {# Only scrape the backup agents if backup is configured! #}
 {% if backup_repository_restic_password|default(False) %}

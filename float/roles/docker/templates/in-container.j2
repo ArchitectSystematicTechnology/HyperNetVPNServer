@@ -79,4 +79,4 @@ if [ $opt_root -eq 0 ]; then
     docker_opts="${docker_opts} --user ${uid}:${gid}"
 fi
 
-exec docker exec ${docker_opts} ${container_name} "$@"
+exec {{ container_runtime }} exec ${docker_opts} ${container_name} "$@"

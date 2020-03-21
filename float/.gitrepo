@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://git.autistici.org/ai3/float.git
 	branch = master
-	commit = e874c6709c263600f4fe883f39480abce7ad6c12
-	parent = 68e87726194bea34de32cf1214b65fc1f4ef5665
+	commit = 438f4c770e093a69649dd35640763d22d43dd9b6
+	parent = c91d10024693c1327db9c4c92587068c0aed15d8
 	cmdver = 0.4.1
 	method = merge

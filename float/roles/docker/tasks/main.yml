@@ -70,7 +70,7 @@
     mode: 0644
 
 - name: Install in-container script
-  copy:
-    src: in-container
+  template:
+    src: in-container.j2
     dest: /usr/local/bin/in-container
     mode: 0755
