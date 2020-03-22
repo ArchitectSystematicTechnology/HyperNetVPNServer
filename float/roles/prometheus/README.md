@@ -19,6 +19,31 @@ $ in-container prometheus-alertmanager amtool alert
 On the read path, [Thanos](https://thanos.io) is used to merge results from
 multiple Prometheus instances.
 
+## Alert delivery
+
+The only supported mechanism for alert delivery right now is
+email. The alertmanager performs its own SMTP delivery. You're
+encouraged to use an external SMTP service for this purpose, to ensure
+that you're not trying to deliver alerts over the same email
+infrastructure you are monitoring.
+
+Email delivery can be configured through the following variables:
+
+* `alert_email` is the address that should receive email alerts
+* `alertmanager_smtp_from` is the sender address to use for alert
+  emails
+* `alertmanager_smtp_smarthost` is the server to use for outbound SMTP
+* `alertmanager_smtp_require_tls` should be set to *true* if the
+  server requires TLS
+* `alertmanager_smtp_auth_username` and
+  `alertmanager_smtp_auth_password` are the credentials for
+  authentication
+* `alertmanager_smtp_hello` is the hostname to use in the HELO SMTP
+  header sent to the server (default: *localhost*)
+
+If *alert_email* is left empty, alertmanager won't deliver any alerts
+but it will still be active and functional (via *amtool*).
+
 ## Customizing alerts
 
 A few alerting rules are provided by default
