@@ -1,9 +1,15 @@
+import hashlib
 import os
 import yaml
 import tempfile
 from ansible.plugins.action import ActionBase
-from ansible.module_utils.crypto import get_fingerprint
-from ansible.module_utils._text import to_bytes
+
+
+def get_fingerprint(private_key_data):
+    privkey = crypto.load_privatekey(crypto.FILETYPE_PEM, private_key_data)
+    pubkey = crypto.dump_publickey(crypto.FILETYPE_ASN1, privkey)
+    return hashlib.sha256(pubkey).hexdigest()
+
 
 class EIPConfig:
 
@@ -86,12 +92,7 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
 
 
 def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_private_key):
-    # We have the key in memory, but 'get_fingerprint' wants
-    # a local file. Use a temporary file.
-    with tempfile.NamedTemporaryFile() as f:
-        f.write(to_bytes(ca_private_key))
-        f.flush()
-        ca_fp = get_fingerprint(f.name)
+    ca_fp = get_fingerprint(ca_private_key)
 
     # Build the JSON data structure that needs to end up in provider.json.
     provider_config = {
