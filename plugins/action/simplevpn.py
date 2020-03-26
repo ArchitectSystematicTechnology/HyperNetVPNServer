@@ -2,6 +2,7 @@ import hashlib
 import os
 import yaml
 import tempfile
+from OpenSSL import crypto
 from ansible.plugins.action import ActionBase
 
 
