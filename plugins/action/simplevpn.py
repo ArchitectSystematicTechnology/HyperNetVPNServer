@@ -18,36 +18,6 @@ class EIPConfig:
         self.locations = locations
         self.gateways = gateways
 
-
-# def parseConfig(provider_config):
-#     with open(provider_config) as conf:
-#         config = yaml.load(conf.read())
-#     eip = EIPConfig()
-#     eip.openvpn.update(yamlListToDict(config['openvpn']))
-
-#     for loc in config['locations']:
-#         eip.locations.update(yamlIdListToDict(loc))
-#     for gw in config['gateways']:
-#         eip.gateways.update(yamlIdListToDict(gw))
-#     eip.provider.update(yamlListToDict(config['provider']))
-#     return eip
-
-
-# def yamlListToDict(values):
-#     vals = {}
-#     for d in values:
-#         for k, v in d.items():
-#             vals[k] = v
-#     return vals
-
-
-# def yamlIdListToDict(data):
-#     _d = {}
-#     for identifier, values in data.items():
-#         _d[identifier] = yamlListToDict(values)
-#     return _d
-
-
 def patchObfs4Cert(transports, cert):
     # Build a new list since we can't modify tuples in place.
     out = []
