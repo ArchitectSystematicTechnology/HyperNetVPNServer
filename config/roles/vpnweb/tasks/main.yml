@@ -14,11 +14,14 @@
     domain: "{{ domain_public[0] }}"
     gateways: "{{ groups['openvpn'] | map('extract', hostvars) | list }}"
     openvpn: "{{ openvpn_config }}"
-    provider_api_uri: "{{ api_uri }}:4430"
-    ca_cert_uri: "{{ ca_cert_uri }}"
-    ca_private_key: "{{ credentials_dir }}/common/client_ca.key"
+    provider_api_uri: "https://{{ api_uri }}:4430"
+    ca_cert_uri: "https://{{ ca_cert_uri }}"
+    ca_public_crt: "{{ credentials_dir }}/common/api_ca.crt"
   run_once: true
   register: simplevpn_result
+  notify:
+    - "restart docker-vpnweb-vpnweb"
+
 
 # need to install the api dirs
 - name: "Create API versioned directories"
@@ -33,9 +36,13 @@
   template:
     src: 'eip-config.json.j2'
     dest: '/etc/leap/config/vpnweb/3/eip-service.json'
+  notify:
+    - "restart docker-vpnweb-vpnweb"
 
 - name: "Render the provider.json template"
   template:
     src: 'provider-config.json.j2'
     dest: '/etc/leap/config/vpnweb/provider.json'
+  notify:
+    - "restart docker-vpnweb-vpnweb"
 

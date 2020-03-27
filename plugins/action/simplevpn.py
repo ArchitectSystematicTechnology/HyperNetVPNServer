@@ -6,11 +6,10 @@ from OpenSSL import crypto
 from ansible.plugins.action import ActionBase
 
 
-def get_fingerprint(private_key_data):
-    privkey = crypto.load_privatekey(crypto.FILETYPE_PEM, private_key_data)
-    pubkey = crypto.dump_publickey(crypto.FILETYPE_ASN1, privkey)
-    return hashlib.sha256(pubkey).hexdigest()
-
+def get_fingerprint(cert_data):
+    cert_contents = open(cert_data).read()
+    cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_contents)
+    return cert.digest('sha256').replace(b':', b'').lower().decode('ascii')
 
 class EIPConfig:
 
@@ -92,14 +91,14 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
     return eip_config
 
 
-def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_private_key):
-    ca_fp = get_fingerprint(ca_private_key)
+def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_public_crt):
+    ca_fp = get_fingerprint(ca_public_crt)
 
     # Build the JSON data structure that needs to end up in provider.json.
     provider_config = {
         "api_url": provider_api_uri,
-        "api_version": 3,
-        "ca_cert_fingerprint": ca_fp,
+        "api_version": "3",
+        "ca_cert_fingerprint": "SHA256: " + ca_fp,
         "ca_cert_uri": ca_cert_uri,
         "default_language": "en",
         "description": {
@@ -158,16 +157,11 @@ class ActionModule(ActionBase):
         # Get provider config task elements
         provider_api_uri = self._task.args['provider_api_uri']
         ca_cert_uri = self._task.args['ca_cert_uri']
-        ca_private_key_path = self._task.args['ca_private_key']
-
-        # The private key might be encrypted with Ansible Vault,
-        # so use the 'lookup' module to obtain its contents
-        # instead of using the Python file primitives directly.
-        ca_private_key = self._templar.template('{{lookup("file","%s")}}' % ca_private_key_path)
+        ca_public_crt = self._task.args['ca_public_crt']
 
         config = EIPConfig(openvpn, locations, gateways)
         eip_config = produceEipConfig(config, obfs4_state_dir, public_domain, transports)
-        provider_config = produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_private_key)
+        provider_config = produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_public_crt)
 
         result = super(ActionModule, self).run(tmp, task_vars)
         result.update({
