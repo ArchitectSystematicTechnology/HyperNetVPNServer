@@ -97,10 +97,10 @@ def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_publi
                     "name": "free"
                 }
             },
-            "services": [
-                "openvpn"
-                ]
-            }
+        },
+        "services": [
+            "openvpn"
+        ]
     }
 
     # Instead of calling the template here, we just return the
