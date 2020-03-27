@@ -66,7 +66,7 @@ def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_publi
 
     # Build the JSON data structure that needs to end up in provider.json.
     provider_config = {
-        "api_url": provider_api_uri,
+        "api_uri": provider_api_uri,
         "api_version": "3",
         "ca_cert_fingerprint": "SHA256: " + ca_fp,
         "ca_cert_uri": ca_cert_uri,
