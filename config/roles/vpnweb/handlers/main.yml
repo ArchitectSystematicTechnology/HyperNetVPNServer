@@ -2,3 +2,8 @@
   systemd:
     name: firewall.service
     state: restarted
+
+- listen: "restart docker-vpnweb-vpnweb"
+  systemd:
+    name: "docker-vpnweb-vpnweb.service"
+    state: restarted
