@@ -16,8 +16,8 @@ alertmanager_smtp_require_tls: true
 alertmanager_smtp_auth_username: float
 alertmanager_smtp_auth_password: somepassword
 alertmanager_smtp_hello: float.bitmask.net
-geoip_account_id:
-geoip_license_key:
+geoip_account_id: 255595
+geoip_license_key: Pufl3DucM3R4LkqF
 
 admins:
   - name: admin
