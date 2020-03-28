@@ -12,6 +12,7 @@
   roles:
     - vpnweb
     - leap-prometheus
+    - getmyip
 
 - hosts: frontend
   roles: [vpnweb-frontend]
