@@ -16,6 +16,9 @@ alertmanager_smtp_require_tls: true
 alertmanager_smtp_auth_username: float
 alertmanager_smtp_auth_password: somepassword
 alertmanager_smtp_hello: float.bitmask.net
+geoip_account_id:
+geoip_license_key:
+
 admins:
   - name: admin
     email: "admin@bitmask.net"
