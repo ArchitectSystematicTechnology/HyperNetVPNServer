@@ -80,11 +80,20 @@
   when: sspki_sign.changed
 
 # Create a fullchain cert bundle containing the CA and certificate
+- name: Get the remote cert
+  slurp:
+    src: "{{ sspki_dir }}/{{ sspki.name }}/cert.pem"
+  register: sspki_slurp_cert
+
+- name: Get the remote CA
+  slurp:
+    src: "{{ sspki_dir }}/ca.crt"
+  register: sspki_slurp_CA
+
 - name: Create fullchain cert bundle of CA and generated certificate
-  shell:
-    cmd: /bin/cat {{ sspki_dir }}/{{ sspki.name }}/cert.pem {{ sspki_dir }}/ca.crt > {{ sspki_dir }}/{{ sspki.name }}/fullchain.crt
-  args:
-    creates: "{{ sspki_dir }}/{{ sspki.name }}/fullchain.crt"
+  copy:
+    dest: "{{ sspki_dir }}/{{ sspki.name }}/fullchain.crt"
+    content: "{{ sspki_slurp_cert['content'] | b64decode }}\n{{ sspki_slurp_CA['content'] | b64decode }}\n"
   when: sspki_sign.changed
 
 - name: Set permissions on the private key
