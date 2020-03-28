@@ -1,14 +1,14 @@
 ---
 
-geoip:
+getmyip:
   scheduling_group: backend
   num_instances: 1
   monitoring_endpoints:
-    - job_name: geoip
+    - job_name: getmyip
       port: 9002
       scheme: http
   containers:
-    - name: geoip
+    - name: getmyip
       image: registry.0xacab.org/leap/getmyip:latest
       port: 9001
   public_endpoints:
