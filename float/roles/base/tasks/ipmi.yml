@@ -1,0 +1,15 @@
+---
+- name: Install ipmitool packages and dependency
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - ipmitool
+      - gawk # prometheus-node-exporter-ipmitool-sensor dependency
+
+- name: Enable prometheus node-exporter ipmitool sensor
+  systemd:
+    name: prometheus-node-exporter-ipmitool-sensor.timer
+    state: started
+    enabled: yes

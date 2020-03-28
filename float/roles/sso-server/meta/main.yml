@@ -2,3 +2,4 @@
 dependencies:
   - { role: auth-server }
   - { role: auth-server-users }
+  - { role: geoip }

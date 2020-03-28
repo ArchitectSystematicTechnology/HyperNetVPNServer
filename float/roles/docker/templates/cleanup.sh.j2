@@ -3,18 +3,6 @@
 # Cleanup unused and unreferenced Docker images and containers.
 #
 
-# Cleanup exited containers.
-docker ps -qa --no-trunc --filter "status=exited" \
-    | xargs --no-run-if-empty docker rm
-
-# Cleanup dangling and untagged images.
-docker images --filter "dangling=true" -q --no-trunc \
-    | xargs --no-run-if-empty docker rmi
-docker images \
-    | awk '$2 == "<none>" {print $3}' \
-    | xargs --no-run-if-empty docker rmi
-
-# Prune everything else (makes the above unnecessary?)
-docker system prune --all --volumes
+{{ container_runtime }} system prune --all --volumes --force
 
 exit 0

@@ -20,5 +20,3 @@
   with_items:
     - /etc/apt/sources.list.d/download_docker_com_linux_debian.list
     - /etc/docker
-    - /usr/local/bin/docker-cleanup
-    - /etc/cron.d/docker-cleanup

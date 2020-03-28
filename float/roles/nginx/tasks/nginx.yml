@@ -57,8 +57,10 @@
 - name: Fix permissions of /var/lib/nginx subdirs
   file:
     path: "/var/lib/nginx/{{ item }}"
+    state: directory
     owner: nginx
   with_items:
+    - ""
     - body
     - proxy
 

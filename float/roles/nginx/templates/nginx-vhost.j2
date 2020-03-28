@@ -23,7 +23,7 @@
 
 {% macro config_vhost(endpoint, shard=None) %}
 server {
-        listen [::]:443 http2;
+        listen [::]:{{ nginx_https_port }} http2;
 {% if endpoint.domains %}
         server_name {{ endpoint.domains | join(' ') }};
 {% else %}

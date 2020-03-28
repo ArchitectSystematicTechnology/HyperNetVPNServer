@@ -1,6 +1,11 @@
 ---
 dhparam_bits: 2048
 
+# Ports that NGINX should bind to. Only change if you are setting
+# up transparent proxies or other network-level trickery on frontends.
+nginx_http_port: 80
+nginx_https_port: 443
+
 # How much memory to use for key caching in the proxy_cache.
 nginx_cache_keys_mem: "64m"
 

@@ -18,6 +18,20 @@ modules:
         key_file: /etc/credentials/x509/prometheus/client/private_key.pem
         insecure_skip_verify: false
 
+  # Base HTTPS probe that will not verify certificates, used
+  # only to check that NGINX is up and running.
+  http_base:
+    prober: http
+    timeout: 5s
+    http:
+      valid_status_codes: [200]
+      method: GET
+      fail_if_ssl: false
+      fail_if_not_ssl: true
+      preferred_ip_protocol: ip4
+      tls_config:
+        insecure_skip_verify: true
+
 {% for custom_probe in prometheus_custom_blackbox_probes.get('http', []) %}
   http_{{ custom_probe.name }}:
     prober: http

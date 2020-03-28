@@ -129,7 +129,7 @@ scrape_configs:
     metrics_path: "/probe"
     params:
       module:
-        - http_public
+        - http_base
     relabel_configs:
       - source_labels: [__address__]
         target_label: target
@@ -150,7 +150,7 @@ scrape_configs:
 {% endfor %}
         labels:
           zone: public
-          probe: https
+          probe: https_up
 
 {% for custom_probe in prometheus_custom_blackbox_probes.get('http', []) %}
   - job_name: "prober_https_{{ custom_probe.name }}_{{ prober_idx }}"
