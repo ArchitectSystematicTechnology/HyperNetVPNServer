@@ -27,8 +27,3 @@
     state: link
     force: true
 
-- name: Install podman-pull-image script
-  copy:
-    src: podman-pull-image
-    dest: /usr/sbin/podman-pull-image
-    mode: 0755

@@ -1,0 +1,29 @@
+---
+
+- name: Install geoipupdate package
+  apt:
+    name: geoipupdate
+    state: present
+
+# Setup the Country GeoIP database.
+- name: Configure GeoIP downloader
+  template:
+    src: GeoIP.conf.j2
+    dest: /etc/GeoIP.conf
+  when: geoip_account_id is defined
+
+- stat:
+    path: /var/lib/GeoIP/GeoLite2-Country.mmdb
+  register: geoip_country
+  when: geoip_account_id is defined
+
+- name: Download GeoLite2-Country database
+  shell: geoipupdate
+  when: geoip_account_id is defined and not geoip_country.stat.exists
+
+- name: Setup geoipupdate cron job
+  copy:
+    dest: /etc/cron.d/geoipupdate
+    content: "12 0 * * 5 root /usr/local/bin/splay 3600 && /usr/bin/geoipupdate"
+  when: geoip_account_id is defined
+

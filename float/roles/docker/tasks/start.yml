@@ -55,33 +55,24 @@
 # right away.  Always bump the service if the systemd unit changes.
 - name: Set up the services
   block:
-    - name: Pull the Docker images
-      docker_image:
-        name: "{{ item.container.image }}"
-        force: true
-      register: docker_image
-      when: "container_runtime == 'docker'"
-      loop: "{{ float_enabled_containers }}"
 
-    - name: Pull the Docker images
-      # Ansible >= 2.8 ships with podman_image
-      command: "podman-pull-image {{ item.container.image }}"
-      register: podman_image
-      when: "container_runtime == 'podman'"
+    - name: Pull the container images
+      command: "float-pull-image {{ item.container.image }}"
+      register: container_image
       loop: "{{ float_enabled_containers }}"
-      changed_when: "podman_image.rc == 0"
-      failed_when: "podman_image.rc not in [0, 42]"
+      changed_when: "container_image.rc == 0"
+      failed_when: "container_image.rc not in [0, 42]"
 
     - name: Start the systemd units
       systemd:
         name: "docker-{{ item.0.tag }}.service"
         daemon_reload: "{{ item.2 is changed }}"
-        state: "{{ 'restarted' if (item.1.changed or item.2.changed or item.3.changed or item.4.changed) else 'started' }}"
+        state: "{{ 'restarted' if (item.1.changed or item.2.changed or item.3.changed) else 'started' }}"
         enabled: yes
         masked: no
         no_block: yes
       #changed_when: false
-      loop: "{{ float_enabled_containers | zip(docker_systemd_run_script.results, docker_systemd_unit.results, docker_image.results, podman_image.results) | list }}"
+      loop: "{{ float_enabled_containers | zip(docker_systemd_run_script.results, docker_systemd_unit.results, container_image.results) | list }}"
   rescue:
     - debug:
         msg: "Failed to set up one or more containers"

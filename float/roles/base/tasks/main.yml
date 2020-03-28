@@ -78,3 +78,11 @@
 - import_tasks: backup.yml
 
 - import_tasks: cleanup.yml
+
+- name: Check ipmi availability
+  stat:
+    path: "/dev/ipmi0"
+  register: ipmi_device
+
+- import_tasks: ipmi.yml
+  when: ipmi_device.stat.exists == true

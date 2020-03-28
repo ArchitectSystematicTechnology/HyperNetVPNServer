@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# Pull a Docker image, and detect if a different image has been pulled
+# than the one we knew about before (so we need to restart the container).
+#
+
+set -u
+
+image=${1:-}
+binary={{ container_runtime }}
+
+if [ -z "$image" ]; then
+  echo "usage: <image url>"
+  exit 1
+fi
+
+get_image_version() {
+  $binary inspect --type image --format "{{ '{{' }}.Id{{ '}}' }}" $image
+}
+
+pre_version=$(get_image_version)
+
+$binary pull $image
+
+if [ $? -gt 0 ]; then
+  exit 1
+fi
+
+post_version=$(get_image_version)
+
+if [ "$pre_version" == "$post_version" ]; then
+  exit 42
+fi
+
+exit 0

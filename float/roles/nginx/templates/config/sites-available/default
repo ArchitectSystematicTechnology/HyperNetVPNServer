@@ -9,7 +9,7 @@ map $http_host $top_level_domain_redirect {
 }
 
 server {
-        listen [::]:80 default_server ipv6only=off;
+        listen [::]:{{ nginx_http_port }} default_server ipv6only=off;
         server_name _;
 
 {# Only enable this if the 'acme' service is defined,
@@ -33,7 +33,7 @@ server {
 }
 
 server {
-        listen [::]:443 http2 default_server ipv6only=off;
+        listen [::]:{{ nginx_https_port }} http2 default_server ipv6only=off;
         server_name _;
         ssl on;
 
