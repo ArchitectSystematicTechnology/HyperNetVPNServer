@@ -51,6 +51,7 @@
     name: nginx
     group: nginx
     groups: nginx-credentials,public-credentials
+    append: yes
     home: /nonexistent
     system: yes
 
