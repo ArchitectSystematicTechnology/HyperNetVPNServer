@@ -1,9 +1,14 @@
+# use the sspki role to create the credentials directory:
+# the sspki role should create the api endpont cert, and the full chain bundle
+# (containing the API endpoint CA and the generated cert) and install them
 
 - include_role:
     name: sspki
   vars:
     sspki:
       name: vpnweb
+      SANs:
+        - "{{ api_uri }}"
       ca: "{{ credentials_dir }}/common/api_ca.crt"
       ca_key: "{{ credentials_dir }}/common/api_ca.key"
 
