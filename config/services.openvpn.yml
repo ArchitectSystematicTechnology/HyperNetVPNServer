@@ -54,7 +54,7 @@ openvpn:
       env:
         # Shapeshifter specific environment variables
         LHOST: "{{ ip }}"
-        RHOST: '127.0.0.1'
+        RHOST: "{{ ip }}"
         RPORT: '1194'
         OBFSPORT: '23042'
         EXTORPORT: '3334'
