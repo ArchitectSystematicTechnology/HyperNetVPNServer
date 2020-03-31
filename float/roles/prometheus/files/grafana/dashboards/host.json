@@ -934,7 +934,7 @@
           "step": 20
         },
         {
-          "expr": "irate(node_disk_io_time_seconds_total{instance=~\"$server\",device=~\"([vs]d[a-z]+|nvme.+)\"}[5m]) / 1000",
+          "expr": "irate(node_disk_io_time_seconds_total{instance=~\"$server\",device=~\"([vs]d[a-z]+|nvme.+)\"}[5m])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{device}}",

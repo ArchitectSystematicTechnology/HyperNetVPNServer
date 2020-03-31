@@ -19,5 +19,5 @@ backup_repository_restic_password: ""
 emergency_ssh_key: ""
 
 # The Debian distribution that we are using as the basis.
-float_debian_dist: "stretch"
+float_debian_dist: "buster"
 
