@@ -1,0 +1,19 @@
+- name: Create knot-resolver directory
+  file:
+    path: /etc/knot-resolver
+    state: directory
+    group: docker-kresd
+    mode: 0770
+
+- name: Install knot-resolver config files
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/knot-resolver/{{ item }}"
+    group: docker-kresd
+    mode: 0770
+  with_items:
+    - 'icann-ca.pem'
+    - 'kresd.conf'
+    - 'root.hints'
+    - 'root.keys'
+
