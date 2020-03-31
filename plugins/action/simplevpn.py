@@ -19,14 +19,12 @@ class EIPConfig:
         self.gateways = gateways
 
 def patchObfs4Cert(transports, cert):
-    # Build a new list since we can't modify tuples in place.
-    out = []
-    for tr, proto, port, options in transports:
-        if tr == "obfs4":
-            options['cert'] = cert
-            options['iatMode'] = "0"
-        out.append((tr, proto, port, options))
-    return out
+    for t in transports:
+        if t['type'] == "obfs4":
+            t.setdefault('options', {})
+            t['options']['cert'] = cert
+            t['options']['iatMode'] = "0"
+    return transports
 
 
 def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
@@ -40,8 +38,7 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
         "serial": 3,
         "version": 3,
         "locations": config.locations,
-        "gateways": dict((x["host"], x) for x in [
-            {
+        "gateways": [{
                 "host": "%s.%s" % (v["inventory_hostname"], public_domain),
                 "ip_address": v["ip"],
                 "location": v.get("location", "Unknown"),
@@ -51,7 +48,7 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
                     "limited": False,
                     "transport": transports,
                 },
-            } for v in config.gateways]),
+            } for v in config.gateways],
         "openvpn_configuration": config.openvpn,
     }
         
@@ -118,8 +115,8 @@ class ActionModule(ActionBase):
         locations = self._task.args['locations']
         public_domain = self._task.args['domain']
         transports = self._task.args.get('transports', [
-            ["openvpn", "tcp", "443", {}],
-            ["obfs4", "tcp", "23042", {}],
+            dict(type="openvpn", protocols=["tcp"], ports=["443"]),
+            dict(type="obfs4", protocols=["tcp"], ports=["23042"]),
         ])
         gateways = self._task.args['gateways']
         openvpn = self._task.args['openvpn']
