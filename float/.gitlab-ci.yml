@@ -16,19 +16,6 @@ run_base_test:
   except:
     - schedules
   cache:
-    key: stretch
-    paths:
-      - .vagrant.d
-
-run_buster_test:
-  stage: test
-  script:
-    - mkdir -p .vagrant.d && ln -s $PWD/.vagrant.d $HOME/.vagrant.d
-    - "cd test && timeout 1h with-ssh-key ./run-test.sh --docker ${APT_PROXY_ADDR:+--apt-proxy $APT_PROXY_ADDR} buster"
-  tags: [ai3]
-  except:
-    - schedules
-  cache:
     key: buster
     paths:
       - .vagrant.d
@@ -42,7 +29,7 @@ run_full_test:
   only:
     - schedules
   cache:
-    key: stretch
+    key: buster
     paths:
       - .vagrant.d
 

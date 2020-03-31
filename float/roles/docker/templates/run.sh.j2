@@ -1,6 +1,14 @@
 #!/bin/sh
 # Start the docker container for {{ item.service }}-{{ item.container.name }}.
 
+# Environment variables.
+export HOSTNAME="{{ ansible_hostname }}"
+export PUBLIC_ADDR="{{ ansible_hostname }}"
+export USER="docker-{{ item.service }}"
+{% for k, v in item.container.get('env', {}) | dictsort %}
+export {{ k }}="{{ v }}"
+{% endfor %}
+
 {# Macro to generate command-line options #}
 {% macro opt(name, value) %}
 opts="$opts --{{ name }}={{ value }}"

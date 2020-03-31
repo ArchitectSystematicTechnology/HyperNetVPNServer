@@ -6,7 +6,6 @@ Requires=docker.service
 {% endif %}
 
 [Service]
-EnvironmentFile=-/etc/default/{{ item.service }}-{{ item.container.name }}
 ExecStart=/usr/lib/float/docker/run-{{ item.service }}-{{ item.container.name }}.sh
 ExecStop=/usr/bin/docker stop {{ item.service }}-{{ item.container.name }}
 TimeoutStopSec=60
