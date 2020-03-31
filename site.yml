@@ -3,7 +3,10 @@
 - import_playbook: config/playbooks/all.yml
 
 - hosts: openvpn
-  roles: [openvpn]
+  roles:
+    - openvpn
+    - kresd
+    - geoip
 
 - hosts: frontend
   roles: [openvpn-frontend]

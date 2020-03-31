@@ -1,0 +1,4 @@
+- listen: "restart docker-kresd-kresd"
+  systemd:
+    name: "docker-kresd-kresd.service"
+    state: restarted
