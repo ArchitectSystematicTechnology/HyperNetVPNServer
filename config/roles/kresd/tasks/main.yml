@@ -2,14 +2,14 @@
   file:
     path: /etc/knot-resolver
     state: directory
-    group: docker-kresd
+    group: docker-openvpn
     mode: 0770
 
 - name: Install knot-resolver config files
   copy:
     src: "{{ item }}"
     dest: "/etc/knot-resolver/{{ item }}"
-    group: docker-kresd
+    group: docker-openvpn
     mode: 0770
   with_items:
     - 'icann-ca.pem'
