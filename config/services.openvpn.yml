@@ -11,6 +11,7 @@ getmyip:
     - name: getmyip
       image: registry.0xacab.org/leap/getmyip:latest
       port: 9001
+      volumes: /var/lib/GeoIP: /var/lib/GeoIP/
   public_endpoints:
     - name: getmyip
       port: 9001
