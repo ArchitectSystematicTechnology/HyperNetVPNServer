@@ -6,13 +6,13 @@
     mode: 0750
 
 - name: Install firewall filter config for openvpn
-  copy:
+  template:
     src: "50openvpn.firewall"
     dest: "/etc/firewall/filter.d/50openvpn"
   notify: "reload firewall"
 
 - name: Install firewall nat config for vpnweb
-  copy:
+  template:
     src: "50openvpn_nat.firewall"
     dest: "/etc/firewall/nat.d/50openvpn"
   notify: "reload firewall"
@@ -23,7 +23,7 @@
     dest: "/etc/openvpn"
     mode: 0644
   with_items:
-    - udp.conf
-    - tcp.conf
+    - udp.conf.j2
+    - tcp.conf.j2
   notify:
     - "restart docker-openvpn-openvpn"

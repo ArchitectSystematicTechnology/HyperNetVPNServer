@@ -1,1 +1,0 @@
-add_rule4 -A POSTROUTING -s 10.41.0.0/24 -o eth0 -j MASQUERADE
