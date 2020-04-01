@@ -12,8 +12,8 @@ options {
     127.0.0.1;
 {% for h in groups['frontend'] | sort %}
     {{ hostvars[h]['ip'] }};
-{% for n in net_overlays | sort if ('ip_' + n) in hostvars[h] %}
-    {{ hostvars[h]['ip_' + n] }};
+{% for n in net_overlays | sort if ('ip_' + n.name) in hostvars[h] %}
+    {{ hostvars[h]['ip_' + n.name] }};
 {% endfor %}
 {% endfor %}
   };
