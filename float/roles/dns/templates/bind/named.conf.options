@@ -7,8 +7,26 @@ acl "net_{{ n.name }}" {
 options {
   directory "/var/cache/bind";
 
+{% if float_limit_bind_to_known_interfaces | default(False) %}
+  listen-on {
+    127.0.0.1;
+{% for h in groups['frontend'] | sort %}
+    {{ hostvars[h]['ip'] }};
+{% for n in net_overlays | sort if ('ip_' + n) in hostvars[h] %}
+    {{ hostvars[h]['ip_' + n] }};
+{% endfor %}
+{% endfor %}
+  };
+  listen-on-v6 {
+    ::1;
+{% for h in groups['frontend'] | sort if 'ip6' in hostvars[h] %}
+    {{ hostvars[h]['ip6'] }};
+{% endfor %}
+  };
+{% else %}
   listen-on { any; };
   listen-on-v6 { any; };
+{% endif %}
 
   dnssec-enable yes;
   dnssec-validation auto;
