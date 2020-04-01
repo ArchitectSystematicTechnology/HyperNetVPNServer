@@ -1,5 +1,7 @@
-{{ domain }}:
+{# The public domain should point at hosts in the 'openvpn' group #}
+{{ domain_public[0] }}:
+  EXTENDS: "@ns"
   _:
-{% for h in groups['openvpn'] %}
+{% for h in groups['openvpn'] | sort %}
     - {{ hostvars[h].ip }}
 {% endfor %}
