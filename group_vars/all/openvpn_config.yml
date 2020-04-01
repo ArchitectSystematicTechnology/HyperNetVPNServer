@@ -13,3 +13,7 @@ openvpn_config:
   'persist-key': true
   'key-direction': '1'
   'verb': '3'
+
+openvpn_network: "10.42.0.0/21"
+openvpn_network6: "2001:db8:123::/64"
+

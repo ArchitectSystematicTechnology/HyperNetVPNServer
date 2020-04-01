@@ -1,5 +1,5 @@
-net.listen('10.42.0.1', 53, { kind = 'dns' })
-net.listen('10.42.0.1', 8453, { kind = 'webmgmt' })
+net.listen('{{ openvpn_network | ipaddr('1') | ipaddr('address') }}', 53, { kind = 'dns' })
+net.listen('{{ ip }}', 8453, { kind = 'webmgmt' })
 
 -- Load Useful modules
 modules = {
