@@ -16,7 +16,13 @@
     mode: 0770
   with_items:
     - 'icann-ca.pem'
-    - 'kresd.conf'
     - 'root.hints'
     - 'root.keys'
+
+- name: Install kresd.conf
+  template:
+    src: "kresd.conf.j2"
+    dest: "/etc/knot-resolver/kresd.conf"
+    group: docker-openvpn
+    mode: 0770
 
