@@ -1,0 +1,1 @@
+add_rule4 -A POSTROUTING -s {{ openvpn_network | ipaddr('network') }}/{{ openvpn_network | ipaddr('netmask') }} -o eth0 -j MASQUERADE
