@@ -55,8 +55,9 @@ openvpn:
         - /srv/leap/shapeshifter-state: /srv/leap/shapeshifter-state
         - /etc/openvpn: /etc/openvpn
         - /dev/net: /dev/net
+        - /tmp: /var/cache/knot-resolver
         - /etc/knot-resolver: /etc/knot-resolver
-        - /var/lib/GeoIP: /var/lib/GeoIP/          
+        - /var/lib/GeoIP: /var/lib/GeoIP/
       env:
         # Shapeshifter specific environment variables
         LHOST: "{{ ip }}"
