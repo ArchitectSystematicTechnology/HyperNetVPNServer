@@ -372,8 +372,8 @@ themselves.
         help='Vagrant private network (default: randomly selected)')
     create_env_parser.add_argument(
         '--debian-dist', metavar='DIST',
-        default='stretch',
-        help='Debian distribution to use (default: stretch)')
+        default='buster',
+        help='Debian distribution to use (default: buster)')
     create_env_parser.add_argument(
         '--no-elasticsearch', action='store_true',
         help='disable Elasticsearch/Kibana, useful in testing'
