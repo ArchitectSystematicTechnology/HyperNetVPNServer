@@ -56,7 +56,6 @@ openvpn:
         - /srv/leap/dns-cache: /var/cache/knot-resolver
         - /etc/openvpn: /etc/openvpn
         - /dev/net: /dev/net
-        - /tmp: /var/cache/knot-resolver
         - /etc/knot-resolver: /etc/knot-resolver
         - /var/lib/GeoIP: /var/lib/GeoIP/
       env:
