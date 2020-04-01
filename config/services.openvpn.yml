@@ -53,6 +53,7 @@ openvpn:
         - /etc/leap: /etc/leap
         - /etc/credentials/sspki: /etc/credentials/sspki
         - /srv/leap/shapeshifter-state: /srv/leap/shapeshifter-state
+        - /srv/leap/dns-cache: /var/cache/knot-resolver
         - /etc/openvpn: /etc/openvpn
         - /dev/net: /dev/net
         - /tmp: /var/cache/knot-resolver
