@@ -1,9 +1,12 @@
 - name: Create knot-resolver directory
   file:
-    path: /etc/knot-resolver
+    path: "{{ item }}"
     state: directory
     group: docker-openvpn
     mode: 0770
+  with_items:
+    - /etc/knot-resolver
+    - /var/cache/knot-resolver
 
 - name: Install knot-resolver config files
   copy:
