@@ -27,3 +27,12 @@
     - tcp.conf
   notify:
     - "restart docker-openvpn-openvpn"
+
+- name: Create knot dns cache dir
+  file:
+    path: /srv/leap/dns-cache
+    state: directory
+    mode: 0700
+    owner: docker-openvpn
+    group: docker-openvpn
+
