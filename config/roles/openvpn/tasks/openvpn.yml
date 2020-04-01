@@ -7,13 +7,13 @@
 
 - name: Install firewall filter config for openvpn
   template:
-    src: "50openvpn.firewall"
+    src: "50openvpn.firewall.j2"
     dest: "/etc/firewall/filter.d/50openvpn"
   notify: "reload firewall"
 
 - name: Install firewall nat config for vpnweb
   template:
-    src: "50openvpn_nat.firewall"
+    src: "50openvpn_nat.firewall.j2"
     dest: "/etc/firewall/nat.d/50openvpn"
   notify: "reload firewall"
 
