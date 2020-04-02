@@ -19,11 +19,11 @@
 
 - name: Install openvpn configs
   template:
-    src: "{{ item }}"
+    src: "{{ item }}.j2"
     dest: "/etc/openvpn"
     mode: 0644
   with_items:
-    - udp.conf.j2
-    - tcp.conf.j2
+    - udp.conf
+    - tcp.conf
   notify:
     - "restart docker-openvpn-openvpn"
