@@ -9,3 +9,9 @@
   systemd:
     name: "docker-openvpn-openvpn.service"
     state: restarted
+
+- listen: "reload sslh"
+  systemd:
+    name: "sslh.service"
+    state: restarted
+

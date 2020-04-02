@@ -1,0 +1,44 @@
+# Detect if this role is being run on a 'frontend' machine, in which
+# case we want to automatically move NGINX to a different port, and
+# setup 'sslh' to do protocol-based multiplexing between HTTPS and
+# OpenVPN on port 443.
+#
+# Auto-magic configuration of NGINX only works if you run this role
+# *before* the float 'frontend' role (so that variables set here can
+# be seen by the later role).
+
+#- set_fact:
+#    demux_443: "{{ inventory_hostname in groups['frontend'] }}"
+
+#- set_fact:
+#    nginx_https_port: 4430
+#  when: demux_443
+
+- name: Install or remove sslh package
+  apt:
+    name: sslh
+    state: "{{ 'present' if demux_443 else 'absent' }}"
+
+- name: Configure sslh
+  template:
+    src: "sslh.default.j2"
+    dest: "/etc/default/sslh"
+  when: demux_443
+  notify: "reload sslh"
+
+- name: Configure SSL mux firewall
+  copy:
+    src: "40sslh.firewall"
+    dest: "/etc/firewall/filter.d/40sslh"
+  when: demux_443
+  notify: "reload firewall"
+
+- name: Remove sslh configs
+  file:
+    path: "{{ item }}"
+    state: absent
+  when: "not demux_443"
+  loop:
+    - "/etc/firewall/filter.d/40sslh"
+    - "/etc/default/sslh"
+

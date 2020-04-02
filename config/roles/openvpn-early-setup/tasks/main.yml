@@ -1,0 +1,16 @@
+# Detect if this role is being run on a 'frontend' machine, in which
+# case we want to automatically move NGINX to a different port, and
+# setup 'sslh' to do protocol-based multiplexing between HTTPS and
+# OpenVPN on port 443.
+#
+# Auto-magic configuration of NGINX only works if you run this role
+# *before* the float 'frontend' role (so that variables set here can
+# be seen by the later role).
+
+- set_fact:
+    demux_443: "{{ inventory_hostname in groups['frontend'] }}"
+
+- set_fact:
+    nginx_https_port: 8443
+  when: demux_443
+
