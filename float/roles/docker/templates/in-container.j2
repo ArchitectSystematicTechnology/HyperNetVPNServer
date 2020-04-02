@@ -61,22 +61,13 @@ container_name="$1"
 shift
 
 if [ $opt_root -eq 0 ]; then
-    # Read container params from /etc/default.
-    if [ ! -e /etc/default/${container_name} ]; then
+    # Find the user that the container is running as.
+    container_uidgid=$(podman inspect -f '{{ '{{' }}.Config.User{{ '}}' }}' ${container_name})
+    if [ -z "${container_uidgid}" ]; then
         die "ERROR: can't find container ${container_name}"
     fi
-    container_user=$(. /etc/default/${container_name} ; echo $USER)
 
-    uid=$(getent passwd ${container_user} | cut -d: -f3)
-    gid=$(getent passwd ${container_user} | cut -d: -f4)
-    if [ -z "$uid" ]; then
-        die "ERROR: could not find uid of user ${container_user}"
-    fi
-    if [ -z "$uid" ]; then
-        die "ERROR: could not find gid of user ${container_user}"
-    fi
-
-    docker_opts="${docker_opts} --user ${uid}:${gid}"
+    docker_opts="${docker_opts} --user ${container_uidgid}"
 fi
 
 exec {{ container_runtime }} exec ${docker_opts} ${container_name} "$@"
