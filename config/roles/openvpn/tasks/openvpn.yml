@@ -20,7 +20,7 @@
 - name: Install openvpn configs
   template:
     src: "{{ item }}.j2"
-    dest: "/etc/openvpn"
+    dest: "/etc/openvpn/{{ item }}"
     mode: 0644
   with_items:
     - udp.conf
