@@ -24,12 +24,4 @@ cd ${tmpdir}
 curl -vskL -o cacert.pem --resolve ${api_server}:443:${api_ip} https://${api_server}/ca.crt
 curl -vskL -o openvpn.pem --resolve ${api_server}:443:${api_ip} https://${api_server}/3/cert
 
-openvpn --setenv LEAPOPENVPN 1 --nobind --dev tun --client \
-	--tls-client --remote-cert-tls server --script-security 1 \
-	--tls-version-min 1.2 --cipher AES-256-GCM --keepalive 10 30 \
-	--tls-cipher TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384 --auth SHA512 \
-	--ca cacert.pem --cert openvpn.pem --key openvpn.pem \
-	--persist-key --persist-local-ip \
-	--ignore-unknown-option block-outside-dns \
-	--verb 3 --remote ${ip} ${port} tcp4
-
+/ovpnprobe --host ${ip} --port ${port} --cert openvpn.pem --ca cacert.pem

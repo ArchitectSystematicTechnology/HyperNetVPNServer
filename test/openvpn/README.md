@@ -10,3 +10,12 @@ Run it with:
         float-pt-openvpn-test 10.121.20.11
 
 Replace the IP with the one you want to test.
+
+
+# Notes
+
+The test uses a custom Go binary because we haven't found an easy way to
+just run a shell script after openvpn has established a connection. Instead
+we talk to the openvpn client over its management connection in order to
+detect the CONNECTED state, and then try to ping a remote test IP.
+
