@@ -1,6 +1,6 @@
 FROM golang:latest AS build
 
-COPY ovpnctl.go /build/
+COPY ovpnprobe.go /build/
 RUN cd /build && go build -tags netgo -o ovpnprobe ovpnprobe.go
 
 FROM debian:stable
