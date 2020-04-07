@@ -13,12 +13,12 @@ Vagrant.configure(2) do |config|
     libvirt.memory = 3072
   end
 
-  config.vm.define "host1" do |m|
-    m.vm.hostname = "host1"
+  config.vm.define "floatrp1" do |m|
+    m.vm.hostname = "floatrp1"
     m.vm.network "private_network", ip: "10.121.20.10", libvirt__dhcp_enabled: false
   end
-  config.vm.define "host2" do |m|
-    m.vm.hostname = "host2"
+  config.vm.define "floatapp1" do |m|
+    m.vm.hostname = "floatapp1"
     m.vm.network "private_network", ip: "10.121.20.11", libvirt__dhcp_enabled: false
   end
 end

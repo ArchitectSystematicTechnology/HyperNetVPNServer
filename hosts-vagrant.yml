@@ -1,15 +1,15 @@
 hosts:
-  floatapp1:
-    groups: [backend, vagrant]
-    ansible_host: 10.121.20.10
-    ip: 10.121.20.10
-    ip_vpn0: 172.16.1.1
   floatrp1:
     groups: [frontend, vagrant]
     ansible_host: 10.121.20.11
+    ip: 10.121.20.10
+    ip_vpn0: 172.16.1.1
+    location: Seattle
+  floatapp1:
+    groups: [backend, vagrant]
+    ansible_host: 10.121.20.11
     ip: 10.121.20.11
     ip_vpn0: 172.16.1.2
-    location: Seattle
 group_vars:
   vagrant:
     ansible_user: vagrant
