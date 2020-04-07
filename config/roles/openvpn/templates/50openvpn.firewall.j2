@@ -6,7 +6,7 @@ allow_port udp 1194
 # so we need something in the FORWARD table that says "allow packets to / from this vpn"
 #
 # let vpn hosts reach the internet
-add_rule4 -A FORWARD -s {{ openvpn_network | ipaddr('network') }}/{{ openvpn_network | ipaddr('netmask') }} -o eth0 -j ACCEPT
+add_rule4 -A FORWARD -s {{ openvpn_network | ipaddr('network') }}/{{ openvpn_network | ipaddr('netmask') }} -o {{ ansible_default_ipv4.interface }} -j ACCEPT
 # allow re/established *inbound* to vpn hosts
 add_rule4 -A FORWARD -d {{ openvpn_network | ipaddr('network') }}/{{ openvpn_network | ipaddr('netmask') }} -m state --state RELATED,ESTABLISHED -j ACCEPT
 
