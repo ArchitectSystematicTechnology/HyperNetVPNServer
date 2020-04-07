@@ -12,7 +12,6 @@
   roles:
     - openvpn
     - kresd
-    - geoip
 
 - hosts: frontend
   roles: [openvpn-frontend]
