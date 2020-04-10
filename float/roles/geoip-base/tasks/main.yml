@@ -1,0 +1,8 @@
+---
+
+- name: Install geoipupdate package
+  apt:
+    name: geoipupdate
+    state: present
+
+

@@ -1,0 +1,3 @@
+- listen: trigger geoipupdate
+  shell: "/usr/bin/geoipupdate -f /etc/GeoIP_{{ item }}.conf"
+  with_items: "{{ geoip_dataset }}"

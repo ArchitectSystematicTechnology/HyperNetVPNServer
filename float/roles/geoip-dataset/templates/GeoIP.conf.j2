@@ -7,4 +7,4 @@ LicenseKey {{ geoip_license_key | default('000000000000') }}
 # * GeoLite2-City - GeoLite 2 City
 # * GeoLite2-Country - GeoLite2 Country
 # For geoipupdate versions earlier than 2.5.0, use ProductIds here instead of EditionIDs.
-EditionIDs GeoLite2-Country
+EditionIDs GeoLite2-{{ geoip_dataset }}

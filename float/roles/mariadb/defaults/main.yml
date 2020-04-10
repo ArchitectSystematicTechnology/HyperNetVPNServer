@@ -20,7 +20,7 @@ mariadb_innodb_log_file_size: 256M
 mariadb_max_user_connections: 200
 
 # System limits
-mariadb_ulimit_nofile: 16384
+mariadb_ulimit_nofile: 65535
 
 # Monitoring configuration
 mariadb_metrics_port: "{{ mariadb_port + 6000 }}"

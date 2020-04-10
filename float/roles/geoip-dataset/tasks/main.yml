@@ -1,0 +1,19 @@
+# This role expects the following variables to be defined:
+#
+# geoip-dataset:
+#  geoip_datasets [ 'City', 'Country' ]
+
+# Setup the Country GeoIP database.
+- name: Configure GeoIP downloader
+  template:
+    src: GeoIP.conf.j2
+    dest: "/etc/GeoIP_{{ item }}.conf"
+  when: geoip_account_id is defined
+  with_items: "{{ geoip_dataset }}"
+  notify: trigger geoipupdate
+  
+- name: Setup geoipupdate cron job
+  copy:
+    dest: "/etc/cron.d/geoipupdate_{{ item }}"
+    content: "12 0 * * 5 root /usr/local/bin/splay 3600 && /usr/bin/geoipupdate -f /etc/GeoIP_{{ item }}.conf"
+  with_items: "{{ geoip_dataset }}"

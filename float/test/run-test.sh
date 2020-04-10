@@ -76,9 +76,9 @@ EOF
 }
 
 run_ansible() {
-    ../../float run init-credentials \
+    ${float_dir}/float run init-credentials \
         || die "failed to run the init-credentials playbook"
-    ../../float run site.yml \
+    ${float_dir}/float run site.yml \
         || die "failed to run the site.yml playbook"
 }
 
@@ -91,7 +91,7 @@ run_integration_test() {
     # The following is required to make the test output readable.
     ANSIBLE_DISPLAY_FAILED_STDERR=True \
     ANSIBLE_STDOUT_CALLBACK=unixy \
-    ../../float run ${bin_dir}/integration-test-${mode}.yml \
+    ${float_dir}/float run ${bin_dir}/integration-test-${mode}.yml \
         || die "failed to run the integration tests"
 }
 
@@ -186,7 +186,12 @@ case $test_name in
         test_name=${test_name#test-}
         ;;
 esac
-test_dir="${PWD}/test-${test_name}"
+
+if [ -n "$TEST_DIR" ]; then
+    test_dir="${TEST_DIR}"
+else
+    test_dir="${PWD}/test-${test_name}"
+fi
 
 if [ ${keep_vms} -eq 0 ]; then
     trap "stop_vagrant; rm -fr \"$test_dir\"" EXIT SIGINT SIGTERM
