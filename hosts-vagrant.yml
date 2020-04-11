@@ -1,7 +1,7 @@
 hosts:
   floatrp1:
     groups: [frontend, vagrant]
-    ansible_host: 10.121.20.11
+    ansible_host: 10.121.20.10
     ip: 10.121.20.10
     ip_vpn0: 172.16.1.1
     location: Seattle
