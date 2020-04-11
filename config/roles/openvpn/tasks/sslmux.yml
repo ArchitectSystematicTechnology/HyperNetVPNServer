@@ -27,11 +27,33 @@
   notify: "reload sslh"
 
 - name: Configure SSL mux firewall
-  copy:
-    src: "40sslh.firewall"
-    dest: "/etc/firewall/filter.d/40sslh"
+  template:
+    src: "sslh.firewall.j2"
+    dest: "/etc/firewall/mangle.d/40sslh"
   when: demux_443
   notify: "reload firewall"
+
+- name: Install sslh-route script
+  copy:
+    src: "sslh-iproute"
+    dest: "/usr/local/bin/sslh-iproute"
+    mode: 0755
+  when: demux_443
+
+- name: Install sslh-iproute systemd unit
+  copy:
+    src: "sslh-iproute.service"
+    dest: "/etc/systemd/system/sslh-iproute.service"
+  register: sslh_iproute_service
+  when: demux_443
+
+- name: Enable sslh-iproute systemd unit
+  systemd:
+    name: "sslh-iproute.service"
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  when: "demux_443 and sslh_iproute_service is changed"
 
 - name: Remove sslh configs
   file:
@@ -39,6 +61,9 @@
     state: absent
   when: "not demux_443"
   loop:
+    - "/usr/local/bin/sslh-iproute"
+    - "/etc/systemd/system/sslh-iproute.service"
     - "/etc/firewall/filter.d/40sslh"
     - "/etc/default/sslh"
+  notify: "reload systemd"
 
