@@ -3,7 +3,7 @@
 # Set up ip routing rules for sslh in transparent proxy mode.
 #
 
-/usr/sbin/ip rule add fwmark 0x1 lookup 100
-/usr/sbin/ip route add local 0.0.0.0/0 dev lo table 100
+/bin/ip rule add fwmark 0x1 lookup 100
+/bin/ip route add local 0.0.0.0/0 dev lo table 100
 
 exit 0
