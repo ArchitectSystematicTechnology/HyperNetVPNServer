@@ -3,7 +3,7 @@ import time
 from float_integration_test import *
 
 
-UNKNOWN_DOMAIN_MSG = 'You have reached this page because your request could not be properly identified'
+UNKNOWN_DOMAIN_MSG = b'You have reached this page because your request could not be properly identified'
 
 class URLTestBase(TestBase):
 
@@ -114,7 +114,7 @@ class TestSystem(TestBase):
         self.assertEqual(200, result['status'])
         response = json.loads(result['body'])
         self.assertEqual('success', response['status'])
-        print json.dumps(response['data'], indent=4)
+        print(json.dumps(response['data'], indent=4))
         firing_alerts = [
             _alert_to_string(x['metric'])
             for x in response['data']['result']

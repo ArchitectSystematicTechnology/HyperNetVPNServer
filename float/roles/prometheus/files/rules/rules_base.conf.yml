@@ -11,17 +11,17 @@ groups:
       # Sum prober metrics over the probers (hosts), producing
       # an aggregation by target.
       - record: target:probe_success:count
-        expr: count(probe_success) by (probe,zone,target)
+        expr: count(probe_success) by (probe,probeset,zone,target)
       - record: target:probe_success:sum
-        expr: sum(probe_success) by (probe,zone,target)
+        expr: sum(probe_success) by (probe,probeset,zone,target)
       - record: target:probe_success:ratio
         expr: target:probe_success:sum / target:probe_success:count
 
       # Sum prober metrics over targets, aggregating by probe.
       - record: probe:probe_success:count
-        expr: count(probe_success) by (probe,zone)
+        expr: count(probe_success) by (probe,probeset,zone)
       - record: probe:probe_success:sum
-        expr: sum(probe_success) by (probe,zone)
+        expr: sum(probe_success) by (probe,probeset,zone)
       - record: probe:probe_success:ratio
         expr: probe:probe_success:sum / probe:probe_success:count
 

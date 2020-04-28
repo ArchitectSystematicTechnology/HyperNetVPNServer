@@ -9,7 +9,7 @@ setup(
     author="Autistici/Inventati",
     author_email="info@autistici.org",
     url="https://git.autistici.org/ai3/float",
-    install_requires=["Jinja2<3",
+    install_requires=["Jinja2",
                       "PyYAML",
                       ],
     setup_requires=[],

@@ -21,6 +21,14 @@
     - files/rules/*.conf.yml
   notify: "reload prometheus"
 
+- name: Install alertmanager templates
+  template:
+    src: "{{ item }}"
+    dest: "/etc/prometheus/alertmanager_templates/"
+  with_fileglob:
+    - templates/alertmanager_templates/*
+  notify: "reload prometheus"
+
 - name: Install Prometheus configs
   template:
     src: "{{ item }}.j2"

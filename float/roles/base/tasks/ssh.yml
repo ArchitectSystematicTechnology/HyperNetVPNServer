@@ -35,7 +35,7 @@
 - name: Generate ssh_known_hosts
   copy:
     dest: /etc/ssh/ssh_known_hosts
-    content: "@cert-authority {{ lookup('file', credentials_dir + '/ssh/key.pub') }}"
+    content: "@cert-authority *.{{ domain }} {{ lookup('file', credentials_dir + '/ssh/key.pub') }}"
 
 # Copy the configuration files.
 - name: Install SSH configuration (files)

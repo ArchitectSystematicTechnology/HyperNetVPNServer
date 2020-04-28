@@ -124,6 +124,7 @@ scrape_configs:
         labels:
           zone: internal
           probe: ping
+          probeset: base
 
   - job_name: "prober_https_{{ prober_idx }}"
     metrics_path: "/probe"
@@ -150,7 +151,8 @@ scrape_configs:
 {% endfor %}
         labels:
           zone: public
-          probe: https_up
+          probe: https
+          probeset: base
 
 {% for custom_probe in prometheus_custom_blackbox_probes.get('http', []) %}
   - job_name: "prober_https_{{ custom_probe.name }}_{{ prober_idx }}"
@@ -178,7 +180,8 @@ scrape_configs:
 {% endfor %}
         labels:
           zone: public
-          probe: https
+          probe: https_{{ custom_probe.name }}
+          probeset: custom
 {% endfor %}
 
   - job_name: "prober_dns_{{ prober_idx }}"
@@ -206,6 +209,7 @@ scrape_configs:
         labels:
           zone: public
           probe: dns
+          probeset: base
 
 {% endfor %}
 
@@ -216,6 +220,8 @@ scrape_configs:
     metrics_path: "{{ target.metrics_path | default('/metrics') }}"
     static_configs:
       - targets: {{ target.targets | to_json }}
+        labels:
+          zone: external
     relabel_configs:
       - source_labels: [__address__]
         target_label: host

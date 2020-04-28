@@ -9,7 +9,7 @@ mariadb_data_dir: "/var/lib/mariadb/{{ mariadb_instance }}"
 mariadb_client: "/usr/local/bin/mysql-{{ mariadb_instance }}"
 
 # Server configuration
-mariadb_server_id: 0
+mariadb_server_id: 1
 mariadb_port: 3306
 mariadb_bind_address: 0.0.0.0
 

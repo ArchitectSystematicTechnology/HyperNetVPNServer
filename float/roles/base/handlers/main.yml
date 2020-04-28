@@ -68,3 +68,8 @@
 
 - name: reload sysctl
   shell: "/sbin/sysctl --system"
+
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+

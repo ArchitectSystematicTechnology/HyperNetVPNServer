@@ -68,29 +68,7 @@ include:
 - import_playbook: "{{ srcdir }}/playbooks/all.yml"
 ''',
         'hosts.yml': '''---
-{% if vagrant %}
-group_vars:
-  vagrant:
-    ansible_user: vagrant
-    ansible_become: true
-    ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_key"
-{% if libvirt and libvirt != 'localhost' %}
-    ansible_ssh_extra_args: "-o ProxyJump={{ libvirt }}"
-{% endif %}
-{% else %}
-# REPLACE THESE WITH YOUR OWN HOSTS!
-{% endif %}
-hosts:
-{% for h in hosts %}
-  {{ h.name }}:
-    ansible_host: {{ h.ip }}
-    ip: {{ h.ip }}
-    ip_vpn0: {{ h.ip_vpn0 }}
-{% if h.shard_id %}
-    shard_id: {{ h.shard_id }}
-{% endif %}
-    groups: {{ h.groups | toyaml }}
-{% endfor %}
+{{ inventory | toyaml }}
 ''',
         'group_vars/all/config.yml': '''---
 {{ config | toyaml }}
@@ -250,10 +228,12 @@ def command_create_env(path, domain, vagrant, mitogen, libvirt, num_hosts, net,
         hosts = [{
             'name': 'host%d' % (i+1),
             'ip': '%s.%d' % (net, i+10),
+            'ansible_host': '%s.%d' % (net, i+10),
             'ip_vpn0': '%s.%d' % (vpn_net, i+1),
-            'shard_id': ('host%d' % (i+1)) if i > 0 else None,
             'groups': ['frontend', 'vagrant'] if i == 0 else ['backend', 'vagrant'],
         } for i in range(num_hosts)]
+        for i in range(1, num_hosts):
+            hosts[i]['shard_id'] = 'host%d' % (i+1)
         # Special case if there's just one host: add the backend group to it!
         if len(hosts) == 1:
             hosts[0]['groups'].append('backend')
@@ -262,11 +242,20 @@ def command_create_env(path, domain, vagrant, mitogen, libvirt, num_hosts, net,
         hosts = [{
             'name': 'host1',
             'ip': '1.2.3.4',
+            'ansible_host': '1.2.3.4',
             'ip_vpn0': '%s.1' % vpn_net,
-            'shard_id': None,
             'groups': ['frontend', 'backend'],
         }]
     vars['hosts'] = hosts
+    vars['inventory'] = {'hosts': dict((h['name'], h) for h in hosts)}
+    if vagrant:
+        vars['inventory']['group_vars'] = {'vagrant': {
+            'ansible_user': 'vagrant',
+            'ansible_become': True,
+            'ansible_ssh_private_key_file': '~/.vagrant.d/insecure_private_key'}}
+        if libvirt and libvirt != 'localhost':
+            vars['inventory']['group_vars']['vagrant']['ansible_ssh_extra_args'] = (
+                '-o ProxyJump=' + libvirt)
 
     if libvirt and libvirt != 'localhost':
         vars['libvirt_user'], vars['libvirt_host'] = libvirt.split('@')
@@ -308,7 +297,7 @@ def command_create_env(path, domain, vagrant, mitogen, libvirt, num_hosts, net,
     filedata = skel['base']
     if vagrant:
         filedata.update(skel['vagrant'])
-    # Create a jinja environment so we can set our toyaml filter.
+    # Create a jinja environment so we can set our filters.
     env = jinja2.Environment(
         loader=jinja2.DictLoader(filedata),
         autoescape=False,

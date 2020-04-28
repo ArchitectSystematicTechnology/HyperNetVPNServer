@@ -1,27 +1,20 @@
 ---
 
-- user:
-    name: "log-collector"
-    system: yes
-    home: "/var/log/remote"
-    groups: ["log-collector-credentials"]
-  
 # Setup Elasticsearch, if enabled.
 - include_tasks: elasticsearch.yml
   when: enable_elasticsearch
 
-# Setup the rsyslog-collector instance. Needs packages from
-# stretch-backports, to support modern versions of Elasticsearch.
-- name: Install rsyslog-elasticsearch package from backports
-  apt:
-    name: rsyslog-elasticsearch
-    default_release: "{{ 'stretch-backports' if float_debian_dist == 'stretch' else '' }}"
-    state: present
 - name: Create the rsyslog-collector logs dir
   file:
     path: "/var/log/remote"
     state: directory
-    owner: "log-collector"
+    owner: "docker-log-collector"
+    mode: 0700
+- name: Create the rsyslog-collector spool dir
+  file:
+    path: "/var/spool/rsyslog-collector"
+    state: directory
+    owner: docker-log-collector
     mode: 0700
 - name: Install logrotate script for local files
   template:
@@ -31,11 +24,6 @@
   template:
     src: "rsyslog-collector.conf.j2"
     dest: "/etc/rsyslog-collector.conf"
-  notify: "restart rsyslog-collector"
-- name: Install rsyslog-collector systemd unit
-  template:
-    src: "rsyslog-collector.service.j2"
-    dest: "/etc/systemd/system/rsyslog-collector.service"
   notify: "restart rsyslog-collector"
 - name: Create the rsyslog-collector normalization rules dir
   file:
@@ -48,3 +36,18 @@
   with_fileglob:
     - files/lognorm/*
   notify: "restart rsyslog-collector"
+
+# TODO: remove when no longer necessary.
+- name: Remove legacy rsyslog-collector service
+  systemd:
+    name: rsyslog-collector.service
+    state: stopped
+    enabled: no
+    masked: yes
+  ignore_errors: true
+
+- name: Remove old rsyslog-collector systemd unit
+  file:
+    path: "/etc/systemd/system/rsyslog-collector.service"
+    state: absent
+

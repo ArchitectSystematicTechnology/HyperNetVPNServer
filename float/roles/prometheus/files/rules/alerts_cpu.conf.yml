@@ -5,7 +5,21 @@ groups:
     expr: instance_utilization:rate5m > 0.96
     for: 10m
     labels:
+      scope: host
       severity: warn
     annotations:
       summary: 'CPU utilization is high on {{ $labels.instance }}'
       description: 'CPU utilization is high on {{ $labels.instance }}'
+
+  # The following alert is used as a signal to inhibit most alerts when
+  # a host is obviously thrashing.
+  - alert: HostThrashing
+    expr: node_load5 > 100
+    for: 5m
+    labels:
+      scope: host
+      severity: page
+    annotations:
+      summary: 'Host {{$labels.host}} is thrashing'
+      description: 'Load average on host {{$labels.host}} is very high ({{$value}}), the host is likely unresponsive.'
+

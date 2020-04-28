@@ -20,7 +20,7 @@ route:
 
   # Only severity=page alerts are ever sent anywhere.
   routes:
-    - receiver: 'alert-email'
+    - receiver: alert
       match:
         severity: page
 
@@ -48,17 +48,25 @@ inhibit_rules:
       scope: 'instance'
     equal: ['alertname']
   # Inhibit all host-level alerts if HostUnreachable is firing.
-  - source_match:
-      alertname: HostUnreachable
+  - source_match_re:
+      alertname: '(HostUnreachable|HostThrashing)'
     target_match:
       severity: 'page'
     equal: ['host']
 
 receivers:
   - name: default
-  - name: 'alert-email'
+  - name: alert
 {% if alert_email %}
     email_configs:
       - to: '{{ alert_email }}'
+        html: '{% raw %}{{ template "email.float.html" . }}{% endraw %}'
+{% endif %}
+{% if alert_webhook_receivers | default([]) %}
+    webhook_configs:
+{% for webhook in alert_webhook_receivers %}
+      - url: "{{ webhook.url }}"
+        send_resolved: {{ webhook.send_resolved | default(False) | to_json }}
+{% endfor %}
 {% endif %}
 

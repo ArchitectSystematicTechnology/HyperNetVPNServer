@@ -55,7 +55,7 @@ groups:
         redundancy ({{ $value }}) and may eventually be at risk.'
 
   - alert: JobDown
-    expr: job:up:ratio < 0.51
+    expr: job:up:ratio < 0.5
     for: 5m
     labels:
       severity: page
@@ -65,7 +65,7 @@ groups:
       description: 'Job {{ $labels.job }} is down globally (availability {{ $value }}).'
 
   - alert: ProbeFailure
-    expr: target:probe_success:ratio{probe!="ping"} < 0.5
+    expr: target:probe_success:ratio{probe!="ping",probeset!="service"} < 0.5
     for: 5m
     labels:
       severity: page
@@ -76,7 +76,7 @@ groups:
         for target {{ $labels.target }} (success ratio {{ $value }}).'
 
   - alert: ProbeFailure
-    expr: probe:probe_success:ratio{probe!="ping"} < 0.5
+    expr: probe:probe_success:ratio{probe!="ping",probeset!="service"} < 0.5
     for: 5m
     labels:
       severity: page

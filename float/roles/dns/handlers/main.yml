@@ -4,6 +4,8 @@
   systemd:
     name: bind9.service
     state: reloaded
+    enabled: yes
+    masked: no
 
 - name: reload firewall
   systemd:

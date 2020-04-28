@@ -2,11 +2,8 @@
 
 - name: restart rsyslog-collector
   systemd:
-    name: "rsyslog-collector.service"
+    name: "docker-log-collector-rsyslog.service"
     state: restarted
-    daemon_reload: yes
-    enabled: yes
-    masked: no
 
 - name: restart elasticsearch
   systemd:

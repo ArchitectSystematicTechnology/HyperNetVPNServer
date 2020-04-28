@@ -483,12 +483,25 @@ class Assignments(object):
 
     @classmethod
     def schedule(cls, services, inventory):
+        """Schedule services on the given host inventory.
+
+        Creates service assignments, with a reproducible (non-random)
+        algorithm so that every invocation with the same configuration
+        produces the same result.
+
+        """
         service_hosts_map = {}
         service_master_map = {}
         group_map = _build_group_map(inventory)
         host_occupation = collections.defaultdict(int)
-        # Iterations should happen over sorted items for reproducible results.
-        for service_name in sorted(services.keys()):
+
+        # Iterations should happen over sorted items for reproducible
+        # results. The sort function combines the 'scheduling_order'
+        # attribute (default -1) and the service name.
+        def _sort_key(service_name):
+            return (services[service_name].get('scheduling_order', -1), service_name)
+
+        for service_name in sorted(services.keys(), key=_sort_key):
             service = services[service_name]
             available_hosts = cls._available_hosts(service, group_map)
             num_instances = service.get('num_instances', 'all')

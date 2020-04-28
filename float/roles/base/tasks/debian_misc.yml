@@ -31,3 +31,10 @@
     src: "sysctl.conf.j2"
     dest: "/etc/sysctl.conf"
   notify: reload sysctl
+
+- name: Configure systemd
+  copy:
+    src: "system.conf"
+    dest: "/etc/systemd/system.dconf"
+  notify: reload systemd
+

@@ -53,19 +53,21 @@
 - file:
     path: /etc/systemd/system/rsyslog.service.d
     state: directory
+
 - name: Configure rsyslog systemd unit to require mtail
   copy:
     src: rsyslog-mtail.conf
     dest: /etc/systemd/system/rsyslog.service.d/mtail.conf
-  register: rsyslog_systemd
-- systemd: daemon_reload=yes
-  when: "rsyslog_systemd is changed"
+  register: mtail_systemd
 
-- name: Create /var/lib/rsyslogd
-  file:
-    path: /var/lib/rsyslogd
-    state: directory
-    mode: 0700
+- name: Configure rsyslog systemd unit
+  copy:
+    src: rsyslog-timeout.conf
+    dest: /etc/systemd/system/rsyslog.service.d/timeout.conf
+  register: rsyslog_systemd
+
+- systemd: daemon_reload=yes
+  when: "mtail_systemd is changed or rsyslog_systemd is changed"
 
 - name: Configure rsyslog
   template:

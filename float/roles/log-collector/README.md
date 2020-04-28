@@ -8,6 +8,11 @@ Logs are forwarded by all machines to a set of (one or more)
 over syslog/tcp (with SSL) and store them locally for search and
 aggregation purposes.
 
+Logs are only written to disk in the centralized collector, all
+process logs are gathered by journald (which stores them in
+memory). Anonymization is also performed centrally on the collector,
+so that only anonymized logs are ever persisted to disk.
+
 ## Log types
 
 There are three main log types at the moment, though more might be
@@ -59,7 +64,8 @@ itself:
   for incoming logs on port 6514 (the standard syslog-tls service),
   and forwards logs, after some processing, to Elasticsearch.
 * Elasticsearch stores logs on the local disk.
-* Kibana is used to provide a query front-end to the archived logs.
+* Kibana is used to provide a web query front-end to the archived
+  logs, in addition to the *logcat* command-line tool.
 
 The structure of Elasticsearch indexes match what would have been
 produced by Logstash, with daily *logstash-YYYY.MM.DD* indexes. HTTP
@@ -83,6 +89,7 @@ indexes.
 Kibana is the availabile UI and its dashboards are sourced from
 `roles/log-collector/files/kibana/provisioning`.
 
-To add a new dashboard, or update an existing one, use Kibana's dashboard API
-to download the dashboard and its related visualizations. The API is available
-at `/api/kibana/dashboards/export?dashboard=DASHBOARD_ID`.
+To add a new dashboard, or update an existing one, use Kibana's
+dashboard API to download the dashboard and its related
+visualizations. The API is available at
+`/api/kibana/dashboards/export?dashboard=DASHBOARD_ID`.

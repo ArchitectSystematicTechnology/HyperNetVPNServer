@@ -11,5 +11,8 @@ alertmanager_smtp_hello: "localhost"
 alertmanager_smtp_auth_username: ""
 alertmanager_smtp_auth_password: ""
 
+# Define if you have a playbook website
+#alertmanager_playbook_url: ""
+
 # Custom blackbox probes.
 prometheus_custom_blackbox_probes: {}

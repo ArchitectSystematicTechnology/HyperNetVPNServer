@@ -42,6 +42,16 @@ log-collector:
       scheme: http
       enable_sso_proxy: true
   containers:
+    - name: rsyslog
+      image: registry.git.autistici.org/ai3/docker/rsyslog:master
+      ports:
+        - 6514
+        - 9105
+      volumes:
+        - /etc/rsyslog-collector.conf: /etc/rsyslog.conf
+        - /etc/rsyslog-collector-lognorm: /etc/rsyslog-collector-lognorm
+        - /var/spool/rsyslog-collector: /var/spool/rsyslog
+        - /var/log/remote: /var/log/remote
     - name: kibana
       image: registry.git.autistici.org/ai3/docker/kibana:master
       port: 5061
@@ -60,8 +70,6 @@ log-collector:
       env:
         PORT: 9200
         EXPORTER_PORT: 9201
-  systemd_services:
-    - rsyslog-collector.service
   ports:
     - 6514
     - 9200

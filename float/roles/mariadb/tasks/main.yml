@@ -97,6 +97,16 @@
     state: link
   when: "not mariadb_resolveip.stat.exists"
 
+- name: Install tmpfiles.d for socket directories
+  template:
+    src: templates/tmpfiles.conf.j2
+    dest: "/etc/tmpfiles.d/{{ mariadb_service }}.conf"
+  register: mariadb_tmpfiles
+
+- name: Create socket directories
+  shell: "systemd-tmpfiles --create"
+  when: mariadb_tmpfiles.changed
+
 - name: Install systemd override file
   template:
     src: templates/service_override.conf.j2
