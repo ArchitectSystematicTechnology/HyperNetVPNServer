@@ -12,6 +12,7 @@ groups:
     annotations:
       summary: 'High HTTP error ratio for {{$labels.vhost}} globally'
       description: 'We are serving lots of 5xx errors for {{$labels.vhost}} on all frontends.'
+      runbook: '[[ alert_playbook_url ]]/HTTPErrorRatioHigh.md'
 
   - alert: HTTPErrorRatioHigh
     expr: (host:nginx_http_requests_errs:ratio > 0.2 and host:nginx_http_requests_total:rate5m > 0.1)
@@ -23,3 +24,5 @@ groups:
     annotations:
       summary: 'High HTTP error ratio for {{$labels.vhost}} on {{$labels.host}}'
       description: 'We are serving lots of 5xx errors for {{$labels.vhost}} on {{$labels.host}}.'
+      runbook: '[[ alert_playbook_url ]]/HTTPErrorRatioHigh.md'
+

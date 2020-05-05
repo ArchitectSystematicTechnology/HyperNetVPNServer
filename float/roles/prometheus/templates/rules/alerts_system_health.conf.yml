@@ -19,12 +19,14 @@ groups:
         summary: "RAID device {{ $labels.md_device }} on {{ $labels.host }} is unhealthy"
         description: "The RAID device {{ $labels.md_device }} on {{ $labels.host }} is reporting a degraded state, which means that probably one or more of the disks in the array have failed."
 
-    - alert: HostPhysicalComponentTooHot
+    - alert: PhysicalComponentTooHot
       expr: node_hwmon_temp_celsius / node_hwmon_temp_crit_celsius > 0.95
       for: 2h
       labels:
+        scope: host
         severity: page
       annotations:
         summary: "A physical component is running too hot on {{ $labels.host }}"
         description: "A sensor is reporting that a physical component ({{ $labels.sensor }}/{{ $labels.chip }}) on {{ $labels.host }} has been running very close to the critical level ({{ $value }}) for the last 2 hours."
+        runbook: '[[ alert_playbook_url ]]/PhysicalComponentTooHot.md'
 

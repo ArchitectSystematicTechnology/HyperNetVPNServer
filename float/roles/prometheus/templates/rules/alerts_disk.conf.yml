@@ -10,3 +10,4 @@ groups:
     annotations:
       summary: 'Disk {{ $labels.mountpoint }} on {{ $labels.instance }} is almost full'
       description: 'Disk {{ $labels.mountpoint }} on {{ $labels.instance }} will be full in less than 4 hours'
+      runbook: '[[ alert_playbook_url ]]/DiskWillFillIn4Hours.md'

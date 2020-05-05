@@ -1,14 +1,5 @@
-{% if alertmanager_playbook_url is defined %}
-{% raw %}{{ define "playbook_url.html" }}{% endraw %}
-<a href="{{ alertmanager_playbook_url }}/{% raw %}{{.Labels.alertname}}{% endraw %}.md">Playbook</a><br />
-{% raw %}{{ end }}{% endraw %}
-{% else %}
-{% raw %}
-{{ define "playbook_url.html" }}{{ end }}
-{% endraw %}
-{% endif %}
+{{ define "__alertmanagerURL" }}https://alerts.[[ domain_public[0] ]]/?q=%40state%3Dactive{{ end }}
 
-{% raw %}
 {{ define "email.float.html" }}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -324,7 +315,7 @@ a {
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td class="content-block">
-                    <a href='{{ template "__alertmanagerURL" . }}' class="btn-primary">View in {{ template "__alertmanager" . }}</a>
+                    <a href='{{ template "__alertmanagerURL" . }}' class="btn-primary">View in alerts dashboard</a>
                   </td>
                 </tr>
                 {{ if gt (len .Alerts.Firing) 0 }}
@@ -341,7 +332,6 @@ a {
                     {{ range .Labels.SortedPairs }}{{ .Name }} = {{ .Value }}<br />{{ end }}
                     {{ if gt (len .Annotations) 0 }}<strong>Annotations</strong><br />{{ end }}
                     {{ range .Annotations.SortedPairs }}{{ .Name }} = {{ .Value }}<br />{{ end }}
-                    {{ template "playbook_url.html" . }}
                     <a href="{{ .GeneratorURL }}">Source</a><br />
                   </td>
                 </tr>
@@ -382,7 +372,7 @@ a {
         <div class="footer">
           <table width="100%">
             <tr>
-              <td class="aligncenter content-block"><a href='{{ .ExternalURL }}'>Sent by {{ template "__alertmanager" . }}</a></td>
+              <td class="aligncenter content-block"><a href="https://alerts.[[ domain_public[0] ]]">Alerts dashboard</a></td>
             </tr>
           </table>
         </div></div>
@@ -394,4 +384,3 @@ a {
 </body>
 </html>
 {{ end }}
-{% endraw %}

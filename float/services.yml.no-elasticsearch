@@ -94,13 +94,15 @@ prometheus:
       env:
         QUERY_FLAGS: "--query.replica-label=monitor {% for h in groups['prometheus']|sort %} --store={{ h }}.prometheus.{{ domain }}:10901{% endfor %}"
         SIDECAR_FLAGS: ""
+    - name: karma
+      image: registry.git.autistici.org/ai3/docker/karma:master
+      ports:
+        - 9193
+      env:
+        ALERTMANAGER_URI: "http://prometheus.{{ domain }}:9093"
   public_endpoints:
     - name: monitor
       port: 9090
-      scheme: http
-      enable_sso_proxy: true
-    - name: alertmanager
-      port: 9093
       scheme: http
       enable_sso_proxy: true
     - name: prober
@@ -115,12 +117,19 @@ prometheus:
       port: 10904
       scheme: http
       enable_sso_proxy: true
+    - name: alerts
+      port: 9193
+      scheme: http
+      enable_sso_proxy: true
   monitoring_endpoints:
     - job_name: prometheus
       port: 9090
       scheme: http
     - job_name: alertmanager
       port: 9093
+      scheme: http
+    - job_name: karma
+      port: 9193
       scheme: http
     - job_name: grafana
       port: 2929

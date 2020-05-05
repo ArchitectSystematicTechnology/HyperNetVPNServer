@@ -63,6 +63,7 @@ groups:
     annotations:
       summary: 'Job {{ $labels.job }} is down globally'
       description: 'Job {{ $labels.job }} is down globally (availability {{ $value }}).'
+      runbook: '[[ alert_playbook_url ]]/JobDown.md'
 
   - alert: ProbeFailure
     expr: target:probe_success:ratio{probe!="ping",probeset!="service"} < 0.5
@@ -74,6 +75,7 @@ groups:
       summary: 'Probe {{ $labels.probe }}@{{ $labels.target }} is failing'
       description: 'Probe {{ $labels.probe }} ({{ $labels.zone }}) is failing
         for target {{ $labels.target }} (success ratio {{ $value }}).'
+      runbook: '[[ alert_playbook_url ]]/ProbeFailure.md'
 
   - alert: ProbeFailure
     expr: probe:probe_success:ratio{probe!="ping",probeset!="service"} < 0.5
@@ -85,3 +87,4 @@ groups:
       summary: 'Probe {{ $labels.probe }} is failing globally'
       description: 'Probe {{ $labels.probe }} ({{ $labels.zone }}) is failing
         globally (success ratio {{ $value }}).'
+      runbook: '[[ alert_playbook_url ]]/ProbeFailure.md'

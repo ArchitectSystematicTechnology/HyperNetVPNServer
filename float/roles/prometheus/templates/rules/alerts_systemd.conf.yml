@@ -9,11 +9,15 @@ groups:
     annotations:
       summary: '{{ $labels.name }} has failed on {{ $labels.host }}'
       description: 'The systemd unit {{ $labels.name }} has failed on {{ $labels.host }}.'
+
   - alert: SystemdUnitCrashLooping
     expr: instance:systemd_unit_restarts:delta10m > 12
     for: 30m
     labels:
+      scope: host
       severity: page
     annotations:
       summary: 'Service {{ $labels.unit }} is crash-looping on {{ $labels.host }}'
       description: 'Systemd unit {{ $labels.unit }} is being restarted repeatedly. Likely a configuration problem.'
+      runbook: '[[ alert_playbook_url ]]/SystemdUnitCrashLooping.md'
+

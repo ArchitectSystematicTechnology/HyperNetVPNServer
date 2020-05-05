@@ -22,4 +22,5 @@ groups:
     annotations:
       summary: 'Host {{$labels.host}} is thrashing'
       description: 'Load average on host {{$labels.host}} is very high ({{$value}}), the host is likely unresponsive.'
+      runbook: '[[ alert_playbook_url ]]/HostThrashing.md'
 

@@ -1,0 +1,13 @@
+groups:
+  - name: roles/prometheus/files/rules/alerts_syslog.conf
+    rules:
+      - alert: SyslogDroppingLogs
+        expr: rsyslog_queue_discarded:rate5m{job="rsyslog-collector"} > 10
+        for: 15m
+        labels:
+          scope: global
+          severity: page
+        annotations:
+          description: 'Syslog collector is dropping logs on {{ $labels.host }}'
+          summary: 'Syslog collector is dropping logs'
+          runbook: '[[ alert_playbook_url ]]/SyslogDroppingLogs.md'

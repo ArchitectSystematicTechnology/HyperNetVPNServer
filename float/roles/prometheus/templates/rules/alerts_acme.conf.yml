@@ -35,3 +35,4 @@ groups:
     annotations:
       summary: 'ACME automation completely broken'
       description: 'It seems that the ACME automation has loaded zero valid certificates, something must be broken.'
+      runbook: '[[ alert_playbook_url ]]/ACMEBroken.md'

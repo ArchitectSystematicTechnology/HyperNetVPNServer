@@ -1,6 +1,11 @@
 ---
 
 # Configure Prometheus components.
+#
+# Since Prometheus configurations and templates are heavy with Go template
+# syntax, which uses the same escapes as Ansible, we override the Ansible
+# template variable delimiters to '[[' and ']]', so that they do not conflict
+# with the Go syntax.
 
 - name: Create /etc/prometheus and subdirs
   file:
@@ -14,17 +19,21 @@
     - "/etc/prometheus/console_libraries"
 
 - name: Install Prometheus rules
-  copy:
+  template:
     src: "{{ item }}"
     dest: "/etc/prometheus/rules/"
+    variable_start_string: "[["
+    variable_end_string: "]]"
   with_fileglob:
-    - files/rules/*.conf.yml
+    - templates/rules/*.conf.yml
   notify: "reload prometheus"
 
 - name: Install alertmanager templates
   template:
     src: "{{ item }}"
     dest: "/etc/prometheus/alertmanager_templates/"
+    variable_start_string: "[["
+    variable_end_string: "]]"
   with_fileglob:
     - templates/alertmanager_templates/*
   notify: "reload prometheus"
