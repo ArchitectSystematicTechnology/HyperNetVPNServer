@@ -1,0 +1,9 @@
+---
+dependencies:
+  - role: geoip-dataset
+    vars:
+      geoip_dataset: 'City'
+  - role: geoip-dataset
+    vars:
+      geoip_dataset: 'Country'
+
