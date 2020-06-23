@@ -1,0 +1,13 @@
+---
+
+- name: stunnel | install (pinned version)
+  apt:
+    pkg: "stunnel4={{ stunnel_version }}"
+    state: present
+  when: stunnel_version is defined and stunnel_version|length > 1
+
+- name: stunnel | install
+  apt:
+    pkg: "stunnel4"
+    state: present
+  when: not (stunnel_version is defined and stunnel_version|length > 1)

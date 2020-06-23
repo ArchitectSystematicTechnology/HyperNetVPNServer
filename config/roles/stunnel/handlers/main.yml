@@ -1,0 +1,8 @@
+---
+
+- name: restart stunnel
+  service:
+    name: stunnel4
+    state: "restarted"
+  become: yes
+  become_method: sudo

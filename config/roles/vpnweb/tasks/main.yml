@@ -46,3 +46,5 @@
   notify:
     - "restart docker-vpnweb-vpnweb"
 
+- import_tasks: "sip.yml"
+  when: vpnweb_auth == "sip"

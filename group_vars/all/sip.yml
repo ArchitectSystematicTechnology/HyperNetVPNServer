@@ -1,0 +1,17 @@
+# when sip2 authentication is not used, the vpnweb_auth should be set to 'anon'
+# and the other values should not be set. By default we'll leave this as 'anon'
+vpnweb_auth: "anon"
+vpnweb_sip_user:
+vpnweb_sip_host:
+vpnweb_sip_port:
+vpnweb_sip_location:
+vpnweb_sip_password:
+vpnweb_auth_secret:
+vpnweb_sip_terminator:
+stunnel_cert: "/etc/credentials/sspki/sip/cert.pem"
+stunnel_key: "/etc/credentials/sspki/sip/private.key"
+stunnel_services:
+  - name: sip_endpoint
+    accept: "127.0.0.1:6001"
+    connect:
+    client: "yes"

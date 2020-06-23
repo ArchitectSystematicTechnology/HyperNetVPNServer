@@ -1,0 +1,29 @@
+---
+
+- name: testing
+  hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: install snakeoil cert
+      apt:
+        name: ssl-cert
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+
+- name: testing
+  hosts: all
+
+  vars:
+    stunnel_cert: /etc/ssl/certs/ssl-cert-snakeoil.pem
+    stunnel_key: /etc/ssl/private/ssl-cert-snakeoil.key
+    stunnel_client: "yes"
+    stunnel_services:
+      - name: redis-server-eth0
+        connect: "127.0.0.1:2000"
+        accept: "3000"
+
+  roles:
+    - role: ansible.stunnel
