@@ -43,7 +43,7 @@ in the same way, change the 'floatrp1' hostname to your hostname, and the
 ansible_host and ip to the IP it should have, and set the location value to
 where this server is located.
 
-Then edit group_vars/all/config.yml, gateway_locations.yml, provider_config.yml
+Then edit group_vars/all/config.yml, gateway_config.yml, provider_config.yml
 to match your environment. Note that the config.yml contains a list of admins, a
 default hashed password, and a set of ssh keys that will be able to connect to
 the system as root. If you do not change this password, then the user 'admin'
@@ -132,31 +132,6 @@ Testing float:
         $ float create-env --vagrant --num-hosts 2 test
         $ cd test; vagrant up
 
-Why is there 'openvpn' and 'openvpn-frontend'?
-
-The "openvpn-frontend" group is completely unrelated to float at all, its there
-to solve an ansible problem: modules/roles can't export "facts" for other roles
-to consume. So, how do you customize a role with data that belongs to something
-else?
-
-In our situation, we want to customize DNS with openvpn-specific data. The
-"openvpn" group, where the "openvpn" role runs, might not overlap with the hosts
-where dns-servers are running. So we create a new role, and tell ansible to run
-it on *top* of the *other* one. The "openvpn-frontend" thus has 'hosts:
-frontend', which is the ansible group corresponding to the role that runs dns
-servers. If ansible had a way to allow a group to indicate "we have this DNS
-information, dns-role please consume it", then this would not be necessary.
-
-The problematic bit is that we want to schedule the openvpn-frontend role on the
-'frontend' groups, and there is no openvpn-frontend service, so instead we are
-customizing the 'frontend' role
-
-If you did not define any groups in hosts.yml, float would still work, it would
-turn up nginx somewhere, backends somewhere else, and all work. But it turns
-out, when deploying to the real-world, people do care where their frontends run,
-as this is your public footprint.  So float comes with the assumption that there
-will be a "frontend" group in your invetory, and just relies on the fact that
-the "frontend" role is scheduled there with num_instances=all
 
 Why is there a '[openvpn]' group, but no host attached to it?
 
