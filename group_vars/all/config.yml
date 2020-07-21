@@ -11,7 +11,7 @@ enable_ssh: true
 enable_osquery: false
 alert_email: root@bitmask.net
 alertmanager_smtp_from: float@bitmask.net
-alertmanager_smtp_smarthost: smtp.bitmask.net
+alertmanager_smtp_smarthost: smtp.bitmask.net:25
 alertmanager_smtp_require_tls: true
 alertmanager_smtp_auth_username: float
 alertmanager_smtp_auth_password: somepassword
