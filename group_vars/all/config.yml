@@ -1,7 +1,6 @@
 ---
 float_debian_dist: buster
 float_limit_bind_to_known_interfaces: true
-testing: false
 domain: infra.bitmask.net
 domain_public:
   - float.bitmask.net
