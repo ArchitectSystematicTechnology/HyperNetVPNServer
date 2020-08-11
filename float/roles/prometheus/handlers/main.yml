@@ -23,3 +23,9 @@
     name: docker-prometheus-grafana.service
     state: restarted
   listen: "restart grafana"
+
+- name: restart karma
+  systemd:
+    name: docker-prometheus-karma.service
+    state: restarted
+  listen: "reload karma"

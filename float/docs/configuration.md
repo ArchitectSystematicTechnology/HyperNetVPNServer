@@ -89,6 +89,21 @@ the public-facing DNS zones, if unset it defaults to `ip`
 `groups` (optional) is a list of groups that this host should be a
 member of.
 
+`resolver_mode` (optional) controls the desired state of the host's
+*resolv.conf* file. The supported values are:
+
+* *ignore* - do nothing and leave resolv.conf alone
+* *localhost* - use localhost as a resolver, presumably some other
+  role will have installed a DNS cache there
+* *internal:NET* - use the frontend hosts as resolvers, over the
+  specified overlay network named NET
+* *external* - use Google Public DNS.
+
+Note that due to ordering issues it is advised to set the *resolver_mode*
+attribute on hosts only after the first setup is complete, to avoid
+breaking DNS resolution while Ansible is running.
+
+
 ## Example
 
 An example of a valid inventory file (for a hypotetic Vagrant
@@ -479,6 +494,12 @@ attribute.
 `on_master_only`: If this attribute is true, and the service's
 *master_election* attribute is also true, the backup job will only be
 run on the master host for the service.
+
+`sharded`: When this attribute is true, the dataset is considered a
+sharded (partitioned) dataset, so float will **not** automatically
+attempt to restore it on new servers: the idea is that for sharded
+datasets, the application layer is responsible for data management.
+This attribute is false by default.
 
 `owner`: For filesystem paths, the user that will own the files upon
 restore.

@@ -28,6 +28,7 @@ create_chain {{ chain }}
 allow_port tcp 3909 -j allow-monitoring # cgroups-exporter
 allow_port tcp 3903 -j allow-monitoring # mtail
 allow_port tcp 9100 -j allow-monitoring # node-exporter
+allow_port tcp 9106 -j allow-monitoring # rsyslog-exporter
 allow_port tcp 9323 -j allow-monitoring # docker
 allow_port tcp 5331 -j allow-monitoring # backup-agent (tabacco)
 {% for s in float_enabled_services|sort %}

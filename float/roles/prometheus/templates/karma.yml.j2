@@ -1,0 +1,21 @@
+# https://github.com/prymitive/karma/blob/master/docs/CONFIGURATION.md
+alertmanager:
+  servers:
+    - name: "{{ domain }}"
+      uri: "http://prometheus.{{ domain }}:9093"
+      proxy: true
+
+# Auto-fill silence dialog with the authenticated user
+authentication:
+  header:
+    name: X-Authenticated-User
+    value_re: ^(.+)$
+
+# Start with 'description' label collapsed
+annotations:
+  hidden:
+    - description
+
+filters:
+  default:
+    - "@state=active"

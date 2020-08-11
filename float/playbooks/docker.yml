@@ -3,3 +3,8 @@
 - hosts: all
   roles:
     - docker
+  serial:
+    - 1
+    - 2
+    - "100%"
+

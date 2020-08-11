@@ -12,7 +12,6 @@ environment, with minimal but complete features, to prepare services
 (and developers) for a full migration to something more sophisticated
 like Kubernetes.
 
-
 # Features
 
 Some of these, especially when comparing against full-featured

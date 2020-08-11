@@ -1,0 +1,29 @@
+Patch for the ansible version in Debian stable (buster) 2.7.7+dfsg-1
+that fixes the issues with MySQL user permissions and recent MariaDB
+packages.
+
+To apply, run:
+
+    sudo patch -p0 -d /usr/lib/python3/dist-packages/ansible < ansible-buster.patch
+
+--- modules/database/mysql/mysql_user.py.orig	2019-02-18 16:21:54.000000000 +0000
++++ modules/database/mysql/mysql_user.py	2020-08-07 23:02:15.152716471 +0100
+@@ -427,14 +427,14 @@
+             return x
+ 
+     for grant in grants:
+-        res = re.match("GRANT (.+) ON (.+) TO '.*'@'.*'( IDENTIFIED BY PASSWORD '.+')? ?(.*)", grant[0])
++        res = re.match("""GRANT (.+) ON (.+) TO (['`"]).*\\3@(['`"]).*\\4( IDENTIFIED BY PASSWORD (['`"]).+\\6)? ?(.*)""", grant[0])
+         if res is None:
+             raise InvalidPrivsError('unable to parse the MySQL grant string: %s' % grant[0])
+         privileges = res.group(1).split(", ")
+         privileges = [pick(x) for x in privileges]
+-        if "WITH GRANT OPTION" in res.group(4):
++        if "WITH GRANT OPTION" in res.group(7):
+             privileges.append('GRANT')
+-        if "REQUIRE SSL" in res.group(4):
++        if "REQUIRE SSL" in res.group(7):
+             privileges.append('REQUIRESSL')
+         db = res.group(2)
+         output[db] = privileges
+

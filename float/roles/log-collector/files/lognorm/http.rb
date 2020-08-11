@@ -4,9 +4,14 @@ version=2
 # setup. The incoming log message starts with a space, the remote host
 # name, and the tag "nginx_access:". Does not index client IP.
 
+# The NGINX log line includes both the server_name and the Host header
+# sent by the client. The 'vhost' field is set to the latter.
+
 rule=:%[
   {"type": "char-to", "extradata": ":"},
   {"type": "literal", "text": ": "},
+  {"type": "word"},
+  {"type": "literal", "text": " "},
   {"type": "word", "name": "vhost"},
   {"type": "literal", "text": " "},
   {"type": "word"},

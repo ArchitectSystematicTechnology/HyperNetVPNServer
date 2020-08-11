@@ -73,6 +73,7 @@ alerting:
 scrape_configs:
 {{ job_static_config('cgroups-exporter', 'all', 3909) }}
 {{ job_static_config('mtail', 'all', 3903) }}
+{{ job_static_config('rsyslog', 'all', 9106) }}
 
 {# Only scrape the backup agents if backup is configured! #}
 {% if backup_repository_restic_password|default(False) %}
@@ -154,7 +155,9 @@ scrape_configs:
           probe: https
           probeset: base
 
-{% for custom_probe in prometheus_custom_blackbox_probes.get('http', []) %}
+{% for probe_type, custom_probes in prometheus_custom_blackbox_probes | dictsort %}
+{% for custom_probe in custom_probes %}
+{% if probe_type == 'http' %}
   - job_name: "prober_https_{{ custom_probe.name }}_{{ prober_idx }}"
     metrics_path: "/probe"
     params:
@@ -175,13 +178,45 @@ scrape_configs:
         replacement: {{ prober_host }}
     static_configs:
       - targets:
-{% for host in groups['frontend']|sort %}
+{% for host in groups[custom_probe.get('service', 'frontend')]|sort %}
         - "https://{{ host }}{{ custom_probe.get('path', '/') }}"
 {% endfor %}
         labels:
           zone: public
           probe: https_{{ custom_probe.name }}
           probeset: custom
+
+{% else %}
+  - job_name: "prober_{{ probe_type }}_{{ custom_probe.name }}_{{ prober_idx }}"
+    metrics_path: "/probe"
+    params:
+      module:
+        - {{ probe_type }}
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: target
+        regex: "([^:]*):.*"
+        replacement: "${1}"
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: {{ prober_host }}.prometheus.{{ domain }}:9115
+      - target_label: host
+        replacement: {{ prober_host }}
+    static_configs:
+      - targets:
+{% for host in groups[custom_probe.get('service', 'frontend')]|sort %}
+        - "{{ host }}:{{ custom_probe.port }}"
+{% endfor %}
+        labels:
+          zone: public
+          probe: {{ probe_type }}_{{ custom_probe.name }}
+          probeset: custom
+
+{% endif %}
+{% endfor %}
 {% endfor %}
 
   - job_name: "prober_dns_{{ prober_idx }}"

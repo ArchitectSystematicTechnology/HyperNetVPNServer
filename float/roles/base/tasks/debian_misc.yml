@@ -10,6 +10,12 @@
     src: "default/locale"
     dest: "/etc/default/locale"
 
+- name: Configure cron
+  copy:
+    src: "default/cron"
+    dest: "/etc/default/cron"
+  notify: "restart cron"
+
 - name: Install /etc/profile.d snippets
   template:
     src: "{{ item }}"
@@ -35,6 +41,6 @@
 - name: Configure systemd
   copy:
     src: "system.conf"
-    dest: "/etc/systemd/system.dconf"
+    dest: "/etc/systemd/system.conf"
   notify: reload systemd
 

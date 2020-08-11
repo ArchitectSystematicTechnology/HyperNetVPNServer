@@ -93,3 +93,8 @@ gateway.expected_nodes: 1
 #
 #action.destructive_requires_name: true
 #
+
+cluster.initial_master_nodes:
+{% for s in groups['log-collector']|sort %}
+  - "{{ s }}"
+{% endfor %}

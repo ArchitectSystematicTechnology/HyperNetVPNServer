@@ -1,6 +1,6 @@
 ---
 
-db_uri: "/var/lib/user-meta-server/usermeta.db?_journal=WAL"
+db_uri: "/var/lib/user-meta-server/usermeta.db"
 http_server:
   tls:
     cert: "/etc/credentials/x509/user-meta-server/server/cert.pem"
@@ -15,7 +15,7 @@ http_server:
         - path: "/api/set_last_login"
           cn: "auth-server.{{ domain }}"
         - path: "/api/get_.*"
-          cn: "(accounts|accountadmin).{{ domain }}"
+          cn: "(accounts|accountadmin|account-automation).{{ domain }}"
         - path: "/metrics"
           cn: ".*"
   max_inflight_requests: 100

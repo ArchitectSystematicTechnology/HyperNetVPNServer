@@ -9,7 +9,7 @@ Define the following configuration variable to enable it:
 
 * *geoip_account_id*
 * *geoip_license_key*
-* *geoip_datasets* (default: country)
+* *geoip_dataset* (default: country)
 
 You will need to register for an account on maxmind.com to obtain
 these.

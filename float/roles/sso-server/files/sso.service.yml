@@ -10,3 +10,5 @@ sso:
     - anti_bruteforce_blacklist
   challenge_response: true
   enable_device_tracking: true
+  enable_last_login_reporting: true
+

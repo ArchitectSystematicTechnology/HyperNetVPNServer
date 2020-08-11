@@ -1,7 +1,6 @@
 # This role expects the following variables to be defined:
 #
-# geoip-dataset:
-#  geoip_datasets [ 'City', 'Country' ]
+# geoip-dataset
 
 # Setup the Country GeoIP database.
 - name: Configure GeoIP downloader

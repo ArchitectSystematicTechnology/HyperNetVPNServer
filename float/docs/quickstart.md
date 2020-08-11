@@ -23,6 +23,11 @@ one it uses to run Ansible, as in the case of Debian Buster (Python
 some Python packages that would normally be installed along with
 Ansible such as Jinja2 and PyYAML.
 
+*NOTE*: the Ansible version packaged with Debian buster (2.7.7) needs
+a patch if your service configuration includes MySQL instances, see
+the `ansible-buster.patch` file in the top-level directory for
+instructions.
+
 The latest Debian stable as of this writing (*buster*) no longer
 packages Virtualbox, so you're going to have to [download and install
 it manually](https://www.virtualbox.org/wiki/Linux_Downloads). The

@@ -7,7 +7,8 @@ Requires=docker.service
 
 [Service]
 ExecStart=/usr/lib/float/docker/run-{{ item.service }}-{{ item.container.name }}.sh
-ExecStop=/usr/bin/docker stop {{ item.service }}-{{ item.container.name }}
+ExecStop=/usr/bin/{{ container_runtime }} stop --time 20 {{ item.service }}-{{ item.container.name }}
+ExecStopPost=-/usr/bin/{{ container_runtime }} kill {{ item.service }}-{{ item.container.name }}
 TimeoutStopSec=60
 KillMode=none
 Restart=always
@@ -17,7 +18,8 @@ SyslogIdentifier={{ item.service }}-{{ item.container.name }}
 
 {% if item.container.resources is defined %}
 {% if item.container.resources.ram is defined %}
-MemoryHigh={{ item.container.resources.ram }}
+MemoryMax={{ item.container.resources.ram }}
+ExecStartPost=+/bin/sh -c "echo 0 > /sys/fs/cgroup/memory/system.slice/%n/memory.swappiness"
 {% endif %}
 {% if item.container.resources.cpu is defined %}
 CPUQuota={{ 100 * item.container.resources.cpu }}%

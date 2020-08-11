@@ -32,10 +32,9 @@
 ##
 ################################################################
 
-## GC configuration
--XX:+UseConcMarkSweepGC
--XX:CMSInitiatingOccupancyFraction=75
--XX:+UseCMSInitiatingOccupancyOnly
+-XX:+UseG1GC
+-XX:G1ReservePercent=25
+-XX:InitiatingHeapOccupancyPercent=30
 
 ## optimizations
 
@@ -103,5 +102,5 @@
 #9-:-Djava.locale.providers=COMPAT
 
 # Silence annoying warning (cf. https://discuss.elastic.co/t/http-publish-host-was-printed-as-ip-port-instead-of-hostname-ip-port/170820/2)
--Des.http.cname_in_publish_address=true
+-Des.transport.cname_in_publish_address=true
 

@@ -21,3 +21,15 @@ emergency_ssh_key: ""
 # The Debian distribution that we are using as the basis.
 float_debian_dist: "buster"
 
+# How to configure resolv.conf, one of the following options:
+# 'ignore' - do nothing and leave resolv.conf alone
+# 'localhost' - use localhost as the name server (presumably a cache)
+# 'internal:NET' - use the frontend hosts as resolvers, over the
+#   specified overlay network NET
+# 'external' - use Google Public DNS.
+resolver_mode: "ignore"
+
+# Controls some problematic sysctl values that may be disabled
+# in the kernels of certain cloud providers.
+disable_restricted_sysctl: false
+

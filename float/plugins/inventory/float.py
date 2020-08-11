@@ -358,7 +358,6 @@ def _host_vars(name, inventory, services, assignments):
         'float_disabled_services': [],
         'float_enabled_containers': [],
         'float_host_service_credentials': [],
-        'float_host_service_credentials_certs': [],
         'float_host_overlay_networks': _host_net_overlays(name, inventory),
         'float_host_dns_map': _host_service_dns_map(
             name, inventory, services, assignments),
@@ -366,8 +365,7 @@ def _host_vars(name, inventory, services, assignments):
 
     # Add default client credentials that are present on all hosts.
     for c in DEFAULT_SERVICE_CREDENTIALS:
-        hv['float_host_service_credentials'].append({'credentials': c})
-        hv['float_host_service_credentials_certs'].append({
+        hv['float_host_service_credentials'].append({
             'credentials': c, 'service': 'LOCAL',
             'mode': 'client', 'x509_params': {}})
 
@@ -390,15 +388,13 @@ def _host_vars(name, inventory, services, assignments):
             for u in services[s].get('systemd_services', []):
                 enabled_systemd_units.add(u)
             for c in services[s].get('service_credentials', []):
-                hv['float_host_service_credentials'].append({
-                    'service': s, 'credentials': c})
                 if c.get('enable_server', True):
                     params = _service_credential_params(name, s, inventory, assignments)
-                    hv['float_host_service_credentials_certs'].append({
+                    hv['float_host_service_credentials'].append({
                         'credentials': c, 'service': s,
                         'mode': 'server', 'x509_params': params})
                 if c.get('enable_client', True):
-                    hv['float_host_service_credentials_certs'].append({
+                    hv['float_host_service_credentials'].append({
                         'credentials': c, 'service': s,
                         'mode': 'client', 'x509_params': {}})
         else:

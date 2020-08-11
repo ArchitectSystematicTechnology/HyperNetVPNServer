@@ -17,4 +17,4 @@ groups:
     annotations:
       summary: '{{ $labels.dataset }} backup failure on {{ $labels.host }}'
       description: 'Dataset {{ $labels.dataset }} has failed its backups on {{ $labels.host }} for two days.'
-      runbook: '[[ alert_playbook_url ]]/BackupFailed.md'
+      runbook: '[[ alert_playbook_url ]]/BackupFailed'

@@ -7,16 +7,19 @@
     owner: root
     group: docker-prometheus
     mode: 0750
-  with_filetree: grafana/
+  with_filetree: templates/grafana/
   when: item.state == 'directory'
+
 - name: Install Grafana config (files)
-  copy:
+  template:
     src: "{{ item.src }}"
     dest: "/etc/grafana/{{ item.path }}"
     owner: root
     group: docker-prometheus
     mode: 0640
-  with_filetree: grafana/
+    variable_start_string: "[["
+    variable_end_string: "]]"
+  with_filetree: templates/grafana/
   when: item.state == 'file'
   notify: restart grafana
 
@@ -26,12 +29,3 @@
     state: directory
     owner: docker-prometheus
     mode: 0700
-
-- name: Install main Grafana configuration file
-  template:
-    src: grafana.ini.j2
-    dest: /etc/grafana/grafana.ini
-    owner: root
-    group: docker-prometheus
-    mode: 0640
-  notify: restart grafana

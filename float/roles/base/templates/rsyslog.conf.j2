@@ -12,6 +12,29 @@ module(load="imuxsock"
 
 module(load="imklog")
 
+# Send stats to the rsyslog-exporter process.
+module(
+  load="impstats"
+  interval="10"
+  format="json"
+  resetCounters="off"
+  ruleset="process_stats"
+)
+
+module(
+  load="omprog"
+)
+
+ruleset(name="process_stats") {
+  action(
+    type="omprog"
+    name="to_exporter"
+    binary="/usr/bin/rsyslog_exporter -web.listen-address=:9106"
+    queue.type="linkedlist"
+    queue.workerThreads="1"
+  )
+}
+
 ruleset(name="incoming") {
 
   # Exclude logs that we explicitly do not want to propagate to the
@@ -22,6 +45,11 @@ ruleset(name="incoming") {
   # Send a copy of everything to mtail.
   action(type="ompipe"
          Pipe="/run/mtail.fifo"
+         # Protect the main queue from mtail pipe full: discard messages on
+         # ompipe action queue full.
+         queue.type="FixedArray"
+         queue.size="4096"
+         queue.timeoutEnqueue="0"
          action.resumeRetryCount="-1"
          action.resumeInterval="2"
          action.resumeIntervalMax="30")

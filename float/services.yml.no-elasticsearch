@@ -99,7 +99,11 @@ prometheus:
       ports:
         - 9193
       env:
-        ALERTMANAGER_URI: "http://prometheus.{{ domain }}:9093"
+        # https://github.com/prymitive/karma/blob/master/docs/CONFIGURATION.md#environment-variables
+        CONFIG_FILE: "/etc/karma/float.yml"
+        PORT: 9193
+      volumes:
+        - /etc/karma: /etc/karma
   public_endpoints:
     - name: monitor
       port: 9090

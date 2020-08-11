@@ -17,9 +17,6 @@ server.host: "0.0.0.0"
 # The Kibana server's name.  This is used for display purposes.
 server.name: "logs.{{ domain_public[0] }}"
 
-# The URL of the Elasticsearch instance to use for all your queries.
-elasticsearch.url: "http://localhost:9200"
-
 # When this setting's value is true Kibana uses the hostname specified in the server.host
 # setting. When the value of this setting is false, Kibana uses the hostname of the host
 # that connects to this Kibana instance.
@@ -102,3 +99,7 @@ logging.dest: stdout
 # The default locale. This locale can be used in certain circumstances to substitute any missing
 # translations.
 #i18n.defaultLocale: "en"
+
+# Don't call out to remote services
+telemetry.enabled: false
+newsfeed.enabled: false

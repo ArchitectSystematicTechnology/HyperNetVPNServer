@@ -23,6 +23,7 @@ groups:
     annotations:
       summary: 'Failure to renew certificate for {{$labels.cn}}'
       description: 'The ACME automation has failed to renew the domain "{{$labels.cn}}" for the last 6 hours. If the situation does not recover, the certificate will eventually expire.'
+      runbook: '[[ alert_playbook_url ]]/CertRenewalFailures'
 
   # Let us know if the ACME automation is completely broken or has
   # failed to load its certificates.
@@ -35,4 +36,4 @@ groups:
     annotations:
       summary: 'ACME automation completely broken'
       description: 'It seems that the ACME automation has loaded zero valid certificates, something must be broken.'
-      runbook: '[[ alert_playbook_url ]]/ACMEBroken.md'
+      runbook: '[[ alert_playbook_url ]]/ACMEBroken'

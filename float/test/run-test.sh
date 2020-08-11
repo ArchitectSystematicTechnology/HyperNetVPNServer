@@ -10,7 +10,7 @@ float_dir="${bin_dir}/.."
 # Used for all ansible/float invocations.
 export ANSIBLE_VAULT_PASSWORD_FILE=".ansible_vault_pw"
 export ANSIBLE_HOST_KEY_CHECKING=False
-export ANSIBLE_STDOUT_CALLBACK=actionable
+export ANSIBLE_STDOUT_CALLBACK=unixy
 
 die() {
     echo "ERROR: $*" >&2

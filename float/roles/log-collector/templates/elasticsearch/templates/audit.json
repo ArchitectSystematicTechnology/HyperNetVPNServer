@@ -7,34 +7,32 @@
         "index.merge.scheduler.max_thread_count": 1
     },
     "mappings": {
-        "events": {
-            "_source": {
-                "excludes": ["ignore", "originalmsg", "unparsed-data"]
-            },
-            "properties": {
-                "category": {"type": "keyword"},
-                "record_type": {"type": "keyword"},
-                "sequence": {"type": "text", "index": false},
-                "session": {"type": "text", "index": false},
-                "data.a0": {"type": "text", "index": false},
-                "data.a1": {"type": "text", "index": false},
-                "data.a2": {"type": "text", "index": false},
-                "data.a3": {"type": "text", "index": false},
-                "process.pid": {"type": "integer", "index": false},
-                "process.ppid": {"type": "integer", "index": false},
-                "user.ids.egid": {"type": "long"},
-                "user.ids.euid": {"type": "long"},
-                "user.ids.fsgid": {"type": "long"},
-                "user.ids.fsuid": {"type": "long"},
-                "user.ids.gid": {"type": "long"},
-                "user.ids.old-auid": {"type": "long", "index": false},
-                "user.ids.sgid": {"type": "long"},
-                "user.ids.suid": {"type": "long"},
-                "user.ids.uid": {"type": "long"},
-                "ignore": {"type": "text", "index": false, "store": false},
-                "originalmsg": {"type": "text", "index": false, "store": false},
-                "unparsed-data": {"type": "text", "index": false, "store": false}
-            }
+        "_source": {
+            "excludes": ["ignore", "originalmsg", "unparsed-data"]
+        },
+        "properties": {
+            "category": {"type": "keyword"},
+            "record_type": {"type": "keyword"},
+            "sequence": {"type": "text", "index": false},
+            "session": {"type": "text", "index": false},
+            "data.a0": {"type": "text", "index": false},
+            "data.a1": {"type": "text", "index": false},
+            "data.a2": {"type": "text", "index": false},
+            "data.a3": {"type": "text", "index": false},
+            "process.pid": {"type": "integer", "index": false},
+            "process.ppid": {"type": "integer", "index": false},
+            "user.ids.egid": {"type": "long"},
+            "user.ids.euid": {"type": "long"},
+            "user.ids.fsgid": {"type": "long"},
+            "user.ids.fsuid": {"type": "long"},
+            "user.ids.gid": {"type": "long"},
+            "user.ids.old-auid": {"type": "long", "index": false},
+            "user.ids.sgid": {"type": "long"},
+            "user.ids.suid": {"type": "long"},
+            "user.ids.uid": {"type": "long"},
+            "ignore": {"type": "text", "index": false, "store": false},
+            "originalmsg": {"type": "text", "index": false, "store": false},
+            "unparsed-data": {"type": "text", "index": false, "store": false}
         }
     }
 }

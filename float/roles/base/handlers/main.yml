@@ -10,6 +10,11 @@
     name: auditd.service
     state: restarted
 
+- name: restart cron
+  systemd:
+    name: cron.service
+    state: restarted
+
 - name: restart mtail
   systemd:
     name: mtail.service

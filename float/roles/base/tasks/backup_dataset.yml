@@ -11,7 +11,10 @@
     dataset_owner: "{{ item.1.get('owner', '') }}"
     dataset_path: "{{ item.1.get('path', '') }}"
     dataset_type: "{% if 'backup_command' in item.1 %}pipe{% else %}file{% endif %}"
-    dataset_should_backup: "{{ item.0.name in float_enabled_services and ((not item.1.get('on_master_only', False)) or (item.0.get('master_host') == inventory_hostname)) }}"
+    dataset_should_backup: "{{ (item.0.name in float_enabled_services) and ((not item.1.get('on_master_only', False)) or (item.0.get('master_host') == inventory_hostname)) }}"
+
+- set_fact:
+    dataset_should_restore: "{{ dataset_should_backup and not item.1.get('sharded', False) }}"
 
 - name: Set up configuration for dataset {{ dataset.name }} (source)
   template:
@@ -47,20 +50,28 @@
     src: "tabacco/restore-script.j2"
     dest: "/usr/lib/float/datasets/restore-{{ dataset_filename }}"
     mode: 0755
-  when: dataset_should_backup
+  when: dataset_should_restore
 
 - name: Create restore service unit
   template:
     src: "tabacco/restore-service.j2"
     dest: "/etc/systemd/system/restore-{{ dataset_filename }}.service"
     mode: 0444
-  when: dataset_should_backup
+  when: dataset_should_restore
+
+- name: Cleanup restore service unit
+  file:
+    path: "/etc/systemd/system/restore-{{ dataset_filename }}.service"
+    state: absent
+  when: "not dataset_should_restore"
+  notify: reload systemd
 
 - name: Enable restore service unit
   systemd:
     name: "restore-{{ dataset_filename }}.service"
     enabled: yes
-  when: dataset_should_backup
+  when: dataset_should_restore
+  notify: reload systemd
 
 - name: Wipe dataset restore guard file
   file:

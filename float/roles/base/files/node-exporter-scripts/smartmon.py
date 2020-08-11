@@ -6,8 +6,11 @@ import datetime
 import decimal
 import itertools
 import re
+import os
 import shlex
 import subprocess
+
+GUARD_FILE = '/etc/smartmon.disable'
 
 device_info_re = re.compile(r'^(?P<k>[^:]+?)(?:(?:\sis|):)\s*(?P<v>.*)$')
 
@@ -386,6 +389,10 @@ def collect_disks_smart_metrics():
 
 
 def main():
+    # Guard file to stop this automation in an emergency.
+    if os.path.exists(GUARD_FILE):
+        sys.exit(0)
+
     version_metric = Metric('smartctl_version', {
         'version': smart_ctl_version()
     }, True)

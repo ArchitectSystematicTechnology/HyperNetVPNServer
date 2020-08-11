@@ -56,12 +56,16 @@ fs.suid_dumpable=0
 # Disable source routed packet acceptance.
 net.ipv4.conf.all.accept_source_route=0
 net.ipv4.conf.default.accept_source_route=0
+net.ipv6.conf.all.accept_source_route=0
+net.ipv6.conf.default.accept_source_route=0
 
 # Do not accept ICMP redirects.
 net.ipv4.conf.all.accept_redirects=0
 net.ipv4.conf.default.accept_redirects=0
 net.ipv4.conf.all.secure_redirects=0
 net.ipv4.conf.default.secure_redirects=0
+net.ipv6.conf.all.accept_redirects=0
+net.ipv6.conf.default.accept_redirects=0
 
 # Do not send ICMP redirects.
 net.ipv4.conf.all.send_redirects=0
@@ -72,3 +76,58 @@ net.ipv4.icmp_ignore_bogus_error_responses=1
 # Enable RFC-recommended source route validation.
 net.ipv4.conf.all.rp_filter=1
 net.ipv4.conf.default.rp_filter=1
+
+# Prevent the automatic loading of line disciplines
+# https://lore.kernel.org/patchwork/patch/1034150
+dev.tty.ldisc_autoload=0
+
+# Additional protections for fifos, hardlinks, regular files, and symlinks
+# https://patchwork.kernel.org/patch/10244781
+# slightly tightened up from the systemd default values of "1" for each
+fs.protected_fifos=2
+fs.protected_hardlinks=1
+fs.protected_regular=2
+fs.protected_symlinks=1
+
+{% if not disable_restricted_sysctl %}
+# Disable the kexec system call (can be used to replace the running kernel)
+# https://lwn.net/Articles/580269
+# (linux-hardened default)
+kernel.kexec_load_disabled=1
+{% endif %}
+
+# Impose restrictions on exposing kernel pointers
+# https://lwn.net/Articles/420403
+# (linux-hardened default)
+kernel.kptr_restrict=2
+
+# Restrict use of the performance events system by unprivileged users
+# https://lwn.net/Articles/696216
+# (linux-hardened default)
+kernel.perf_event_paranoid=3
+
+# Disable the "magic sysrq key" functionality
+# https://security.stackexchange.com/questions/138658
+# https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1861238
+kernel.sysrq=0
+
+{% if not disable_restricted_sysctl %}
+# Harden the BPF JIT compiler and restrict unprivileged use of BPF
+# https://www.zerodayinitiative.com/advisories/ZDI-20-350
+# https://lwn.net/Articles/660331
+# (linux-hardened default)
+net.core.bpf_jit_harden=2
+kernel.unprivileged_bpf_disabled=1
+{% endif %}
+
+# Disable unprivileged user namespaces
+# https://lwn.net/Articles/673597
+# (linux-hardened default)
+#kernel.unprivileged_userns_clone=0
+
+# Enable yama ptrace restrictions
+# https://www.kernel.org/doc/Documentation/security/Yama.txt
+# (linux-hardened default)
+# set to "3" if the use of ptrace is not needed
+kernel.yama.ptrace_scope=1
+

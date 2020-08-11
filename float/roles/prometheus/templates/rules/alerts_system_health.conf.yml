@@ -28,5 +28,5 @@ groups:
       annotations:
         summary: "A physical component is running too hot on {{ $labels.host }}"
         description: "A sensor is reporting that a physical component ({{ $labels.sensor }}/{{ $labels.chip }}) on {{ $labels.host }} has been running very close to the critical level ({{ $value }}) for the last 2 hours."
-        runbook: '[[ alert_playbook_url ]]/PhysicalComponentTooHot.md'
+        runbook: '[[ alert_playbook_url ]]/PhysicalComponentTooHot'
 

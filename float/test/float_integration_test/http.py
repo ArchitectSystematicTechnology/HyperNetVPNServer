@@ -4,7 +4,6 @@ import os
 import re
 import socket
 import ssl
-import urllib.request, urllib.parse, urllib.error
 import urllib.request, urllib.error, urllib.parse
 import urllib.parse
 

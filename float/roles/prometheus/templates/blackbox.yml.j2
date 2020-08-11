@@ -43,6 +43,10 @@ modules:
         Host: "{{ custom_probe.host }}"
       fail_if_ssl: false
       fail_if_not_ssl: true
+{% if custom_probe.regexp is defined %}
+      fail_if_not_matches_regexp:
+        - "{{ custom_probe.regexp }}"
+{% endif %}
       preferred_ip_protocol: ip4
       tls_config:
         server_name: "{{ custom_probe.host }}"
@@ -66,3 +70,59 @@ modules:
       valid_rcodes:
         - "NOERROR"
 
+  # Standard protocol-oriented probes to be used with prometheus_custom_blackbox_probes.
+  imap_starttls:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: ip4
+      query_response:
+        - expect: "OK.*STARTTLS"
+        - send: ". STARTTLS"
+        - expect: "OK"
+        - starttls: true
+        - send: ". capability"
+        - expect: "CAPABILITY IMAP4rev1"
+      tls_config:
+        insecure_skip_verify: true
+
+  imap_tls:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      tls: true
+      preferred_ip_protocol: ip4
+      query_response:
+        - expect: "OK.*"
+      tls_config:
+        insecure_skip_verify: true
+
+  smtp_starttls:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: ip4
+      query_response:
+        - expect: "^220 ([^ ]+) ESMTP (.+)$"
+        - send: "EHLO prober"
+        - expect: "^250-STARTTLS"
+        - send: "STARTTLS"
+        - expect: "^220"
+        - starttls: true
+        - send: "EHLO prober"
+        - expect: "^250-AUTH"
+        - send: "QUIT"
+      tls_config:
+        insecure_skip_verify: true
+
+  smtp_tls:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      tls: true
+      preferred_ip_protocol: ip4
+      query_response:
+        - expect: "^220 ([^ ]+) ESMTP (.+)$"
+        - send: "QUIT"
+      tls_config:
+        insecure_skip_verify: true

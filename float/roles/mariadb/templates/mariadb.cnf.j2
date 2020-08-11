@@ -23,6 +23,11 @@ innodb_log_file_size={{ mariadb_innodb_log_file_size }}
 innodb_log_buffer_size=8M
 log_warnings=3
 
+# For long mysqldumps.
+max_allowed_packet=1024M
+net_read_timeout=3600
+net_write_timeout=3600
+
 # Do not block hosts because of errors.
 max_connect_errors = 4294967295
 

@@ -12,8 +12,8 @@ class URLTestBase(TestBase):
         url = 'https://%s.%s/' % (
             public_endpoint_name, ANSIBLE_VARS['domain_public'][0])
         result = c.request(url, self.frontend_ip())
-        self.assertFalse(result.get('error'))
-        self.assertEqual(200, result['status'])
+        self.assertFalse(result.get('error'), f'url={url}')
+        self.assertEqual(200, result['status'], f'url={url}')
 
 
 class TestHTTPRouter(URLTestBase):

@@ -1,0 +1,15 @@
+{% if resolver_mode == 'localhost' %}
+nameserver 127.0.0.1
+options edns0
+{% elif resolver_mode.startswith('internal:') %}
+{% set dns_overlay_net = resolver_mode[9:] %}
+{% for h in groups['frontend'] | sort %}
+nameserver {{ hostvars[h]['ip_' + dns_overlay_net] }}
+{% endfor %}
+options edns0 rotate
+{% else %}
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+options edns0
+{% endif %}
+

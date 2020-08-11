@@ -58,3 +58,14 @@
   loop:
     - alertmanager
     - metrics2
+
+- name: Create /etc/karma
+  file:
+    path: /etc/karma
+    state: directory
+
+- name: Install Karma configuration
+  template:
+    src: karma.yml.j2
+    dest: "/etc/karma/float.yml"
+  notify: "reload karma"

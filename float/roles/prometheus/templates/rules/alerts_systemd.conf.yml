@@ -19,5 +19,5 @@ groups:
     annotations:
       summary: 'Service {{ $labels.unit }} is crash-looping on {{ $labels.host }}'
       description: 'Systemd unit {{ $labels.unit }} is being restarted repeatedly. Likely a configuration problem.'
-      runbook: '[[ alert_playbook_url ]]/SystemdUnitCrashLooping.md'
+      runbook: '[[ alert_playbook_url ]]/SystemdUnitCrashLooping'
 

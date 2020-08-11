@@ -37,17 +37,3 @@
     - files/lognorm/*
   notify: "restart rsyslog-collector"
 
-# TODO: remove when no longer necessary.
-- name: Remove legacy rsyslog-collector service
-  systemd:
-    name: rsyslog-collector.service
-    state: stopped
-    enabled: no
-    masked: yes
-  ignore_errors: true
-
-- name: Remove old rsyslog-collector systemd unit
-  file:
-    path: "/etc/systemd/system/rsyslog-collector.service"
-    state: absent
-

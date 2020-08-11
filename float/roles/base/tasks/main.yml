@@ -86,3 +86,10 @@
 
 - import_tasks: ipmi.yml
   when: ipmi_device.stat.exists == true
+
+- name: Configure resolv.conf
+  template:
+    src: "resolv.conf.j2"
+    dest: "/etc/resolv.conf"
+  when: "resolver_mode != 'ignore'"
+

@@ -156,6 +156,7 @@ def command_run(config, playbooks,
                 ansible_check=False,
                 ansible_diff=False,
                 ansible_stdout=None,
+                ansible_limit=None,
                 ansible_extra_vars=[]):
     if not os.path.exists(config):
         raise Exception(
@@ -185,6 +186,8 @@ def command_run(config, playbooks,
             cmd.append('--check')
         if ansible_diff:
             cmd.append('--diff')
+        if ansible_limit:
+            cmd.extend(['--limit', ansible_limit])
         for v in ansible_extra_vars:
             cmd.append('--extra-vars=' + v)
         cmd.append(arg)
@@ -398,6 +401,9 @@ themselves.
         '-e', '--extra-vars', dest='ansible_extra_vars',
         action='append', default=[],
         help='Extra variables for Ansible')
+    run_parser.add_argument(
+        '-l', '--limit', dest='ansible_limit',
+        help='Limit to selected hosts')
 
     kwargs = vars(parser.parse_args())
     cmd = kwargs.pop('subparser')

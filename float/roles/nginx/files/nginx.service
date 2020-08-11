@@ -12,7 +12,7 @@ PIDFile=/run/nginx/nginx.pid
 # option, force ownership here or nginx will refuse to (re)start.
 ExecStartPre=+/usr/bin/install -v -d -m 700 -o nginx -g nginx /var/cache/nginx /var/cache/nginx/temp
 ExecStartPre=/usr/sbin/nginx -t -q -g 'daemon on; master_process on; error_log stderr;'
-ExecStart=/usr/sbin/nginx -g 'daemon on; master_process on; error_log stderr;'
+ExecStart=/usr/sbin/nginx -g 'daemon on; master_process on; error_log /dev/null;'
 ExecReload=/usr/sbin/nginx -g 'daemon on; master_process on; error_log stderr;' -s reload
 ExecStop=/bin/kill -TERM $MAINPID
 

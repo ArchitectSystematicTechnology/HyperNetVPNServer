@@ -10,7 +10,7 @@ groups:
         annotations:
           description: 'Availability too low for service {{ $labels.float_service }}'
           summary: 'Availability too low for service {{ $labels.float_service }}'
-          runbook: '[[ alert_playbook_url ]]/ServiceAvailabilityTooLow.md'
+          runbook: '[[ alert_playbook_url ]]/ServiceAvailabilityTooLow'
 
       - alert: ServiceDegraded
         expr: float_service:ok_by_host == 0

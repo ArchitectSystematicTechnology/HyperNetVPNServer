@@ -6,7 +6,7 @@ counter nginx_http_bytes by host, vhost, method, code, backend
 counter nginx_http_bytes_cache by host, vhost, cache_status
 counter nginx_http_requests_ms by le, host, vhost, method, code, backend 
 
-/(?P<hostname>[-0-9A-Za-z._:]+) nginx_access: (?P<vhost>[-0-9A-Za-z._:]+) (?P<remote_addr>[0-9a-f\.:]+) - - \[[^\]]+\] "(?P<request_method>[A-Z]+) (?P<request_uri>\S+) (?P<http_version>HTTP\/[0-9\.]+)" (?P<status>\d{3}) ((?P<response_size>\d+)|-) "[^"]*" "[^"]*" (?P<upstream_addr>[-0-9A-Za-z._:]+) ((?P<ups_resp_seconds>\d+\.\d+)|-) (?P<request_seconds>\d+)\.(?P<request_milliseconds>\d+) (?P<cache_status>\S+)/ {
+/(?P<hostname>[-0-9A-Za-z._:]+) nginx_access: (?P<vhost>[-0-9A-Za-z._:]+) \S+ (?P<remote_addr>[0-9a-f\.:]+) - - \[[^\]]+\] "(?P<request_method>[A-Z]+) (?P<request_uri>\S+) (?P<http_version>HTTP\/[0-9\.]+)" (?P<status>\d{3}) ((?P<response_size>\d+)|-) "[^"]*" "[^"]*" (?P<upstream_addr>[-0-9A-Za-z._:]+) ((?P<ups_resp_seconds>\d+\.\d+)|-) (?P<request_seconds>\d+)\.(?P<request_milliseconds>\d+) (?P<cache_status>\S+)/ {
 
 	nginx_http_request_total++
 

@@ -17,4 +17,4 @@
 # Set up a SOCKS5 proxy for debugging purposes, running on 'host1'.
 
 - include_tasks: debug-proxy.yml
-  when: "inventory_hostname == 'host1' and enable_testing_socks_proxy|default(True) and testing|default(True)"
+  when: "enable_testing_socks_proxy|default(True) and testing|default(True)"

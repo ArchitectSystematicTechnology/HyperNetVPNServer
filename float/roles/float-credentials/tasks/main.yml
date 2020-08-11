@@ -1,0 +1,26 @@
+---
+
+# Distribute the SSO public key to all hosts.
+- file:
+    path: /etc/sso
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Install SSO public key
+  copy:
+    src: "{{ credentials_dir }}/sso/public.key"
+    dest: /etc/sso/public.key
+    mode: 0644
+
+# Create a group for public credentials.
+- name: Create public-credentials group
+  group:
+    name: public-credentials
+    system: yes
+
+# Create the root directory for public credentials.
+- file:
+    path: /etc/credentials/public
+    state: directory

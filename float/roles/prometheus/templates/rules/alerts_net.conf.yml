@@ -9,7 +9,7 @@ groups:
     annotations:
       description: 'Conntrack table on {{ $labels.instance }} is more than 90% full.'
       summary: 'Conntrack table on {{ $labels.instance }} is almost full'
-      runbook: '[[ alert_playbook_url ]]/ConntrackTableFull.md'
+      runbook: '[[ alert_playbook_url ]]/ConntrackTableFull'
 
   - alert: NetworkErrors
     expr: instance:node_network_errs_total:rate5m > 1
@@ -19,7 +19,7 @@ groups:
     annotations:
       summary: 'High rate of packet errors on {{ $labels.instance }}/{{ $labels.device }}'
       description: 'High rate of packet errors on {{ $labels.instance }} device {{ $labels.device }}.'
-      runbook: '[[ alert_playbook_url ]]/NetworkErrors.md'
+      runbook: '[[ alert_playbook_url ]]/NetworkErrors'
 
   - alert: NetworkDrops
     expr: instance:node_network_drop_total:rate5m > 1
@@ -29,7 +29,7 @@ groups:
     annotations:
       summary: 'High rate of packet drops on {{ $labels.instance }}/{{ $labels.device }}'
       description: 'High rate of packet drops on {{ $labels.instance }} device {{ $labels.device }}.'
-      runbook: '[[ alert_playbook_url ]]/NetworkDrops.md'
+      runbook: '[[ alert_playbook_url ]]/NetworkDrops'
 
   - alert: HostUnreachable
     expr: probe_success{job="blackbox_ping"} < 1
@@ -39,4 +39,4 @@ groups:
     annotations:
       summary: 'Host {{ $labels.instance }} is unreachable'
       description: 'Host {{ $labels.instance }} is unreachable (does not respond to icmp).'
-      runbook: '[[ alert_playbook_url ]]/HostUnreachable.md'
+      runbook: '[[ alert_playbook_url ]]/HostUnreachable'
