@@ -1,6 +1,6 @@
 create_chain sslh
 {# Need to find the interface that has 'ip' on it. #}
-{% for intf in ansible_interfaces if hostvars[inventory_hostname]['ansible_' + intf].ipv4.address == ip %}
+{% for intf in ansible_interfaces if hostvars[inventory_hostname]['ansible_' + intf].ipv4.address | default('') == ip %}
 add_rule -A OUTPUT -o {{ intf }} -p tcp -m tcp --sport 8443 -j sslh
 add_rule -A OUTPUT -o {{ intf }} -p tcp -m tcp --sport 1194 -j sslh
 {% endfor %}
