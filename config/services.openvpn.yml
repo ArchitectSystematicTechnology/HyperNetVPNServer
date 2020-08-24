@@ -94,6 +94,7 @@ vpnweb:
         VPNWEB_SIP_PORT: "{{ vpnweb_sip_port }}"
         VPNWEB_SIP_LIBR_LOCATION: "{{ vpnweb_sip_location }}"
         VPNWEB_SIP_TERMINATOR: "{{ vpnweb_sip_terminator }}"
+        VPNWEB_PASSWORD_POLICY: "{{ vpnweb_password_policy }}"
   public_endpoints:
     - name: api
       port: 8000

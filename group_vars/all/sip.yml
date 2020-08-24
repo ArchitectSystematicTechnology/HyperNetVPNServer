@@ -8,6 +8,10 @@ vpnweb_sip_location:
 vpnweb_sip_password:
 vpnweb_auth_secret:
 vpnweb_sip_terminator:
+
+# if using sip2 authentication and no password, set this to "ignore"
+vpnweb_password_policy: "require"
+
 stunnel_cert: "/etc/credentials/sspki/sip/cert.pem"
 stunnel_key: "/etc/credentials/sspki/sip/private.key"
 stunnel_services:
