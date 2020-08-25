@@ -27,3 +27,9 @@
     state: link
     force: true
 
+# TODO: remove this once the podman packaging issues are fixed.
+- name: Install a working seccomp.json
+  copy:
+    src: "seccomp-0.3.2.json"
+    dest: "/usr/share/containers/seccomp.json"
+

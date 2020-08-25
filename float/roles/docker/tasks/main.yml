@@ -3,13 +3,6 @@
 - set_fact:
     container_runtime: "podman"
 
-- set_fact:
-    container_runtime: "docker"
-  when: "ansible_distribution_release == 'stretch'"
-
-- include_tasks: buster_upgrade.yml
-  when: "ansible_distribution_release == 'buster'"
-
 - include_tasks: docker.yml
   when: "container_runtime == 'docker'"
 

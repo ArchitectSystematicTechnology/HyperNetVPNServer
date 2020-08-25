@@ -8,17 +8,9 @@
     dest: "/etc/apt/preferences.d/99float-syslog"
   when: float_debian_dist == 'buster'
 
-# Install rsyslog from the backports repository. This isn't strictly
-# necessary but it is done to have the same version of rsyslog on all
-# hosts, including the log-collector.
-#
-# This sources.list check must use float_debian_dist because otherwise
-# Ansible complains about the unknown source on dist upgrades.
-# TODO: drop this check when stretch is obsolete.
-- name: Install rsyslog packages from backports
+- name: Install rsyslog packages
   apt:
     name: "{{ packages }}"
-    default_release: "{{ 'stretch-backports' if float_debian_dist == 'stretch' else '' }}"
     state: present
   vars:
     packages:
@@ -34,7 +26,7 @@
 
 - name: Install mtail systemd unit
   copy:
-    src: "{{ 'mtail.service' if ansible_distribution_release == 'stretch' else 'mtail.service.buster' }}"
+    src: "mtail.service"
     dest: "/etc/systemd/system/mtail.service"
   notify: restart mtail
 

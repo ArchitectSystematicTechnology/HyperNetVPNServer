@@ -114,7 +114,7 @@
   register: mariadb_systemd_unit
 
 - name: Bootstrap data directory
-  shell: "/usr/bin/mysql_install_db --defaults-file={{ mariadb_config }} --datadir={{ mariadb_data_dir }} --user=mysql --auth-root-authentication-method=socket {{ ansible_distribution_release == 'stretch' and '--skip-auth-anonymous-user' or '' }} && date > {{ mariadb_data_dir }}/.float-bootstrap-ok"
+  shell: "/usr/bin/mysql_install_db --defaults-file={{ mariadb_config }} --datadir={{ mariadb_data_dir }} --user=mysql --auth-root-authentication-method=socket && date > {{ mariadb_data_dir }}/.float-bootstrap-ok"
   args:
     creates: "{{ mariadb_data_dir }}/.float-bootstrap-ok"
 

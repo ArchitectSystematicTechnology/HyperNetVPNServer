@@ -31,6 +31,7 @@
   mount:
     path: "{{ volume.path }}"
     src: "{{ lv_dev }}"
+    opts: "rw,noatime{% if volume.mount_opts is defined %},{{ volume.mount_opts }}{% endif %}"
     fstype: ext4
     state: mounted
 

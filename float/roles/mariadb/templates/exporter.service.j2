@@ -4,11 +4,7 @@ Description=Prometheus exporter for MySQL server (%I)
 [Service]
 Restart=always
 User=prometheus
-{% if ansible_distribution_release == 'stretch' %}
-ExecStart=/usr/bin/prometheus-mysqld-exporter -web.listen-address {{ mariadb_metrics_address }}:{{ mariadb_metrics_port }} -config.my-cnf {{ mariadb_metrics_config }} -collect.info_schema.tables=false -collect.info_schema.tablestats=false
-{% else %}
 ExecStart=/usr/bin/prometheus-mysqld-exporter --web.listen-address {{ mariadb_metrics_address }}:{{ mariadb_metrics_port }} --config.my-cnf {{ mariadb_metrics_config }} --no-collect.info_schema.tables --no-collect.info_schema.tablestats
-{% endif %}
 
 [Install]
 WantedBy=multi-user.target

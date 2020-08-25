@@ -12,10 +12,6 @@ HostKey /etc/ssh/ssh_host_{{ key_type }}_key
 HostCertificate /etc/ssh/ssh_host_{{ key_type }}_key-cert.pub
 {% endfor %}
 
-{% if ansible_distribution_release == 'stretch' %}
-UsePrivilegeSeparation sandbox
-{% endif %}
-
 # Ciphers and MACs
 KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
 Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr

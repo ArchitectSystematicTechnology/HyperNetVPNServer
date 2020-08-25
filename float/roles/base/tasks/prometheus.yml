@@ -2,7 +2,7 @@
 
 - name: Install prometheus config files in /etc/default
   copy:
-    src: "{{ 'node-exporter.default' if ansible_distribution_release == 'stretch' else 'node-exporter.default.buster' }}"
+    src: "node-exporter.default"
     dest: "/etc/default/prometheus-node-exporter"
   notify:
     - reload prometheus-node-exporter

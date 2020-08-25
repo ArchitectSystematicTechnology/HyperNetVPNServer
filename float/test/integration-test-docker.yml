@@ -9,14 +9,7 @@
         content: "{{ vars|to_nice_yaml }}"
 
     - name: Setup test Docker image
-      docker_image:
-        name: registry.git.autistici.org/ai3/float:integration-test
-        force: true
-      when: "ansible_distribution_release == 'stretch'"
-
-    - name: Setup test Docker image
       command: "podman pull registry.git.autistici.org/ai3/float:integration-test"
-      when: "ansible_distribution_release != 'stretch'"
 
     - name: Run tests
       command: docker run --net host --mount type=bind,source=/tmp/test-config.yml,destination=/test-config.yml registry.git.autistici.org/ai3/float:integration-test

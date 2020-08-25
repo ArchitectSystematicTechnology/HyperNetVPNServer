@@ -24,11 +24,6 @@ usage_err() {
     exit 2
 }
 
-die() {
-    echo "$*" >&2
-    exit 1
-}
-
 opt_root=0
 docker_opts=
 while [ $# -gt 0 ]; do
@@ -63,11 +58,12 @@ shift
 if [ $opt_root -eq 0 ]; then
     # Find the user that the container is running as.
     container_uidgid=$(podman inspect -f '{{ '{{' }}.Config.User{{ '}}' }}' ${container_name})
-    if [ -z "${container_uidgid}" ]; then
-        die "ERROR: can't find container ${container_name}"
+    if [ -n "${container_uidgid}" ]; then
+        # If we haven't found a user, it could be that the container
+        # itself is running as root. If the container does not exist,
+        # the 'docker exec' command will report an error anyway.
+        docker_opts="${docker_opts} --user ${container_uidgid}"
     fi
-
-    docker_opts="${docker_opts} --user ${container_uidgid}"
 fi
 
 exec {{ container_runtime }} exec ${docker_opts} ${container_name} "$@"

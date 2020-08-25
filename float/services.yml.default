@@ -53,7 +53,7 @@ log-collector:
         - /var/spool/rsyslog-collector: /var/spool/rsyslog
         - /var/log/remote: /var/log/remote
     - name: kibana
-      image: registry.git.autistici.org/ai3/docker/kibana:kibana7
+      image: registry.git.autistici.org/ai3/docker/kibana:master
       port: 5061
       volumes:
         - /etc/kibana/kibana.yml: /etc/kibana/kibana.yml
@@ -61,7 +61,7 @@ log-collector:
       env:
         BABEL_CACHE_PATH: "/var/lib/kibana/.babelcache.json"
     - name: elasticsearch
-      image: registry.git.autistici.org/ai3/docker/elasticsearch:es7
+      image: registry.git.autistici.org/ai3/docker/elasticsearch:master
       port: 9200
       volumes:
         - /etc/elasticsearch: /etc/elasticsearch

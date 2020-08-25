@@ -41,6 +41,7 @@
 
 # Audit configuration on Debian stretch uses augenrules by default, so
 # we copy our rules in /etc/audit/rules.d.
+# TODO: evaluate whether we still need this.
 - name: Auditd installed
   apt:
     name: "{{ packages }}"
