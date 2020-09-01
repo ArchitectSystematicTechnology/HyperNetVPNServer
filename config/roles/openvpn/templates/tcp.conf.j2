@@ -14,7 +14,7 @@ tls-version-min 1.2
 dev tun
 duplicate-cn
 keepalive 10 30
-local {{ public_ip|default(ip) }}
+local {{ gateway_address|default(ip) }}
 mute-replay-warnings
 mute 5
 proto tcp

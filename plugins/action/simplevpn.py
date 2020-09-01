@@ -40,7 +40,7 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
         "locations": config.locations,
         "gateways": [{
                 "host": "%s.%s" % (v["inventory_hostname"], public_domain),
-                "ip_address": v["ip"],
+                "ip_address": v["gateway_address"],
                 "location": v.get("location", "Unknown"),
                 "capabilities": {
                     "adblock": False,

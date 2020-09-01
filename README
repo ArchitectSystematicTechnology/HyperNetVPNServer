@@ -38,10 +38,12 @@ everytime.
 app host's hostname, and specify the ansible_host and ip values to be the IP
 addresses for that host. If you have more than one app server, then you would
 just create a copy of this block, modifying the values, being sure to keep the
-'backend' group assigned to each one. Configure the front-end reverse proxy with
-in the same way, change the 'floatrp1' hostname to your hostname, and the
-ansible_host and ip to the IP it should have, and set the location value to
-where this server is located.
+'backend' group assigned to each one.
+
+Configure the front-end reverse proxy with in the same way, change the
+'floatrp1' hostname to your hostname, and the ansible_host and ip to the IP it
+should have, and set the location value to where this server is located. For the
+gateway_address, put the secondary gateway ip.
 
 Then edit group_vars/all/config.yml, gateway_config.yml, provider_config.yml
 to match your environment. Note that the config.yml contains a list of admins, a

@@ -16,3 +16,10 @@
     dest: '/etc/dns/manual/openvpn.yml'
   notify: reload openvpn DNS config
 
+- name: Setup secondary gateway address
+  interfaces_file:
+    dest: /etc/network/interfaces
+    iface: "{{ ansible_default_ipv4.interface }}"
+    option: post-up
+    value: "ip addr add {{ gateway_address }} dev {{ ansible_default_ipv4.interface }}"
+  notify: restart networking
