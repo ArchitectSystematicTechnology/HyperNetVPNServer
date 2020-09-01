@@ -27,7 +27,6 @@ such as *dpkg-buildpackage*.
 * [ai3/tools/replds](https://git.autistici.org/ai3/tools/replds)
 * [ai3/tools/tabacco](https://git.autistici.org/ai3/tools/tabacco)
 
-* [ai3/thirdparty/systemd-docker](https://git.autistici.org/ai3/thirdparty/systemd-docker)
 * [ai3/thirdparty/rsyslog-exporter](https://git.autistici.org/ai3/thirdparty/rsyslog-exporter)
 * [ai3/thirdparty/restic](https://git.autistici.org/ai3/thirdparty/restic)
 

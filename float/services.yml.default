@@ -56,7 +56,7 @@ log-collector:
       image: registry.git.autistici.org/ai3/docker/kibana:master
       port: 5061
       volumes:
-        - /etc/kibana/kibana.yml: /etc/kibana/kibana.yml
+        - /etc/kibana: /etc/kibana
         - /var/lib/kibana: /var/lib/kibana
       env:
         BABEL_CACHE_PATH: "/var/lib/kibana/.babelcache.json"
