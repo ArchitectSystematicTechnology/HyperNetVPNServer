@@ -1,15 +1,19 @@
 ---
 
-# TODO: switch to keyserver once the apt_key --no-tty bug in Ansible is fixed.
-- name: Install podman repository key
+- name: Remove podman repository key
   apt_key:
     id: 2472D6D0D2F66AF87ABA8DA34D64390375060AA4
     url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x4D64390375060AA4'
-    state: present
+    state: absent
+
+- name: Remove opensuse podman repository
+  apt_repository:
+    repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /"
+    state: absent
 
 - name: Install podman repository
   apt_repository:
-    repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /"
+    repo: "deb http://deb.autistici.org/urepo buster-podman/"
     state: present
 
 - name: Install podman packages

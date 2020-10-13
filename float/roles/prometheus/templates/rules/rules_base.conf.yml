@@ -27,6 +27,7 @@ groups:
 
       # Special metric for the ping probe. The label_replace() sets
       # the host to the value of the target label (instead of the host
-      # running the prober).
+      # running the prober). The 'bool' qualifier makes the greater-than
+      # operation not act as a filter.
       - record: host_reachable
-        expr: label_replace(target:probe_success:ratio{probe="ping"} > 0.6, "host", "$1", "target", "(.*)")
+        expr: label_replace(target:probe_success:ratio{probe="ping"} > bool 0.6, "host", "$1", "target", "(.*)")

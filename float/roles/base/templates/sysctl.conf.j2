@@ -38,13 +38,6 @@ net.ipv4.tcp_wmem=4096 655360 6553600
 net.core.somaxconn=4000
 net.core.netdev_max_backlog=4000
 
-# TCP socket recycling.
-# The tcp_tw_reuse setting is particularly useful in environments where
-# numerous short connections are open and left in TIME_WAIT state, such
-# as web servers. Reusing the sockets can be very effective in reducing
-# server load.
-net.ipv4.tcp_tw_reuse=1
-
 # Required by Elasticsearch and other JVM-based Docker images.
 vm.max_map_count=262144
 

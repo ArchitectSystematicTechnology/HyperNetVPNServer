@@ -1,0 +1,4 @@
+@cert-authority *.{{ domain }} {{ lookup('file', credentials_dir + '/ssh/key.pub') }}
+{% for entry in additional_ssh_known_hosts | default([]) %}
+{{ entry }}
+{% endfor %}

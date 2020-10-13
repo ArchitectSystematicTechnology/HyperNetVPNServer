@@ -95,6 +95,17 @@ run_integration_test() {
         || die "failed to run the integration tests"
 }
 
+save_logs() {
+    local test_dir="$1"
+    local out_dir="$2"
+
+    pushd $test_dir
+    ANSIBLE_STDOUT_CALLBACK=unixy \
+    ${float_dir}/float run --extra-vars "out_dir=$out_dir" \
+        ${bin_dir}/save-logs.yml
+    popd
+}
+
 usage() {
     cat <<EOF
 Usage: $0 [<options>] <test-dir>
@@ -163,6 +174,10 @@ while [ $# -gt 0 ]; do
         --network)
             private_network="$1"
             ;;
+        --save-logs)
+            shift
+            save_logs="$1"
+            ;;
         -*)
             echo "Unknown option '$1'" >&2
             usage >&2
@@ -195,6 +210,10 @@ fi
 
 if [ ${keep_vms} -eq 0 ]; then
     trap "stop_vagrant; rm -fr \"$test_dir\"" EXIT SIGINT SIGTERM
+fi
+
+if [ -n "${save_logs}" ]; then
+    trap "save_logs \"$test_dir\" \"$save_logs\"" EXIT SIGINT SIGTERM
 fi
 
 setup_ansible_env

@@ -33,9 +33,9 @@
     - reload ssh
 
 - name: Generate ssh_known_hosts
-  copy:
-    dest: /etc/ssh/ssh_known_hosts
-    content: "@cert-authority *.{{ domain }} {{ lookup('file', credentials_dir + '/ssh/key.pub') }}"
+  template:
+    src: "ssh/ssh_known_hosts.j2"
+    dest: "/etc/ssh/ssh_known_hosts"
 
 # Copy the configuration files.
 - name: Install SSH configuration (files)

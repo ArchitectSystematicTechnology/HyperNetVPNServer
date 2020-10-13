@@ -1,0 +1,16 @@
+- hosts: log-collector
+  gather_facts: no
+  tasks:
+    - name: Enumerate syslog files
+      find:
+        paths: /var/log/remote/
+        patterns: "*.log"
+        depth: 2
+        recurse: yes
+      register: remote_logs
+
+    - name: Fetch syslog files
+      fetch:
+        src: "{{ item.path }}"
+        dest: "{{ out_dir }}"
+      with_items: "{{ remote_logs.files }}"

@@ -480,7 +480,7 @@ which schedules the backup job at a random offset for each host within
 the specified interval. Intervals can be written in a human-friendly
 syntax like *7d* or *12h*. This is the fundamental mechanism for
 spreading the load of the different hosts on the backup server without
-central coordination.
+central coordination. If unspecified, the default is "@random\_every 1d".
 
 `path`: Local (on each host) filesystem path that contains the
 dataset. This selects the *file* type for the dataset, and is
