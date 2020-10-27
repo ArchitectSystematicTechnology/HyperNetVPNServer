@@ -17,9 +17,17 @@
   notify: reload openvpn DNS config
 
 - name: Setup secondary gateway address
-  interfaces_file:
-    dest: /etc/network/interfaces
-    iface: "{{ ansible_default_ipv4.interface }}"
-    option: post-up
-    value: "ip addr add {{ gateway_address }} dev {{ ansible_default_ipv4.interface }}"
-  notify: restart networking
+  template:
+    src: 'add_gateway_ips.j2'
+    dest: '/usr/local/sbin/add_gateway_ips.sh'
+    mode: '0744'
+  notify: add gateway address
+  when: gateway_address is defined
+
+- name: Ensure gateway address is added on reboot
+  cron:
+    name: "add gateway address"
+    special_time: reboot
+    job: '/usr/local/sbin/add_gateway_ips.sh'
+  when: gateway_address is defined
+

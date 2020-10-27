@@ -5,6 +5,7 @@ hosts:
     ip: 10.121.20.10
     ip_vpn0: 172.16.1.1
     location: Seattle
+    gateway_address: 10.121.20.44
   floatapp1:
     groups: [backend, vagrant]
     ansible_host: 10.121.20.11

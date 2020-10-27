@@ -2,9 +2,5 @@
 - listen: reload openvpn DNS config
   shell: "/usr/sbin/update-dns && rndc reload"
 
-- name: Restarting network to enable gateway address
-  become: yes
-  service:
-    name: networking
-    state: restarted
-  listen: restart networking
+- listen: add gateway address
+  shell: '/usr/local/sbin/add_gateway_ips.sh'
