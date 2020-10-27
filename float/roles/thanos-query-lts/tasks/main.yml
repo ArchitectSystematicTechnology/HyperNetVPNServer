@@ -1,0 +1,18 @@
+---
+
+# Configure Thanos query to ask Prometheus Long Term Storage
+
+- name: Create /etc/thanos and subdirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "/etc/thanos"
+    - "/etc/thanos/store-sd"
+
+- name: Install Thanos query discovery files
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/thanos/store-sd/{{ item }}"
+  loop:
+    - "prometheus-lts.yml"

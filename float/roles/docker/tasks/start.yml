@@ -58,11 +58,12 @@
   block:
 
     - name: Pull the container images
-      command: "float-pull-image {{ item.container.image }}"
+      command: "float-pull-image{% if ansible_check_mode %} --check{% endif %} {{ item.container.image }}"
       register: container_image
       loop: "{{ float_enabled_containers }}"
       changed_when: "container_image.rc == 0"
       failed_when: "container_image.rc not in [0, 42]"
+      check_mode: no
 
     - name: Start the systemd units
       systemd:

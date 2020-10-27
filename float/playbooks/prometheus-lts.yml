@@ -1,0 +1,8 @@
+- hosts: prometheus-lts
+  roles:
+    - prometheus-lts
+
+# Configure 'thanos query' on 'prometheus' hosts to discover prometheus-lts
+- hosts: prometheus
+  roles:
+    - thanos-query-lts

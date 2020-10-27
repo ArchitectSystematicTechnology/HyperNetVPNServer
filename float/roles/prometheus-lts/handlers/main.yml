@@ -1,0 +1,7 @@
+---
+
+- name: restart prometheus-lts
+  systemd:
+    name: docker-prometheus-lts-prometheus.service
+    state: restarted
+  listen: "reload prometheus-lts"

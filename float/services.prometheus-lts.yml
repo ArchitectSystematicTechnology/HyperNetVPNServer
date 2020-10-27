@@ -1,0 +1,46 @@
+# Prometheus LTS pulls from one of the available (shorter term) 'prometheus' servers
+# The Thanos sidecar is used to allow 'thanos query' to query and merge results
+# from Prometheus LTS.
+
+prometheus-lts:
+  scheduling_group: backend
+  num_instances: 1
+  service_credentials:
+    - { name: prometheus-lts }
+  containers:
+    - name: prometheus
+      image: registry.git.autistici.org/ai3/docker/prometheus:master
+      port: 9099
+      volumes:
+        - /etc/prometheus-lts: /etc/prometheus-lts
+        - /var/lib/prometheus-lts/metrics2: /var/lib/prometheus-lts/metrics2
+      args: "--config.file=/etc/prometheus-lts/prometheus.yml --web.listen-address=0.0.0.0:9099 --storage.tsdb.path=/var/lib/prometheus-lts/metrics2 --storage.tsdb.retention.time={{ prometheus_lts_tsdb_retention | default('395d') }} --web.external-url=https://monitor-lts.{{ domain_public[0] }}"
+    - name: thanos
+      image: registry.git.autistici.org/ai3/docker/thanos:master
+      ports:
+        - 10911 # sidecar grpc
+        - 10912 # sidecar http
+      env:
+        QUERY_OFF: "yes" # The main 'thanos query' service is 'prometheus'
+        SIDECAR_GRPC_ADDRESS: "0.0.0.0:10911"
+        SIDECAR_HTTP_ADDRESS: "0.0.0.0:10912"
+        SIDECAR_FLAGS: "--prometheus.url=http://localhost:9099"
+  public_endpoints:
+    - name: monitor-lts
+      port: 9099
+      scheme: http
+      enable_sso_proxy: true
+  monitoring_endpoints:
+    - job_name: prometheus-lts
+      port: 9099
+      scheme: http
+    - job_name: thanos-sidecar-lts
+      port: 10912
+      scheme: http
+  ports:
+    - 10911
+  volumes:
+    - name: metrics-lts
+      path: /var/lib/prometheus-lts
+      owner: docker-prometheus-lts
+      group: docker-prometheus-lts

@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: geoip-dataset
+    vars:
+      geoip_dataset: 'ASN'

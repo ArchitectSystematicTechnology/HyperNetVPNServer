@@ -11,6 +11,7 @@
     no_block: yes
   ignore_errors: true
   with_items: "{{ float_disabled_systemd_units }}"
+  changed_when: false
 
 # Also clear failed status if any for disabled units
 - name: Reset failed unwanted systemd units

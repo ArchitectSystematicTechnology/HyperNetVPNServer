@@ -74,6 +74,8 @@ def _to_list(l):
 def _read_yaml(path):
     with open(path) as fd:
         data = yaml.safe_load(fd)
+    if not data:
+        return {}
     if not isinstance(data, dict):
         raise ConfigError('data in %s is not a dictionary' % (path,))
     if 'include' in data:

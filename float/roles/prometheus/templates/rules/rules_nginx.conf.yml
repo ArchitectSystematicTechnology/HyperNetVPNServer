@@ -16,3 +16,13 @@ groups:
   - record: global:nginx_http_cached_requests:ratio
     expr: clamp_max(sum(rate(nginx_http_requests_cache[5m])) by (vhost, cache_status) / ignoring (cache_status) group_left global:nginx_http_requests_total:rate5m, 1)
 
+- name: http_requests_ms_histogram
+  rules:
+  - record: vhost_le:nginx_http_requests_ms:rate5m
+    expr: sum(rate(nginx_http_requests_ms[5m])) by (vhost, le)
+  - record: vhost:nginx_http_requests_ms:50p5m
+    expr: histogram_quantile(0.50, vhost_le:nginx_http_requests_ms:rate5m)
+  - record: vhost:nginx_http_requests_ms:90p5m
+    expr: histogram_quantile(0.90, vhost_le:nginx_http_requests_ms:rate5m)
+  - record: vhost:nginx_http_requests_ms:99p5m
+    expr: histogram_quantile(0.99, vhost_le:nginx_http_requests_ms:rate5m)

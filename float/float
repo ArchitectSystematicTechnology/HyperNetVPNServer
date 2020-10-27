@@ -105,6 +105,7 @@ Vagrant.configure(2) do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.cpus = 1
     libvirt.memory = {{ ram }}
+    libvirt.random_hostname = true
   end
 {% endif %}
 
@@ -202,8 +203,9 @@ def _parse_network(s):
     return m.group(1)
 
 
-def command_create_env(path, domain, vagrant, mitogen, libvirt, num_hosts, net,
-                       apt_proxy, debian_dist, ram, no_elasticsearch):
+def command_create_env(path, domain, infra_domain, vagrant, mitogen, libvirt,
+                       num_hosts, net, apt_proxy, debian_dist, ram,
+                       no_elasticsearch):
     if os.path.exists(path):
         raise Exception('Target %s already exists' % path)
 
@@ -263,9 +265,11 @@ def command_create_env(path, domain, vagrant, mitogen, libvirt, num_hosts, net,
     if libvirt and libvirt != 'localhost':
         vars['libvirt_user'], vars['libvirt_host'] = libvirt.split('@')
 
+    if not infra_domain:
+        infra_domain = 'infra.' + domain
     vars['config'] = {
         'testing': True,
-        'domain': 'infra.%s' % domain,
+        'domain': infra_domain,
         'domain_public': [domain],
         'net_overlays': [
             {'name': 'vpn0',
@@ -359,6 +363,9 @@ themselves.
     create_env_parser.add_argument(
         '--domain', default='example.com',
         help='public domain to use (default: example.com)')
+    create_env_parser.add_argument(
+        '--infra-domain',
+        help='infrastructural domain to use (default: "infra." + domain)')
     create_env_parser.add_argument(
         '--net',
         help='Vagrant private network (default: randomly selected)')

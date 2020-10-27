@@ -1,0 +1,74 @@
+{# Generate static targets for hosts in an Ansible group #}
+{% macro targets_for_group(group, port) %}
+      - targets:
+{% for host in groups[group]|sort %}
+          - "{{ host }}:{{ port }}"
+{% endfor %}
+{% endmacro %}
+
+{# Generate static targets for hosts in a float service #}
+{% macro targets_for_service(group, service_name, port) %}
+      - targets:
+{% for host in groups[group]|sort %}
+          - "{{ host }}.{{ service_name }}.{{ domain }}:{{ port }}"
+{% endfor %}
+{% endmacro %}
+
+{# Generate a static_configs entry for a scrape config #}
+{% macro static_configs_for_group(group, port, service_name='') %}
+    static_configs:
+{% if service_name %}
+{{ targets_for_service(group, service_name, port) }}
+        labels:
+          service: "{{ service_name }}"
+{% else %}
+{{ targets_for_group(group, port) }}
+{% endif %}
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: host
+        regex: "([^.]*).*:[0-9]+"
+        replacement: "${1}"
+{% endmacro %}
+
+global:
+  scrape_interval: "{{ prometheus_lts_scrape_interval }}"
+
+  # Set an external label unique to this host, but remove it
+  # from the generated alerts so that they match across all
+  # Prometheus instances.
+  external_labels:
+    monitor: "{{ inventory_hostname }}-lts"
+
+alerting:
+  alert_relabel_configs:
+    - regex: monitor
+      action: labeldrop
+  alertmanagers:
+    - static_configs:
+{{ targets_for_service('prometheus', 'prometheus', 9093) }}
+
+scrape_configs:
+  - job_name: "prometheus-federation"
+    honor_labels: true
+    metrics_path: '/federate'
+    params:
+      'match[]':
+        - '{__name__=~".+"}'
+    metric_relabel_configs:
+      # Drop replica label 'monitor' to get unique metrics
+      - action: labeldrop
+        regex: monitor
+      # Drop high cardinality metrics
+{% for metric in prometheus_lts_drop_metrics|sort %}
+      - source_labels: ['__name__']
+        regex: "{{ metric }}"
+        action: drop
+{% endfor %}
+    static_configs:
+      - targets:
+          - "prometheus.{{ domain }}:9090"
+
+rule_files:
+  - /etc/prometheus-lts/rules/*.yml
+

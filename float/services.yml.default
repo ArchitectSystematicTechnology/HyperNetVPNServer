@@ -23,6 +23,25 @@ frontend:
       mode: "0700"
       size: 20g
 
+reports-collector:
+  scheduling_group: frontend
+  containers:
+    - name: http
+      image: registry.git.autistici.org/ai3/tools/reports-collector:master
+      port: 3995
+      env:
+        ADDR: ":3995"
+      volumes:
+        - /var/lib/GeoIP: /var/lib/GeoIP
+  public_endpoints:
+    - name: live-reports
+      port: 3995
+      scheme: http
+  monitoring_endpoints:
+    - job_name: reports-collector
+      port: 3995
+      scheme: http
+
 log-collector:
   scheduling_group: backend
   num_instances: 1
@@ -128,6 +147,8 @@ prometheus:
       env:
         QUERY_FLAGS: "--query.replica-label=monitor {% for h in groups['prometheus']|sort %} --store={{ h }}.prometheus.{{ domain }}:10901{% endfor %}"
         SIDECAR_FLAGS: ""
+      volumes:
+        - /etc/thanos: /etc/thanos
     - name: karma
       image: registry.git.autistici.org/ai3/docker/karma:master
       ports:

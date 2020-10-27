@@ -29,6 +29,9 @@ setup shared across all servers:
 * `enable_ssh` (default: *True*): whether to take over the SSH
   configuration and set up a SSH CA for host-based authentication.
 
+* `enable_osquery` (default: *False*): when True, install *osquery*
+  on all hosts
+
 * `mail_relay`: a dictionary of attributes configuring outbound email
   over (authenticated) SMTP. Useful when you do not intend on running
   your own mail service. Available attributes:

@@ -6,30 +6,110 @@
 
 set -u
 
-image=${1:-}
 binary={{ container_runtime }}
 
-if [ -z "$image" ]; then
-  echo "usage: <image url>"
-  exit 1
-fi
-
-get_image_version() {
-  $binary inspect --type image --format "{{ '{{' }}.Id{{ '}}' }}" $image
+get_main_auth_token() {
+    jq -r .auths.\"${registry_hostname}\".auth ~/.docker/config.json 2>/dev/null
 }
 
-pre_version=$(get_image_version)
+get_auth_token() {
+    local url="$1"
+    local auth_hdr="$(curl -s -I -H "Accept: application/vnd.docker.distribution.manifest.v2+json" "$url" \
+                         | awk 'BEGIN{IGNORECASE=1} /^www-authenticate:/ {print $3}')"
+    local scope=$(printf "%s" "${auth_hdr}" | sed -e 's/^.*scope="\([^"]*\)".*$/\1/')
+    local service=$(printf "%s" "${auth_hdr}" | sed -e 's/^.*service="\([^"]*\)".*$/\1/')
+    local realm=$(printf "%s" "${auth_hdr}" | sed -e 's/^.*realm="\([^"]*\)".*$/\1/')
+    local main_auth_token="$(get_main_auth_token)"
+    local curl_opts=""
+    if [ -n "${main_auth_token}" ]; then
+        curl_opts="-H \"Authorization: Bearer ${main_auth_token}\""
+    fi
+    curl ${curl_opts} -s "${realm}?service=${service}&scope=${scope}" | jq -r .token
+}
 
-$binary pull $image
+get_remote_image_version() {
+    local url="https://${registry_hostname}/v2/${image_path}/manifests/${image_tag}"
+    local token="$(get_auth_token "$url")"
+    curl -s -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+         -H "Authorization: Bearer ${token}" \
+         "$url" \
+         | jq -r .config.digest
+}
 
-if [ $? -gt 0 ]; then
-  exit 1
+get_local_image_version() {
+    $binary inspect --type image --format "{{ '{{' }}.Id{{ '}}' }}" $image
+}
+
+check() {
+    local_version=$(get_local_image_version)
+    remote_version=$(get_remote_image_version)
+    if [ -z "${remote_version}" ]; then
+        echo "ERROR: Failed to obtain container version from the registry" >&2
+        exit 1
+    fi
+    if [ "${local_version}" != "${remote_version}" ]; then
+        exit 42
+    fi
+}
+
+pull() {
+    pre_version=$(get_local_image_version)
+
+    $binary pull $image
+    if [ $? -gt 0 ]; then
+        exit 1
+    fi
+
+    post_version=$(get_local_image_version)
+
+    if [ "$pre_version" == "$post_version" ]; then
+        exit 42
+    fi
+}
+
+# Main.
+op="pull"
+image=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --check)
+            op="check"
+            ;;
+        -*)
+            echo "Unknown option $1" >&2
+            exit 2
+            ;;
+        *)
+            image="$1"
+            ;;
+    esac
+    shift
+done
+
+if [ -z "$image" ]; then
+  echo "Usage: $0 [--check] <image url>" >&2
+  exit 2
 fi
 
-post_version=$(get_image_version)
+registry_hostname="${image%%/*}"
+case "$image" in
+    *:*)
+        image_tag="${image##*:}"
+        ;;
+    *)
+        image_tag=latest
+        ;;
+esac
+image_without_tag="${image%:*}"
+image_path="${image_without_tag#*/}"
 
-if [ "$pre_version" == "$post_version" ]; then
-  exit 42
-fi
+case "$op" in
+    pull)
+        pull
+        ;;
+    check)
+        check
+        ;;
+esac
 
 exit 0

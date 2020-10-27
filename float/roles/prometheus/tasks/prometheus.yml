@@ -17,6 +17,7 @@
     - "/etc/prometheus/alertmanager_templates"
     - "/etc/prometheus/consoles"
     - "/etc/prometheus/console_libraries"
+    - "/etc/thanos"
 
 - name: Install Prometheus rules
   template:

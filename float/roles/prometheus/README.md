@@ -98,3 +98,16 @@ in the instance you happen to talk to.
 Instead, one should drop the dashboard JSON files in the
 */etc/grafana/dashboards/* directory, preferably using a custom
 Ansible role as mentioned above.
+
+## Extending metrics storage retention
+
+Float supports so-called long term storage (lts) for Prometheus metrics via
+federation.
+
+The `prometheus-lts` service provides such functionality; it will **scrape**
+all Prometheus instances via federation. For queries, the service also runs a
+`thanos sidecar` instance to make long term metrics available.
+
+Although the service is not active by default, it can be deployed by including
+`playbooks/prometheus-lts.yml` in `site.yml` and the corresponding
+`services.prometheus-lts.yml` in `services.yml`.

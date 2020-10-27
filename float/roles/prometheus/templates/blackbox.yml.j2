@@ -126,3 +126,14 @@ modules:
         - send: "QUIT"
       tls_config:
         insecure_skip_verify: true
+
+  irc_tls:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      tls: true
+      preferred_ip_protocol: ip4
+      query_response:
+        - expect: "^:.* NOTICE .+ :\\*\\*\\*"
+      tls_config:
+        insecure_skip_verify: true

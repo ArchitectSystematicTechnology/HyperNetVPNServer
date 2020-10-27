@@ -1,0 +1,4 @@
+prometheus_lts_scrape_interval: '5m'
+prometheus_lts_drop_metrics:
+  - node_systemd_unit_state
+  - nginx_http_requests_ms

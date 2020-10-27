@@ -1,0 +1,29 @@
+---
+
+# Configure Prometheus Long Term Storage
+
+- name: Create /etc/prometheus-lts and subdirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "/etc/prometheus-lts"
+    - "/etc/prometheus-lts/rules"
+
+- name: Install Prometheus configs
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/prometheus-lts/{{ item }}"
+  loop:
+    - "prometheus.yml"
+  notify: "reload prometheus-lts"
+
+- name: Create /var/lib/prometheus-lts dirs
+  file:
+    path: "/var/lib/prometheus-lts/{{ item }}"
+    state: directory
+    owner: docker-prometheus-lts
+    group: docker-prometheus-lts
+    mode: 0750
+  loop:
+    - metrics2

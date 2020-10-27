@@ -47,6 +47,7 @@
   apt:
     update_cache: yes
     cache_valid_time: '{{ 1800 if ansible_distribution_release == float_debian_dist else 1 }}'
+  changed_when: false
 
 # When testing, try to make dpkg faster by disabling fsync.
 - name: Speed up dpkg
@@ -78,6 +79,7 @@
       - acpid
       - lz4
       - man-db
+      - jq
 
 - name: Install extra packages
   apt:

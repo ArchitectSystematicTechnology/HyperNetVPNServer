@@ -94,6 +94,8 @@ prometheus:
       env:
         QUERY_FLAGS: "--query.replica-label=monitor {% for h in groups['prometheus']|sort %} --store={{ h }}.prometheus.{{ domain }}:10901{% endfor %}"
         SIDECAR_FLAGS: ""
+      volumes:
+        - /etc/thanos: /etc/thanos
     - name: karma
       image: registry.git.autistici.org/ai3/docker/karma:master
       ports:

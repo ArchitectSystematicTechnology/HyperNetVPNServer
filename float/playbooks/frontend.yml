@@ -16,3 +16,7 @@
   roles:
     - acme
 
+- hosts: reports-collector
+  roles:
+    - reports-collector
+

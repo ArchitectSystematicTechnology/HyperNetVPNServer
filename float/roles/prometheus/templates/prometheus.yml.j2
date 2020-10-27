@@ -207,9 +207,15 @@ scrape_configs:
         replacement: {{ prober_host }}
     static_configs:
       - targets:
+{% if custom_probe.get('hosts') %}
+{% for host in custom_probe.get('hosts')|sort %}
+        - "{{ host }}:{{ custom_probe.port }}"
+{% endfor %}
+{% else %}
 {% for host in groups[custom_probe.get('service', 'frontend')]|sort %}
         - "{{ host }}:{{ custom_probe.port }}"
 {% endfor %}
+{% endif %}
         labels:
           zone: public
           probe: {{ probe_type }}_{{ custom_probe.name }}

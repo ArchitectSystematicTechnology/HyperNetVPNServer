@@ -208,13 +208,17 @@ else
     test_dir="${PWD}/test-${test_name}"
 fi
 
-if [ ${keep_vms} -eq 0 ]; then
-    trap "stop_vagrant; rm -fr \"$test_dir\"" EXIT SIGINT SIGTERM
-fi
+cleanup_cmd=""
 
 if [ -n "${save_logs}" ]; then
-    trap "save_logs \"$test_dir\" \"$save_logs\"" EXIT SIGINT SIGTERM
+    cleanup_cmd="save_logs \"$test_dir\" \"$save_logs\";"
 fi
+
+if [ ${keep_vms} -eq 0 ]; then
+    cleanup_cmd="${cleanup_cmd} stop_vagrant; rm -fr \"$test_dir\";"
+fi
+
+trap "$cleanup_cmd" EXIT SIGINT SIGTERM
 
 setup_ansible_env
 
