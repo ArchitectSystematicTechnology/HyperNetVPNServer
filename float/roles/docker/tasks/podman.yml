@@ -16,6 +16,14 @@
     repo: "deb http://deb.autistici.org/urepo buster-podman/"
     state: present
 
+- name: Pin podman packages to our repository
+  copy:
+    dest: "/etc/apt/preferences.d/99podman"
+    content: |
+        Package: podman
+        Pin: origin deb.autistici.org
+        Pin-Priority: 1001
+
 - name: Install podman packages
   apt:
     name: "{{ packages }}"
