@@ -92,7 +92,7 @@ Be sure you can ssh to the hosts as root with a public key that will not be prom
 
 Run: 
 ```shell
-float/float run site.yml. 
+float/float run site.yml 
 ```
 This will take some time to finish, as it needs to download packages and Docker images and configure everything.
 
