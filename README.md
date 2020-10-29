@@ -179,5 +179,6 @@ You might have noticed that site.yml has a hosts parameter with roles assigned t
 For the 'openvpn' service, there is a scheduling_group, which sets the *scope* of the possible hosts that the service will be scheduled onto. Float will create automatically a 'openvpn' group, containing just the hosts that 'openvpn' is running on. We did not define an 'openvpn' group in the hosts.yml ansible inventory, yet such a group is automatically created by float, and you can use it in Ansible. This 'openvpn' group is a subset of the scheduling_group.
 
 ***"where can I run openvpn"*** -> scheduling_group (frontend) 
+
 ***"where is openvpn actually running"**** -> "openvpn" group
 
