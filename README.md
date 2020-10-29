@@ -9,7 +9,7 @@ You need to run the following commands ***locally on your computer*** in order t
 You'll need ansible < 2.10 and python3 for the installation process. This installation guide is tested on Debian buster. 
 Other Linux distributions might need additional steps to install all requirements in the correct version.
 
-```
+```shell
 sudo apt-get install golang bind9utils python3-pysodium python3-jinja2 python3-netaddr python3-openssl python3-yaml python3-six python3-crypto ansible git
 go get -u git.autistici.org/ale/x509ca
 go get -u git.autistici.org/ale/ed25519gen
@@ -24,7 +24,7 @@ Make sure `$ ansible --version | grep "python version" shows a python 3 version.
 
 ...and enter it
 
-```
+```shell
 git clone https://0xacab.org/leap/container-platform/float
 cd float
 ```
@@ -33,26 +33,26 @@ cd float
 
 ... by creating a password file:
 
-```
+```shell
 tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 26 > .ansible_vault_pw
 ```
 
 _Optionally_: gpg encrypt this file, so only trusted admins can read it. If you do *not* encrypt this file, then this repository should not be shared anywhere public:
 
-```
+```shell
 gpg -e .ansible.vault_pw ; rm .ansible.vault_pw
 ```
 
 Configure your local environment to know where the ansible vault password is located:
 
-```
+```shell
 export ANSIBLE_VAULT_PASSWORD_FILE=.ansible_vault_pw
 ```
 
 _NOTE:_ if you performed the optional encryption step above, you will
 need to add .gpg to the end of the file name below:
 
-```
+```shell
 export ANSIBLE_VAULT_PASSWORD_FILE=.ansible_vault_pw.gpg
 ```
 
@@ -65,7 +65,7 @@ Open _hosts.yml_ and change `floatapp1` to your app host's hostname, and specify
 Configure the front-end reverse proxy with in the same way, change the `floatrp1` hostname to your hostname, and the `ansible_host` and `ip` to the IP it should have, and set the  `location` value to where this server is located. For the gateway_address, put the secondary gateway ip.
 
 Then edit _group_vars/all/config.yml_, _group_vars/all/gateway_locations.yml_, _group_vars/all/provider_config.yml_ to match your environment. Note that the _config.yml_ contains a list of admins, a default hashed password and a set of ssh keys that will be able to connect to the system as root. If you do not change this password, then the user 'admin' and password 'password' are used. To change the hashed password you can run 
-```
+```shell
 pwtool <type-here-your-password>
 ``` 
 and paste the output into the `password` variable.
@@ -75,7 +75,7 @@ and paste the output into the `password` variable.
 ... by running the init-credentials playbook. This will ansible-vault-encrypt the resulting secret files under _credentials/_. 
 _Note:_ this is not the built-in float init-credentials, rather this is the LEAP provided one, which will instantiate the float init-credentials when it is finished.
 
-```
+```shell
 float/float run playbooks/init-credentials
 ```
 
@@ -91,7 +91,7 @@ Be sure you can ssh to the hosts as root with a public key that will not be prom
 ## 7. Deploy the configuration 
 
 Run: 
-```
+```shell
 float/float run site.yml. 
 ```
 This will take some time to finish, as it needs to download packages and Docker images and configure everything.
