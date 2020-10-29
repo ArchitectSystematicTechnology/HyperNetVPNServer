@@ -100,29 +100,35 @@ This will take some time to finish, as it needs to download packages and Docker 
 
 Run:
 
-```
+```shell
 float/float run float/playbooks/apt-upgrade.yml
 ```
 
 Congratulations. You have successfully installed and deployed the LEAP platform!
 
-Testing
--------
-Certificate authority from provider: leap.ca
+## Testing
+
+Certificate authority from provider: `leap.ca`
+
 Make a CSR/key
+
 sign cert against CA
+
 make sure the x509 v3 extensions exist: x509.ExtKeyUsageClientAuth x509.KeyUsageDigitalSignature
-     $ /usr/sbin/openvpn --client --remote-cert-tls server --tls-client --remote 37.218.241.84 1194 --proto tcp --verb 3 --auth SHA1 --keepalive 10 30 --tls-version-min 1.0 --dev tun --tun-ipv6 --ca ./ca.pem --cert ./testopenvpn.crt --key ./testopenvpn.key
+
+```shell
+/usr/sbin/openvpn --client --remote-cert-tls server --tls-client --remote 37.218.241.84 1194 --proto tcp --verb 3 --auth SHA1 --keepalive 10 30 --tls-version-min 1.0 --dev tun --tun-ipv6 --ca ./ca.pem --cert ./testopenvpn.crt --key ./testopenvpn.key
+```
 
 Reference: https://0xacab.org/leap/vpnweb/blob/master/certs.go#L37
 
-                ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-                KeyUsage:    x509.KeyUsageDigitalSignature,
-                CommonName: UNLIMITED
-                subjectkeyID: random
-                serial: random
+        ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+        KeyUsage:    x509.KeyUsageDigitalSignature,
+        CommonName: UNLIMITED
+        subjectkeyID: random
+        serial: random
 
-Integration Testing
+### Integration Testing
 Integration tests can be run to:
             * check that public endpoints for built-in services are reachable
             * check that no Prometheus alerts are firing
@@ -154,29 +160,24 @@ priv_user:
   password: password
 ```
 
+### Testing float
 
-Testing float:
-        # apt install qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils vagrant vagrant-libvirt
-        # adduser micah libvirt
-        # adduser micah libvirt-quemu
-        $ float create-env --vagrant --num-hosts 2 test
-        $ cd test; vagrant up
+```shell
+    apt install qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils vagrant vagrant-libvirt
+    adduser micah libvirt
+    adduser micah libvirt-quemu
+    float create-env --vagrant --num-hosts 2 test
+    cd test; vagrant up
+```
 
+### FAQ
 
-Why is there a '[openvpn]' group, but no host attached to it?
+***Why is there a '[openvpn]' group, but no host attached to it?***
 
-You might have noticed that site.yml has a hosts parameter with roles assigned
-to them, and the actual hosts defined in site.yml are connected to the hosts.yml
-groups parameter. The hosts.yml has floatrp1 with the groups: [frontend], but
-there is no host which has the '[openvpn]' group attached to it.
+You might have noticed that site.yml has a hosts parameter with roles assigned to them, and the actual hosts defined in site.yml are connected to the hosts.yml groups parameter. The hosts.yml has floatrp1 with the groups: `[frontend]`, but there is no host which has the `[openvpn]` group attached to it.
 
-For the 'openvpn' service, there is a scheduling_group, which sets the *scope*
-of the possible hosts that the service will be scheduled onto. Float will create
-automatically a 'openvpn' group, containing just the hosts that 'openvpn' is
-running on. We did not define an 'openvpn' group in the hosts.yml ansible
-inventory, yet such a group is automatically created by float, and you can use
-it in Ansible. This 'openvpn' group is a subset of the scheduling_group.
+For the 'openvpn' service, there is a scheduling_group, which sets the *scope* of the possible hosts that the service will be scheduled onto. Float will create automatically a 'openvpn' group, containing just the hosts that 'openvpn' is running on. We did not define an 'openvpn' group in the hosts.yml ansible inventory, yet such a group is automatically created by float, and you can use it in Ansible. This 'openvpn' group is a subset of the scheduling_group.
 
-"where can I run openvpn" -> scheduling_group (frontend)
-"where is openvpn actually running" -> "openvpn" group
+***"where can I run openvpn"*** -> scheduling_group (frontend) 
+***"where is openvpn actually running"**** -> "openvpn" group
 
