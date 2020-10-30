@@ -14,7 +14,7 @@ sudo apt-get install golang bind9utils python3-pysodium python3-jinja2 python3-n
 go get -u git.autistici.org/ale/x509ca
 go get -u git.autistici.org/ale/ed25519gen
 go get git.autistici.org/ai3/go-common/cmd/pwtool
-export PATH=$PATH:$HOME/go/bin7
+export PATH=$PATH:$HOME/go/bin
 ```
 
 Make sure `$ ansible --version | grep "ansible 2"` shows a version < 2.10.
