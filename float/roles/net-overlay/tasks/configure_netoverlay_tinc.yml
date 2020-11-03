@@ -27,7 +27,7 @@
 # some reason (failures) we weren't able to fetch it.
 - name: Install tinc host configuration
   copy:
-    dest: "{{ tinc_dir}}/hosts/{{ h }}"
+    dest: "{{ tinc_dir}}/hosts/{{ h | regex_replace('-', '_') }}"
     content: "{{ hostvars[h]['tinc_host_config'] }}"
   with_items: "{{ groups['overlay-' + tinc_net] | list }}"
   loop_control:

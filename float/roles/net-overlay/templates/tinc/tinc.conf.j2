@@ -1,4 +1,4 @@
-Name = {{ inventory_hostname }}
+Name = {{ inventory_hostname | regex_replace('-', '_') }}
 
 # Bind to all v4/v6 interfaces.
 AddressFamily = any
@@ -15,6 +15,6 @@ ReplayWindow = 32
 
 # Connect to all other known nodes (full mesh).
 {% for host in groups['overlay-' + tinc_net]|sort %}
-ConnectTo = {{ host }}
+ConnectTo = {{ host | regex_replace('-', '_') }}
 {% endfor %}
 
