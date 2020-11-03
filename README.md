@@ -1,6 +1,10 @@
 # Getting started
 
-Currently, you need at least two differnet remote machines for the installation process. The first one will run the LEAP web API, the second one runs a reverse proxy and a VPN gateway. ***In this minimal configuration the second server needs to have two IPs***. 
+Currently, you need at least two different remote machines for the installation process. These can be bare-metal, or virtual machines (eg. KVM). They should have a minimal Debian Buster installation and be reachable by ssh. The machines should be considered to be fully managed by this framework when things have been deployed: it will modify the system-level configuration, install packages, start services, etc. However, it assumes that certain functionality is present, either managed manually or with some external mechanism: Network configuration must be externally managed; Partitions, file systems, LVs must be externally managed; SSH access and configuration must be externally managed unless you explicitly set enable_ssh=true (and add SSH keys to your admin users), in which case deployment will take over the SSH configuration.
+
+One of the hosts will be a reverse proxy and the VPN gateway. *** You will the need two publicly addressable IP addresses for this machine ***. The second machine will run the LEAP web API, its gateway selection service, and the infrastructure that provides monitoring and alerting. 
+
+The float platform will manage DNS hostnames and Lets Encrypt certificates for all of its services it handles. You should pick a subdomain and delegate its DNS for the system to manage. For example, if your domain is `example.com`, then you could delegate, for example, the subdomain `float.example.com`. You would do this by adding a `NS` record for `float.example.com` that points to `ns1.float.example.com` and then an `A` record for `ns1.float.example.com` that points to the IP address you use for the reverse proxy host (note: not the gateway ip).
 
 You need to run the following commands ***locally on your computer*** in order to install and deploy the LEAP platfrom on the remote machines.
 
@@ -43,6 +47,8 @@ _Optionally_: gpg encrypt this file, so only trusted admins can read it. If you 
 gpg -e .ansible.vault_pw ; rm .ansible.vault_pw
 ```
 
+The resulting `.ansible.vault_pw.gpg` will be automatically decrypted by Ansible at runtime (use of an agent, such as `gpg-agent` is advised).
+
 Configure your local environment to know where the ansible vault password is located:
 
 ```shell
@@ -64,11 +70,15 @@ Open _hosts.yml_ and change `floatapp1` to your app host's hostname, and specify
 
 Configure the front-end reverse proxy with in the same way, change the `floatrp1` hostname to your hostname, and the `ansible_host` and `ip` to the IP it should have, and set the  `location` value to where this server is located. For the gateway_address, put the secondary gateway ip.
 
-Then edit _group_vars/all/config.yml_, _group_vars/all/gateway_locations.yml_, _group_vars/all/provider_config.yml_ to match your environment. Note that the _config.yml_ contains a list of admins, a default hashed password and a set of ssh keys that will be able to connect to the system as root. If you do not change this password, then the user 'admin' and password 'password' are used. To change the hashed password you can run 
+Then edit _group_vars/all/config.yml_ and set your `domain_public` to the subdomain name that you delegated (eg. `float.example.com`), the `domain` can be set to `infra.example.com` as this is the internally managed domain. 
+
+The _config.yml_ contains a list of admins, a default hashed password and a set of ssh keys that will be able to connect to the system as root. If you do not change this password, then the user 'admin' and password 'password' are used. To change the hashed password you can run 
 ```shell
 pwtool <type-here-your-password>
 ``` 
-and paste the output into the `password` variable.
+and paste the output into the `password` variable. Have a look at [the common operators playbook](https://git.autistici.org/ai3/float/-/blob/master/docs/playbook.md#adding-an-admin-account) for additional options, such as setting up OTP or U2F tokens.
+
+Then edit _group_vars/all/gateway_locations.yml_, _group_vars/all/provider_config.yml_ to match your environment. 
 
 ## 4. Generate credentials 
 
@@ -81,9 +91,11 @@ float/float run playbooks/init-credentials
 
 ***You should not see any red text*** in this process, if you do, stop now.
 
+This will generate service-level credentials, which are automatically managed by the toolkit and are encrypted with ansible-vault. These include the internal X509 PKI for TLS service authentication, a SSH PKI for hosts, and application credentials. 
+
 ## 5. Consider comitting the generated credentials 
 
-... to git, and pushing them to arepository. The secret material is encrypted with ansible-vault, so it cannot be read without the access to the _.ansible_vault_pw_. If you commit these files, and push them to a respository, then you can share them with other admins, but be aware that these are secrets that should not be shared with anyone but trusted admins. If you gpg encrypted the _.ansible_vault_pw_, then that file is also encrypted and could also be committed.
+... to git, and pushing them to a repository. All auto-generated credentials are stored in the _credentials_dir_ - you will want to ensure that these are properly encrypted, checked into a git repository and kept private. The secret material is encrypted with ansible-vault, so it cannot be read without the access to the _.ansible_vault_pw_. If you commit these files, and push them to a respository, then you can share them with other admins, but be aware that these are secrets that should not be shared with anyone but trusted admins. If you gpg encrypted the _.ansible_vault_pw_, then that file is also encrypted and could also be committed.
 
 ## 6. Ensure SSH access
 Be sure you can ssh to the hosts as root with a public key that will not be prompting you for a password every time; you should have also verified and accepted the correct host key.
@@ -104,7 +116,7 @@ Run:
 float/float run float/playbooks/apt-upgrade.yml
 ```
 
-Congratulations. You have successfully installed and deployed the LEAP platform!
+Congratulations. You have successfully installed and deployed the LEAP platform! You should [read the documentation about how to perform common operations](https://git.autistici.org/ai3/float/-/blob/master/docs/playbook.md).
 
 ## Testing
 
