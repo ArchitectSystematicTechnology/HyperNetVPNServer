@@ -14,7 +14,7 @@ prometheus-lts:
       volumes:
         - /etc/prometheus-lts: /etc/prometheus-lts
         - /var/lib/prometheus-lts/metrics2: /var/lib/prometheus-lts/metrics2
-      args: "--config.file=/etc/prometheus-lts/prometheus.yml --web.listen-address=0.0.0.0:9099 --storage.tsdb.path=/var/lib/prometheus-lts/metrics2 --storage.tsdb.retention.time={{ prometheus_lts_tsdb_retention | default('395d') }} --web.external-url=https://monitor-lts.{{ domain_public[0] }}"
+      args: "--config.file=/etc/prometheus-lts/prometheus.yml --web.listen-address=0.0.0.0:9099 --storage.tsdb.path=/var/lib/prometheus-lts/metrics2 --storage.tsdb.retention.time={{ prometheus_lts_tsdb_retention | default('395d') }} --web.external-url=https://monitor-lts.{{ domain_public[0] }} --web.enable-lifecycle"
     - name: thanos
       image: registry.git.autistici.org/ai3/docker/thanos:master
       ports:

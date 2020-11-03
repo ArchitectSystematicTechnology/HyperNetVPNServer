@@ -2,10 +2,10 @@ float
 ====
 
 *float* is a minimalistic configuration management toolkit to manage
-container-based services on bare-metal hardware (a.k.a. *container
-orchestration framework*). It is implemented as a series of Ansible
-plugins and roles that you should use from your own Ansible
-configuration.
+container-based services on bare-metal hardware or virtual machines
+(a.k.a. *container orchestration framework*). It is implemented as a
+series of Ansible plugins and roles that you should use from your own
+Ansible configuration.
 
 Its main purpose is to provide a simple container-oriented
 environment, with minimal but complete features, to prepare services

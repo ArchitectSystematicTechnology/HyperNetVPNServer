@@ -1,21 +1,21 @@
 ---
 
-- name: restart prometheus
-  systemd:
-    name: docker-prometheus-prometheus.service
-    state: restarted
+- name: reload prometheus
+  uri:
+    url: "http://localhost:9090/-/reload"
+    method: POST
   listen: "reload prometheus"
 
-- name: restart prometheus-alertmanager
-  systemd:
-    name: docker-prometheus-alertmanager.service
-    state: restarted
+- name: reload alertmanager
+  uri:
+    url: "http://localhost:9093/-/reload"
+    method: POST
   listen: "reload prometheus"
 
-- name: restart prometheus-blackbox
-  systemd:
-    name: docker-prometheus-blackbox.service
-    state: restarted
+- name: reload blackbox
+  uri:
+    url: "http://localhost:9115/-/reload"
+    method: POST
   listen: "reload prometheus"
 
 - name: restart grafana-server

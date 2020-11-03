@@ -673,23 +673,8 @@ each a dictionary with the following attributes:
 * `totp_secret` - TOTP secret for 2FA, base32-encoded
 * `ssh_keys` - a list of strings representing SSH public keys
 * `u2f_registrations` - a list of objects representing U2F token
-  registrations (see below for details)
-
-### U2F Registrations
-
-Hardware tokens supporting U2F can be registered for admin
-users. Registration objects can be generated using the *pamu2fcfg*
-command-line tool (part of the *pamu2fcfg* Debian package). The
-following snippet should produce the two YAML attributes you need to
-set (replace *login.example.com* with your SSO domain):
-
-```shell
-$ pamu2fcfg --nouser --appid https://login.example.com \
-    | tr -d : \
-    | awk -F, '{print "key_handle: \"" $1 "\"\npublic_key: \"" $2 "\""}'
-```
-
-Touch the hardware token to allow the above command to complete.
+  registrations (see the [Playbook](playbook.md) documentation for
+  details).
 
 ## SSH
 

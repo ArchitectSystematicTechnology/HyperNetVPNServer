@@ -112,7 +112,7 @@ prometheus:
       volumes:
         - /etc/prometheus: /etc/prometheus
         - /var/lib/prometheus/metrics2: /var/lib/prometheus/metrics2
-      args: "--storage.tsdb.retention.time={{ prometheus_tsdb_retention | default('90d') }} --web.external-url=https://monitor.{{ domain_public[0] }}"
+      args: "--storage.tsdb.retention.time={{ prometheus_tsdb_retention | default('90d') }} --web.external-url=https://monitor.{{ domain_public[0] }} --web.enable-lifecycle"
     - name: alertmanager
       image: registry.git.autistici.org/ai3/docker/prometheus-alertmanager:master
       ports:
@@ -294,6 +294,11 @@ backup-metadata:
     - job_name: backup-metadata
       port: 5332
       scheme: https
+  public_endpoints:
+    - name: backups
+      port: 5332
+      scheme: https
+      enable_sso_proxy: true
   ports:
     - 5332
   systemd_services:

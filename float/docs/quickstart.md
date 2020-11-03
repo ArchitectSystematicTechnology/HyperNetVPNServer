@@ -40,6 +40,10 @@ go get -u git.autistici.org/ale/ed25519gen
 export PATH=$PATH:$HOME/go/bin
 ```
 
+*NOTE*: On Ubuntu, the *dnssec-keygen* command in bind9utils has been
+replaced by *tsig-keygen* from the bind9 package, so you're going to
+need to install that instead.
+
 *Float* should work equally well with both Python 2 and Python 3, and
 it supports scenarios where the Python interpreter used by Ansible is
 different from the system's default.
