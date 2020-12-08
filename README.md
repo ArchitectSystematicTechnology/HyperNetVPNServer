@@ -4,7 +4,7 @@ Currently, you need at least two different remote machines for the installation 
 
 One of the hosts will be a reverse proxy and the VPN gateway. *** You will need two publicly addressable IP addresses for this machine ***. The second machine will run the LEAP web API, its gateway selection service, and the infrastructure that provides monitoring and alerting. 
 
-The float platform will manage DNS hostnames and Let's Encrypt certificates for all of its services it handles. You should pick a subdomain and delegate its DNS for the system to manage. For example, if your domain is `example.com`, then you could delegate, for example, the subdomain `float.example.com`. You would do this by adding a `NS` record for `float.example.com` that points to `ns1.float.example.com` and then an `A` record for `ns1.float.example.com` that points to the IP address you use for the reverse proxy host (note: not the gateway IP).
+The float platform will manage DNS hostnames and Let's Encrypt certificates for all of its services it handles. You should pick a subdomain and delegate its DNS for the system to manage. For example, if your domain is `example.com`, then you could delegate, for example, the subdomain `float.example.com`. You would do this by adding a `NS` record for `float.example.com` that points to `ns1.example.com` and then an `A` record for `ns1.example.com` that points to the IP address you use for the reverse proxy host (note: not the gateway IP).
 
 You need to run the following commands ***locally on your computer*** in order to install and deploy the LEAP platfrom on the remote machines.
 
