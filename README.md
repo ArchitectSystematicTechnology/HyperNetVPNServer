@@ -78,6 +78,8 @@ pwtool <type-here-your-password>
 ``` 
 and paste the output into the `password` variable. Have a look at [the common operators playbook](https://git.autistici.org/ai3/float/-/blob/master/docs/playbook.md#adding-an-admin-account) for additional options, such as setting up OTP or U2F tokens.
 
+This _config.yml_ also contains the credentials for an updated geoip database. The `geoip_account_id` and `geoip_license_key` values must be changed, you can register for an account on maxmind.com to obtain these. The geoip service helps clients to choose a gateway near them (usually faster).
+
 Then edit _group_vars/all/gateway_locations.yml_, _group_vars/all/provider_config.yml_ to match your environment. 
 
 ## 4. Generate credentials 
