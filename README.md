@@ -44,10 +44,13 @@ tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 26 > .ansible_vault_pw
 _Optionally_: gpg encrypt this file, so only trusted admins can read it. If you do *not* encrypt this file, then this repository should not be shared anywhere public:
 
 ```shell
-gpg -e .ansible.vault_pw ; rm .ansible.vault_pw
+(echo '#!/usr/bin/gpg -d'; gpg -a -e .ansible_vault_pw) \
+    > .ansible_vault_pw.gpg
+chmod +x .ansible_vault_pw.gpg
+rm .ansible_vault_pw
 ```
 
-The resulting `.ansible.vault_pw.gpg` will be automatically decrypted by Ansible at runtime (use of an agent, such as `gpg-agent` is advised).
+The resulting `.ansible_vault_pw.gpg` will be automatically decrypted by Ansible at runtime (use of an agent, such as `gpg-agent` is advised).
 
 Configure your local environment to know where the ansible vault password is located:
 
