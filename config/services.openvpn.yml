@@ -99,3 +99,29 @@ vpnweb:
     - name: api
       port: 8000
       scheme: http
+
+prometheus-pushgateway:
+  scheduling_group: backend
+  num_instances: 1
+  monitoring_endpoints:
+    - job_name: prometheus-pushgateway
+      port: 9091
+      scheme: http
+  containers:
+    - name: prometheus-pushgateway
+      image: registry.0xacab.org/leap/container-platform/prometheus-pushgateway
+      port: 9091
+
+ooni-exporter:
+  scheduling_group: backend
+  num_instances: 1
+  monitoring_endpoints:
+    - job_name: ooni-exporter
+      port: 9007
+      scheme: http
+  containers:
+    - name: ooni-exporter
+      image: registry.0xacab.org/leap/ooni-exporter
+      env:
+        OONI_PUSH_PORT: 9091
+        OONI_PUSH_HOST: "prometheus-pushgateway"
