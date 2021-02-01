@@ -1,15 +1,15 @@
 ---
 
-getmyip:
+menshen:
   scheduling_group: backend
   num_instances: 1
   monitoring_endpoints:
-    - job_name: getmyip
+    - job_name: menshen
       port: 9002
       scheme: http
   containers:
-    - name: getmyip
-      image: registry.0xacab.org/leap/getmyip:latest
+    - name: menshen
+      image: registry.0xacab.org/leap/menshen:latest
       port: 9001
       volumes:
         - /var/lib/GeoIP: /var/lib/GeoIP/
