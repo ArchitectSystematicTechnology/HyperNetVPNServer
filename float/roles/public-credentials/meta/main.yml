@@ -1,5 +1,0 @@
----
-allow_duplicates: true
-dependencies:
-  - {role: acme-storage}
-

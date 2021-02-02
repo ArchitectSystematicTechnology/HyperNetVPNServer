@@ -86,6 +86,7 @@ run_integration_test() {
     local mode="$1"
 
     # Give the system some time to stabilize.
+    echo "Sleeping for ${wait_time} seconds..."
     sleep ${wait_time}
 
     # The following is required to make the test output readable.
@@ -148,6 +149,7 @@ apt_proxy=${APT_PROXY:-}
 wait_time=30
 mode=${MODE:-local}
 private_network="10.$(( 1 + ($RANDOM % 254) )).$(( 1 + ($RANDOM % 254) )).0"
+skip_tests=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --keep)
@@ -177,6 +179,9 @@ while [ $# -gt 0 ]; do
         --save-logs)
             shift
             save_logs="$1"
+            ;;
+        --skip-tests)
+            skip_tests=1
             ;;
         -*)
             echo "Unknown option '$1'" >&2
@@ -227,7 +232,9 @@ clean
 start_vagrant
 check_hosts_ready
 run_ansible
-run_integration_test ${mode}
+if [ $skip_tests -eq 0 ]; then
+    run_integration_test ${mode}
+fi
 popd
 
 # Execute the env-specific tests, if any.

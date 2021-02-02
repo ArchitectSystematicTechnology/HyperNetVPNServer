@@ -1,7 +1,0 @@
----
-
-dependencies:
-  - role: credentials
-    vars:
-      credentials: "{{ float_host_service_credentials }}"
-

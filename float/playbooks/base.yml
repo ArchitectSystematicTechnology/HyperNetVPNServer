@@ -2,10 +2,10 @@
 
 - hosts: all
   roles:
-    - base
-    - float-credentials
-    - vagrant-compat
+    - float-base
+    - float-base-service-credentials
+    - float-util-vagrant-compat
 
 - hosts: net-overlay
   roles:
-    - net-overlay
+    - float-base-net-overlay

@@ -1,0 +1,55 @@
+---
+
+- set_fact:
+    lv_name: "{{ service.name }}-{{ volume.name }}"
+
+- set_fact:
+    lv_dev: "/dev/{{ volumes_vg | default('vg0') }}/{{ lv_name }}"
+
+- name: "Create mount point for volume {{ lv_name }}"
+  file:
+    path: "{{ volume.path }}"
+    mode: "{{ volume.mode | default('0700') }}"
+    state: directory
+
+- name: "Set permissions for volume {{ lv_name }}"
+  file:
+    path: "{{ volume.path }}"
+    state: directory
+    owner: "{{ volume.owner }}"
+    group: "{{ volume.group | default('root') }}"
+  when: "volume.owner is defined"
+
+- name: "Create the LV {{ lv_name }}"
+  lvol:
+    vg: "{{ volumes_vg | default('vg0') }}"
+    lv: "{{ lv_name }}"
+    size: "{{ volume.size | default('10g') }}"
+    shrink: false
+  when: enable_lvm
+
+- name: "Create a filesystem on {{ lv_name }}"
+  filesystem:
+    dev: "{{ lv_dev }}"
+    fstype: ext4
+  register: lv_mkfs
+  when: enable_lvm
+
+- name: "Add the /etc/fstab entry for {{ lv_name }}"
+  mount:
+    path: "{{ volume.path }}"
+    src: "{{ lv_dev }}"
+    opts: "rw,noatime{% if volume.mount_opts is defined %},{{ volume.mount_opts }}{% endif %}"
+    fstype: ext4
+    state: mounted
+  when: enable_lvm
+
+# Set permissions again if we have created the filesystem.
+- name: "Fix permissions for {{ volume.path }}"
+  file:
+    path: "{{ volume.path }}"
+    owner: "{{ volume.owner | default('') }}"
+    group: "{{ volume.group | default('') }}"
+    mode: "{{ volume.mode | default('0700') }}"
+    state: directory
+  when: "lv_mkfs.changed and volume.owner is defined"

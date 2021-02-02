@@ -1,0 +1,79 @@
+---
+
+- name: Install prometheus config files in /etc/default
+  copy:
+    src: "node-exporter.default"
+    dest: "/etc/default/prometheus-node-exporter"
+  notify:
+    - reload prometheus-node-exporter
+
+- name: Install prometheus node package
+  apt:
+    name: prometheus-node-exporter
+    state: present
+
+- name: Add static metrics
+  template:
+    src: "{{ item }}.j2"
+    dest: "/var/lib/prometheus/node-exporter/{{ item }}"
+  with_items:
+    - roles.prom
+    - vhostmap.prom
+
+# Treat ansible.prom specially: since it contains a timestamp of
+# the push, it changes every time, and we don't want to report
+# it when running with --check.
+- name: Add push metrics
+  template:
+    src: ansible.prom.j2
+    dest: "/var/lib/prometheus/node-exporter/ansible.prom"
+  changed_when: false
+
+# System scripts (e.g. runcron) can drop metric files as any user
+- name: Setup node-exporter world-writable textfile directory
+  file:
+    path: "/var/lib/prometheus/node-exporter"
+    state: directory
+    mode: 01777
+
+- name: Enable prometheus node systemd unit
+  systemd:
+    name: "prometheus-node-exporter.service"
+    enabled: yes
+    state: started
+
+- name: Mask node-exporter smartmon.sh, replaced by smartmon.py
+  systemd:
+    name: "prometheus-node-exporter-smartmon.service"
+    enabled: no
+    masked: yes
+
+# Script and cron job to periodically run shell scripts that generate
+# Prometheus metrics for the local node (collected via the node exporter).
+- name: Install run-node-exporter-script wrapper
+  copy:
+    src: run-node-exporter-script.sh
+    dest: "/usr/local/bin/run-node-exporter-script"
+    mode: 0755
+
+- name: Create node-exporter scripts directory
+  file:
+    path: "/etc/prometheus/node-exporter-scripts"
+    state: directory
+
+- set_fact:
+    node_exporter_scripts: "{{ lookup('fileglob', 'files/node-exporter-scripts/*', wantlist=True) }}"
+
+- name: Install node-exporter scripts
+  copy:
+    dest: "/etc/prometheus/node-exporter-scripts/{{ item | basename }}"
+    src: "{{ item }}"
+    mode: 0755
+  loop: "{{ node_exporter_scripts }}"
+
+- name: Install node-exporter scripts cron jobs
+  copy:
+    dest: "/etc/cron.d/node-exporter-script-{{ item | basename | regex_replace('\\..*$', '') }}"
+    content: |
+      */20 * * * * root /usr/local/bin/run-node-exporter-script {{ item | basename | regex_replace('\..*$', '') }} /etc/prometheus/node-exporter-scripts/{{ item | basename }}
+  loop: "{{ node_exporter_scripts }}"

@@ -1,0 +1,13 @@
+digraph log_flow {
+  {
+    rank=min
+    process [color=gray]
+  }
+
+  process -> journald
+  journald -> rsyslog
+  rsyslog -> mtail
+  rsyslog -> "log-collector-rsyslog"
+  "log-collector-rsyslog" -> "Elasticsearch"
+  "Kibana" -> "Elasticsearch"
+}

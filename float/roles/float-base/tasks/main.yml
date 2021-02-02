@@ -1,0 +1,107 @@
+---
+
+# Determine a few facts about the source repository (based on the
+# location of the inventory).
+- local_action:
+    module: shell
+    _raw_params: "git rev-parse HEAD 2>/dev/null || echo none"
+    chdir: "{{ inventory_dir }}"
+  changed_when: false
+  check_mode: no
+  run_once: true
+  become: false
+  register: float_git_revision_cmd
+
+- set_fact:
+    git_revision: "{{ float_git_revision_cmd.stdout }}"
+
+# Try to generate a unique fingerprint for the current configuration
+# (assuming it is stored in a git repository, and that there are no
+# uncommitted files open). The fingerprint will include submodules.
+#
+# If the source (defined as the location of the inventory) is not a
+# git repository, the fingerprint will always be the same.
+#
+# Sets the 'float_configuration_fingerprint' Ansible fact.
+- local_action:
+    module: shell
+    _raw_params: "(git rev-parse HEAD ; git submodule status | awk '{print $1}') | md5sum - | cut -c-8"
+    chdir: "{{ inventory_dir }}"
+  register: float_configuration_fingerprint_cmd
+  run_once: true
+  become: false
+  changed_when: false
+  check_mode: no
+  when: "git_revision != 'none'"
+
+- set_fact:
+    float_configuration_fingerprint: "{{ float_configuration_fingerprint_cmd.stdout if git_revision != 'none' else 'none' }}"
+
+- import_tasks: rollback_protection.yml
+  when: "git_revision != 'none' and not testing|default(True)"
+
+# Create the /usr/lib/float and /var/lib/float directories for
+# internal scripts.
+- file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /usr/lib/float
+    - /var/lib/float
+
+- import_tasks: service_discovery.yml
+
+- import_tasks: apt.yml
+
+- import_tasks: debian_misc.yml
+
+- import_tasks: syslog.yml
+
+- import_tasks: ssh.yml
+  when: enable_ssh|bool
+
+- import_tasks: harden.yml
+
+- import_tasks: firewall.yml
+
+- include_tasks: prometheus.yml
+
+- import_tasks: fail2ban.yml
+  when: enable_fail2ban|bool
+
+- include_tasks: outbound_mail.yml
+  when: mail_relay|bool
+
+- import_tasks: osquery.yml
+  when: enable_osquery|bool
+
+- import_tasks: backup.yml
+
+- import_tasks: cleanup.yml
+
+- name: Check ipmi availability
+  stat:
+    path: "/dev/ipmi0"
+  register: ipmi_device
+
+- import_tasks: ipmi.yml
+  when: ipmi_device.stat.exists == true
+
+- name: Configure resolv.conf
+  template:
+    src: "resolv.conf.j2"
+    dest: "/etc/resolv.conf"
+  when: "resolver_mode != 'ignore'"
+
+# Add here files that need to be removed (perhaps because they have
+# been renamed at some point in float history, or for other reasons).
+- name: Cleanup obsolete files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/etc/prometheus/node-exporter-scripts/apt.sh"
+    - "/etc/prometheus/node-exporter-scripts/smartmon_float.py"
+    - "/var/lib/prometheus/node-exporter/smartmon_float.prom"
+    - "/etc/cron.d/node-exporter-scripts"
+    - "/usr/local/bin/node-exporter-cron"

@@ -1,0 +1,17 @@
+# Count systemd unit restarts. Use the systemd audit logging (via
+# audispd-json). This is really a bad way to obtain this information,
+# but:
+#
+# - systemd doesn't really log service start/stop operations to syslog
+# - the systemd version in Debian buster is still too old to report
+#   NRestarts? in any case the value of node_systemd_service_restart_total
+#   is always 0.
+#
+# Once the node exporter has this information, we need to stop using mtail
+# and compute instance:systemd_unit_restarts:delta10m using the right
+# node exporter metric.
+
+/audit.*@cee.*"record_type":"service_start".*"unit":"(?P<unit>[^"]+)"/ {
+  counter systemd_unit_restarts by unit
+  systemd_unit_restarts[$unit]++
+}

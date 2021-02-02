@@ -1,8 +1,0 @@
-apiVersion: 1
-datasources:
-  - name: localhost
-    type: prometheus
-    access: proxy
-    orgId: 1
-    url: http://prometheus.[[ domain ]]:10904
-    editable: false

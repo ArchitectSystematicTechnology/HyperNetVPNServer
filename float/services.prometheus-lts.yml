@@ -22,6 +22,7 @@ prometheus-lts:
         - 10912 # sidecar http
       env:
         QUERY_OFF: "yes" # The main 'thanos query' service is 'prometheus'
+        QUERY_FRONTEND_OFF: "yes" # Ditto for 'query-frontend'
         SIDECAR_GRPC_ADDRESS: "0.0.0.0:10911"
         SIDECAR_HTTP_ADDRESS: "0.0.0.0:10912"
         SIDECAR_FLAGS: "--prometheus.url=http://localhost:9099"
