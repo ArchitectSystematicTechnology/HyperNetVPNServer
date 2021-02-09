@@ -1,0 +1,5 @@
+---
+
+# Whether to create volumes as LVs.
+enable_lvm: false
+

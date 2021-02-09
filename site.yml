@@ -20,7 +20,7 @@
   roles:
     - vpnweb
     - leap-prometheus
-    - getmyip
+    - menshen
 
 - hosts: frontend
   roles: [vpnweb-frontend]

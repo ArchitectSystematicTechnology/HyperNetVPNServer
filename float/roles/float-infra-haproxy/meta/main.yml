@@ -1,0 +1,7 @@
+---
+
+dependencies:
+  - role: float-base-public-credentials
+    vars:
+      credentials_type: tcp
+

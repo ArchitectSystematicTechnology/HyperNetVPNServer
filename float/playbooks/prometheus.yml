@@ -2,5 +2,5 @@
 
 - hosts: prometheus
   roles:
-    - prometheus
+    - float-infra-prometheus
 

@@ -1,0 +1,92 @@
+global(
+  maxMessageSize="64k"
+  defaultNetstreamDriver="gtls"
+  defaultNetstreamDriverCAFile="/etc/credentials/x509/log-client/ca.pem"
+  defaultNetstreamDriverCertFile="/etc/credentials/x509/log-client/client/cert.pem"
+  defaultNetstreamDriverKeyFile="/etc/credentials/x509/log-client/client/private_key.pem"
+)
+
+module(load="imuxsock"
+  SysSock.Use="off"
+)
+
+module(load="imkmsg")
+
+# Send stats to the rsyslog-exporter process.
+module(
+  load="impstats"
+  interval="10"
+  format="json"
+  resetCounters="off"
+  ruleset="process_stats"
+)
+
+module(
+  load="omprog"
+)
+
+ruleset(name="process_stats") {
+  action(
+    type="omprog"
+    name="to_exporter"
+    binary="/usr/bin/rsyslog_exporter -web.listen-address=:9106"
+    queue.type="linkedlist"
+    queue.workerThreads="1"
+  )
+}
+
+ruleset(name="incoming") {
+
+  # Exclude logs that we explicitly do not want to propagate to the
+  # log aggregator. This currently only includes redundant HTTP logs
+  # (sent to facility local4).
+  if ($syslogfacility-text == "local4") then stop
+
+  # Send a copy of everything to mtail.
+  action(type="ompipe"
+         Pipe="/run/mtail.fifo"
+         # Protect the main queue from mtail pipe full: discard messages on
+         # ompipe action queue full.
+         queue.type="FixedArray"
+         queue.size="4096"
+         queue.timeoutEnqueue="0"
+         action.resumeRetryCount="-1"
+         action.resumeInterval="2"
+         action.resumeIntervalMax="30")
+
+  # Send everything to remote peer, do not write anything locally.
+  action(type="omfwd"
+         protocol="tcp"
+         target="log-collector.{{ domain }}"
+         port="6514"
+         StreamDriver="gtls"
+         StreamDriverMode="1"
+         StreamDriverAuthMode="x509/name"
+         StreamDriverPermittedPeers="log-collector.{{ domain }}"
+         Keepalive="on"
+         action.resumeRetryCount="-1"
+         action.resumeInterval="2"
+         action.reportSuspension="on"
+         queue.spoolDirectory="/var/spool/rsyslog"
+         queue.filename="remote"
+         queue.maxdiskspace="1g"
+         queue.type="LinkedList"
+         queue.saveonshutdown="on"
+  )
+}
+
+# The 'imklog' module before rsyslog 8.2008 always uses the default ruleset.
+# Force 'incoming' as the default ruleset to catch kernel messages as well.
+$DefaultRuleset incoming
+
+# Use the journald syslog forwarding socket, instead of reading
+# directly from the journal via the imjournal module. Some of the
+# reasons for this are mentioned in
+# https://www.rsyslog.com/doc/v8-stable/configuration/modules/imjournal.html
+# and are related to performance and reliability.
+#
+# Unfortunately we lose the journald metadata this way, which would be
+# useful to have (in that case all logs would be "structured" logs).
+input(type="imuxsock" Socket="/run/systemd/journal/syslog" ruleset="incoming")
+
+$IncludeConfig /etc/rsyslog.d/*.conf

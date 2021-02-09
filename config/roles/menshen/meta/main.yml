@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: float-util-geoip-dataset
+    vars:
+      geoip_dataset: 'City'

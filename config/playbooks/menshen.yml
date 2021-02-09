@@ -1,0 +1,3 @@
+- hosts: menshen
+  roles:
+    - menshen

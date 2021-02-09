@@ -1,0 +1,30 @@
+---
+
+# Install certificates by type (credentials_type: one of 'http', 'tcp'
+# or 'other').
+
+- set_fact:
+    endpoint_variable: "public_{{ credentials_type }}_endpoints"
+  when: credentials_type != 'http'
+
+- include_tasks: endpoints.yml
+  vars:
+    endpoints: "{{ float_http_endpoints.values()|list }}"
+  when: credentials_type == 'http'
+
+- include_tasks: endpoints.yml
+  with_subelements:
+    - "{{ services }}"
+    - "{{ endpoint_variable }}"
+    - { skip_missing: true }
+  loop_control:
+    loop_var: endpoints
+  when: credentials_type != 'http'
+
+# Special case for 'http': always include the 'default' cn.
+
+# Setup 'default' self-signed cert.
+- include_role:
+    name: float-util-public-ssl-cert
+  vars:
+    cn: default

@@ -4,19 +4,19 @@
 
 - hosts: frontend
   roles:
-    - nginx
-    - dns
-    - haproxy
+    - float-infra-nginx
+    - float-infra-dns
+    - float-infra-haproxy
 
 - hosts: admin-dashboard
   roles:
-    - admin-dashboard
+    - float-infra-admin-dashboard
 
 - hosts: acme
   roles:
-    - acme
+    - float-infra-acme
 
 - hosts: reports-collector
   roles:
-    - reports-collector
+    - float-infra-reports-collector
 

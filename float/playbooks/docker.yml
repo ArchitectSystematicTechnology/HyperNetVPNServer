@@ -2,7 +2,7 @@
 
 - hosts: all
   roles:
-    - docker
+    - float-base-docker
   serial:
     - 1
     - 2

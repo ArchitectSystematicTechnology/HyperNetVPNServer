@@ -5,9 +5,9 @@
 
 - hosts: sso-server
   roles:
-    - sso-server
+    - float-infra-sso-server
 
 - hosts: user-meta-server
   roles:
-    - sso-server
+    - float-infra-sso-server
 

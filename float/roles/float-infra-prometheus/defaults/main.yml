@@ -1,0 +1,23 @@
+---
+
+# Destination (To:) of alert emails.
+alert_email: ""
+
+# Alertmanager SMTP parameters.
+alertmanager_smtp_from: "prometheus@{{ domain }}"
+alertmanager_smtp_smarthost: "localhost:25"
+alertmanager_smtp_require_tls: false
+alertmanager_smtp_hello: "localhost"
+alertmanager_smtp_auth_username: ""
+alertmanager_smtp_auth_password: ""
+
+# Base URL for playbooks (no trailing slash).
+# Note: do not use template substitution in this var! We are
+# changing the template beg/end markers in the alert rules,
+# so using {{ here will generate broken rules files.
+alert_playbook_url: "https://playbooks"
+
+# Custom blackbox probes.
+prometheus_custom_blackbox_probes: {}
+
+thanos_query_frontend_cache_size: '50MB'

@@ -18,9 +18,6 @@ frontend:
   volumes:
     - name: cache
       path: /var/cache/nginx
-      owner: nginx
-      group: nginx
-      mode: "0700"
       size: 20g
 
 reports-collector:
@@ -144,9 +141,12 @@ prometheus:
         - 10902 # sidecar http
         - 10903 # query grpc
         - 10904 # query http
+        - 10905 # query-frontend grpc
+        - 10906 # query-frontend http
       env:
         QUERY_FLAGS: "--query.replica-label=monitor {% for h in groups['prometheus']|sort %} --store={{ h }}.prometheus.{{ domain }}:10901{% endfor %}"
         SIDECAR_FLAGS: ""
+        QUERY_FRONTEND_FLAGS: "--query-range.response-cache-config-file=/etc/thanos/query-frontend-cache.yml"
       volumes:
         - /etc/thanos: /etc/thanos
     - name: karma
@@ -173,7 +173,7 @@ prometheus:
       scheme: https
       enable_sso_proxy: true
     - name: thanos
-      port: 10904
+      port: 10906
       scheme: http
       enable_sso_proxy: true
     - name: alerts
@@ -199,6 +199,9 @@ prometheus:
     - job_name: thanos-sidecar
       port: 10902
       scheme: http
+    - job_name: thanos-query-frontend
+      port: 10906
+      scheme: http
   ports:
     - 9094
     - 10901
@@ -207,6 +210,7 @@ prometheus:
       path: /var/lib/prometheus
       owner: docker-prometheus
       group: docker-prometheus
+      mode: "0755"
 
 sso-server:
   num_instances: 1

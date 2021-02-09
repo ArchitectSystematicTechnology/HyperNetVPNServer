@@ -65,27 +65,8 @@ and in README files for individual Ansible roles:
 ### General Documentation
 
 * [Quick start guide](docs/quickstart.md)
-* [Guide to Ansible integration](docs/ansible.md)
-* [Notes on running in production](docs/running.md)
-* [Configuration reference](docs/configuration.md)
-* [Service discovery protocol](docs/service_mesh.md)
-* [HTTP router](docs/http_router.md)
-* [Docker usage](roles/docker/README.md)
-* [Overview of built-in services](docs/builtin_services.md)
-* [CLI tool usage](docs/cli.md)
+* [Reference](docs/reference.md)
 * [Testing](docs/testing.md)
-
-### Built-in services documentation
-
-* [Monitoring and alerting](roles/prometheus/README.md)
-* [Log management and analysis](roles/log-collector/README.md)
-* [Authoritative public DNS](roles/dns/README.md)
-* [Authentication and identity management](docs/identity_management.md)
-
-Built-in services are currently implemented with Ansible roles, and do
-not run in containers. But this is just an implementation detail, and
-in the future they could be moved to containers without requiring any
-changes in the clients.
 
 # Requirements
 

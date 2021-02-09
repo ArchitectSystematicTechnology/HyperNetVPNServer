@@ -5,9 +5,9 @@ stages:
   - test
 
 variables:
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
-run_base_test:
+base_test:
   stage: test
   script:
     - mkdir -p .vagrant.d && ln -s $PWD/.vagrant.d $HOME/.vagrant.d
@@ -20,7 +20,11 @@ run_base_test:
     paths:
       - .vagrant.d
 
-run_full_test:
+base_bullseye_test:
+  extends: base_test
+  image: registry.git.autistici.org/ai3/docker/float-runner:bullseye
+
+full_test:
   stage: test
   script:
     - mkdir -p .vagrant.d && ln -s $PWD/.vagrant.d $HOME/.vagrant.d

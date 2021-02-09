@@ -1,7 +1,0 @@
----
-
-- include_tasks: service.yml
-  with_items: "{{ float_enabled_services }}"
-  loop_control:
-    loop_var: service_name_iter
-  when: "enable_volumes | default(False)"

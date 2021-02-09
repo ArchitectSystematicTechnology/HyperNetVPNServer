@@ -1,0 +1,40 @@
+---
+
+- name: reload prometheus
+  uri:
+    url: "http://localhost:9090/-/reload"
+    method: POST
+  ignore_errors: true
+  listen: "reload prometheus"
+
+- name: reload alertmanager
+  uri:
+    url: "http://localhost:9093/-/reload"
+    method: POST
+  ignore_errors: true
+  listen: "reload prometheus"
+
+- name: reload blackbox
+  uri:
+    url: "http://localhost:9115/-/reload"
+    method: POST
+  ignore_errors: true
+  listen: "reload prometheus"
+
+- name: restart grafana-server
+  systemd:
+    name: docker-prometheus-grafana.service
+    state: restarted
+  listen: "restart grafana"
+
+- name: restart karma
+  systemd:
+    name: docker-prometheus-karma.service
+    state: restarted
+  listen: "reload karma"
+
+- name: restart thanos
+  systemd:
+    name: docker-prometheus-thanos.service
+    state: restarted
+  listen: "reload thanos"
