@@ -35,8 +35,8 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
 
     # Build the JSON data structure that needs to end up in eip-service.json.
     eip_config = {
-        "serial": 3,
-        "version": 3,
+        "serial": 4,
+        "version": 4,
         "locations": config.locations,
         "gateways": [{
             "host": "%s.%s" % (v["inventory_hostname"], public_domain),
@@ -64,7 +64,7 @@ def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_publi
     # Build the JSON data structure that needs to end up in provider.json.
     provider_config = {
         "api_uri": provider_api_uri,
-        "api_version": "3",
+        "api_version": "4",
         "ca_cert_fingerprint": "SHA256: " + ca_fp,
         "ca_cert_uri": ca_cert_uri,
         "default_language": "en",
