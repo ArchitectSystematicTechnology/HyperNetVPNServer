@@ -1,7 +1,0 @@
-create_chain sslh
-{# Need to find the interface that has 'ip' on it. #}
-add_rule -A OUTPUT -o {{ ansible_default_ipv4.interface }} -p tcp -m tcp --sport 8443 -j sslh
-add_rule -A OUTPUT -o {{ ansible_default_ipv4.interface }} -p tcp -m tcp --sport 1194 -j sslh
-add_rule -A sslh -j MARK --set-mark 0x1
-add_rule -A sslh -j ACCEPT
-

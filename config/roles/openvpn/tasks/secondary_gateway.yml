@@ -1,0 +1,15 @@
+---
+- name: Setup secondary gateway address
+  template:
+    src: 'add_gateway_ips.j2'
+    dest: '/usr/local/sbin/add_gateway_ips.sh'
+    mode: '0744'
+  notify: add gateway address
+  when: gateway_address is defined
+
+- name: Ensure gateway address is added on reboot
+  cron:
+    name: "add gateway address"
+    special_time: reboot
+    job: '/usr/local/sbin/add_gateway_ips.sh'
+  when: gateway_address is defined

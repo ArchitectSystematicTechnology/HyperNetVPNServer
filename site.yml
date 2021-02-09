@@ -1,10 +1,4 @@
 ---
-
-# This runs before everything else because it sets facts that are
-# consumed by float's "frontend" Ansible role.
-- hosts: frontend
-  roles: [openvpn-early-setup]
-
 - import_playbook: float/playbooks/all.yml
 - import_playbook: config/playbooks/all.yml
 

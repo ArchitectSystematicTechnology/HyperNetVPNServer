@@ -10,12 +10,9 @@
     name: "docker-openvpn-openvpn.service"
     state: restarted
 
-- listen: "reload sslh"
-  systemd:
-    name: "sslh.service"
-    state: restarted
-
 - listen: "reload systemd"
   systemd:
     daemon_reload: yes
 
+- listen: add gateway address
+  shell: '/usr/local/sbin/add_gateway_ips.sh'
