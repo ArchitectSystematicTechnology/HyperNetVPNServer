@@ -29,7 +29,7 @@ Make sure `$ ansible --version | grep "python version" shows a python 3 version.
 ...and enter it
 
 ```shell
-git clone https://0xacab.org/leap/container-platform/float
+git clone https://0xacab.org/leap/container-platform/lilypad
 cd float
 ```
     
