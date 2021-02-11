@@ -30,7 +30,7 @@ Make sure `$ ansible --version | grep "python version" shows a python 3 version.
 
 ```shell
 git clone https://0xacab.org/leap/container-platform/lilypad
-cd float
+cd lilypad
 ```
     
 ## 2. Initialize the ansible vault
