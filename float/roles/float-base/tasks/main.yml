@@ -37,7 +37,7 @@
 - set_fact:
     float_configuration_fingerprint: "{{ float_configuration_fingerprint_cmd.stdout if git_revision != 'none' else 'none' }}"
 
-- import_tasks: rollback_protection.yml
+- include_tasks: rollback_protection.yml
   when: "git_revision != 'none' and not testing|default(True)"
 
 # Create the /usr/lib/float and /var/lib/float directories for
@@ -49,6 +49,13 @@
     - /usr/lib/float
     - /var/lib/float
 
+- name: Configure resolv.conf
+  template:
+    src: "resolv.conf.j2"
+    dest: "/etc/resolv.conf"
+  when: "resolver_mode != 'ignore'"
+
+# Configure fundamental services.
 - import_tasks: service_discovery.yml
 
 - import_tasks: apt.yml
@@ -57,51 +64,32 @@
 
 - import_tasks: syslog.yml
 
-- import_tasks: ssh.yml
-  when: enable_ssh|bool
-
 - import_tasks: harden.yml
 
 - import_tasks: firewall.yml
 
-- include_tasks: prometheus.yml
+- import_tasks: prometheus.yml
 
-- import_tasks: fail2ban.yml
+# Include optional parts of the base configuration.
+- include_tasks: ssh.yml
+  when: enable_ssh|bool
+
+- include_tasks: fail2ban.yml
   when: enable_fail2ban|bool
 
 - include_tasks: outbound_mail.yml
   when: mail_relay|bool
 
-- import_tasks: osquery.yml
+- include_tasks: osquery.yml
   when: enable_osquery|bool
-
-- import_tasks: backup.yml
-
-- import_tasks: cleanup.yml
 
 - name: Check ipmi availability
   stat:
     path: "/dev/ipmi0"
   register: ipmi_device
 
-- import_tasks: ipmi.yml
+- include_tasks: ipmi.yml
   when: ipmi_device.stat.exists == true
 
-- name: Configure resolv.conf
-  template:
-    src: "resolv.conf.j2"
-    dest: "/etc/resolv.conf"
-  when: "resolver_mode != 'ignore'"
-
-# Add here files that need to be removed (perhaps because they have
-# been renamed at some point in float history, or for other reasons).
-- name: Cleanup obsolete files
-  file:
-    path: "{{ item }}"
-    state: absent
-  loop:
-    - "/etc/prometheus/node-exporter-scripts/apt.sh"
-    - "/etc/prometheus/node-exporter-scripts/smartmon_float.py"
-    - "/var/lib/prometheus/node-exporter/smartmon_float.prom"
-    - "/etc/cron.d/node-exporter-scripts"
-    - "/usr/local/bin/node-exporter-cron"
+# Finally run some cleanups.
+- import_tasks: cleanup.yml

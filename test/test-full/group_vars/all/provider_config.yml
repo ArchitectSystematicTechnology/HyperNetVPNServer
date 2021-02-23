@@ -1,0 +1,5 @@
+---
+provider_config:
+  name: "demo provider"
+  description: "this is a demo provider"
+  domain: 'float.bitmask.net'

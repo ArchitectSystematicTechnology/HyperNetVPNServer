@@ -1,0 +1,32 @@
+---
+
+frontend:
+  scheduling_group: frontend
+  service_credentials:
+    - name: nginx
+      enable_server: false
+    - name: ssoproxy
+      enable_server: false
+    - name: replds-acme
+  systemd_services:
+    - nginx.service
+    - sso-proxy.service
+    - bind9.service
+    - replds@acme.service
+  ports:
+    - 5005
+
+ok:
+  scheduling_group: all
+  num_instances: 1
+  containers:
+    - name: http
+      image: registry.git.autistici.org/ai3/docker/okserver:latest
+      port: 3100
+      env:
+        PORT: 3100
+  public_endpoints:
+    - name: ok
+      port: 3100
+      scheme: http
+

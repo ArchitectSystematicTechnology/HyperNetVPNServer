@@ -1,5 +1,5 @@
 groups:
-  - name: roles/prometheus/files/rules/rules_mysql.conf
+  - name: roles/float-infra-prometheus/templates/rules/rules_mysql.conf
     rules:
       - record: mysql_slave_lag_seconds
         expr: mysql_slave_status_seconds_behind_master - mysql_slave_status_sql_delay

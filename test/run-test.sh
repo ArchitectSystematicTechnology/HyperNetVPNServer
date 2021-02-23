@@ -1,16 +1,18 @@
 #!/bin/bash
 
+set -e
+
 # Find the absolute path to this script's directory
 # (so that we can find the 'float' root dir).
 bin_dir=$(dirname "$0")
 bin_dir=${bin_dir:-.}
 bin_dir=$(cd "${bin_dir}" && pwd)
-float_dir="${bin_dir}/.."
+float_dir="${bin_dir}/../float"
 
 # Used for all ansible/float invocations.
 export ANSIBLE_VAULT_PASSWORD_FILE=".ansible_vault_pw"
 export ANSIBLE_HOST_KEY_CHECKING=False
-export ANSIBLE_STDOUT_CALLBACK=unixy
+export ANSIBLE_STDOUT_CALLBACK=debug
 
 die() {
     echo "ERROR: $*" >&2
@@ -27,6 +29,7 @@ clean() {
 
 start_vagrant() {
     # Ignore errors on update.
+    echo "starting vagrant..."
     vagrant box update
     vagrant up ${LIBVIRT:+--provider libvirt} \
         || die "could not start virtual machines"
@@ -35,30 +38,30 @@ start_vagrant() {
 stop_vagrant() {
     pushd $test_dir
     vagrant destroy -f
+    virsh --connect qemu+ssh://leap_ci@remotevirt.riseup.net/system net-destroy float-net-$CI_JOB_ID
+    virsh --connect qemu+ssh://leap_ci@remotevirt.riseup.net/system net-undefine float-net-$CI_JOB_ID
     popd
 }
 
 check_hosts_ready() {
+    echo "checking hosts are ready..."
+    pwd
+    echo "config.yaml contents:"
+    cat config.yml
+    echo "ansible.cfg contents:"
+    cat ansible.cfg
+    echo "hosts.yml contents:"
+    cat hosts.yml
     # Wait at most 30 seconds for the vms to become reachable.
     local i=0
     while [ $i -lt 10 ]; do
-        sleep 3
-        ansible -v -i config.yml all -m ping && break
+        sleep 5
+        ANSIBLE_CONFIG=./ansible.cfg ansible -vv -i config.yml all -m ping && break
         i=$(($i + 1))
     done
-    [ $i -eq 10 ] && die "could not reach virtual machines over SSH"
 }
 
 setup_ansible_env() {
-    create_env_cmd=$(PATH=$PATH:. command -v create-env.${test_name}.sh)
-    test -n "$create_env_cmd" \
-         || die "there is no setup script for test environment $name"
-    ${create_env_cmd} ${test_dir} \
-         --net ${private_network} \
-         ${LIBVIRT:+--libvirt=${LIBVIRT}} \
-         ${MITOGEN:+--mitogen=${MITOGEN}} \
-         || die "error creating test environment"
-
     if [ -n "${apt_proxy}" ]; then
         cat > ${test_dir}/group_vars/all/apt-proxy.yml <<EOF
 ---
@@ -68,16 +71,18 @@ EOF
     fi
 
     # Install a test dhparam file to save some time.
-    mkdir -p ${test_dir}/credentials/x509
-    cp ${bin_dir}/dhparam.test ${test_dir}/credentials/x509/dhparam
-
-    # Create a test ansible vault password.
-    echo test-passphrase > ${test_dir}/.ansible_vault_pw
+    mkdir -p test-full/credentials/x509
+    cp ../float/test/dhparam.test test-full/credentials/x509/dhparam
 }
 
 run_ansible() {
-    ${float_dir}/float run init-credentials \
-        || die "failed to run the init-credentials playbook"
+    # initialize the leap credentials (which then automatically initializes the float ones)
+    echo "initializing credentials..."
+
+    cat config.yml
+
+    ${float_dir}/float run -vv ../../playbooks/init-credentials
+
     ${float_dir}/float run site.yml \
         || die "failed to run the site.yml playbook"
 }
@@ -103,7 +108,7 @@ save_logs() {
     pushd $test_dir
     ANSIBLE_STDOUT_CALLBACK=unixy \
     ${float_dir}/float run --extra-vars "out_dir=$out_dir" \
-        ${bin_dir}/save-logs.yml
+        ../../float/test/save-logs.yml
     popd
 }
 
@@ -228,7 +233,6 @@ trap "$cleanup_cmd" EXIT SIGINT SIGTERM
 setup_ansible_env
 
 pushd $test_dir
-clean
 start_vagrant
 check_hosts_ready
 run_ansible
@@ -245,5 +249,7 @@ if [ -n "$test_cmd" ]; then
     $test_cmd \
         || die "env-specific test suite failed: $test_cmd"
 fi
+
+stop_vagrant
 
 exit 0

@@ -27,8 +27,11 @@ def temp_dir():
 
 
 def vault_decrypt(srcpath, dstpath):
-    subprocess.check_call(
-        ['ansible-vault', 'decrypt', '--output=' + dstpath, srcpath])
+    if os.getenv('ANSIBLE_VAULT_PASSWORD_FILE'):
+        subprocess.check_call(
+            ['ansible-vault', 'decrypt', '--output=' + dstpath, srcpath])
+    else:
+        shutil.copy(srcpath, dstpath)
 
 
 class ActionModule(ActionBase):

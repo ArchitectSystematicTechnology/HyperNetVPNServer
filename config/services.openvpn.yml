@@ -86,15 +86,15 @@ vpnweb:
         VPNWEB_CACRT: /etc/leap/ca/client_ca.crt
         VPNWEB_CAKEY: /etc/leap/keys/client_ca.key
         VPNWEB_PROVIDER_CA: /etc/leap/ca/api_ca.crt
-        VPNWEB_AUTH: "{{ vpnweb_auth }}"
-        VPNWEB_SIP_USER: "{{ vpnweb_sip_user }}"
-        VPNWEB_SIP_PASS: "{{ vpnweb_sip_password }}"
-        VPNWEB_AUTH_SECRET: "{{ vpnweb_auth_secret }}"
-        VPNWEB_SIP_HOST: "{{ vpnweb_sip_host }}"
-        VPNWEB_SIP_PORT: "{{ vpnweb_sip_port }}"
-        VPNWEB_SIP_LIBR_LOCATION: "{{ vpnweb_sip_location }}"
-        VPNWEB_SIP_TERMINATOR: "{{ vpnweb_sip_terminator }}"
-        VPNWEB_PASSWORD_POLICY: "{{ vpnweb_password_policy }}"
+        VPNWEB_AUTH: "{{ vpnweb_auth | default('anon') }}"
+        VPNWEB_SIP_USER: "{{ vpnweb_sip_user | default('') }}"
+        VPNWEB_SIP_PASS: "{{ vpnweb_sip_password | default('') }}"
+        VPNWEB_AUTH_SECRET: "{{ vpnweb_auth_secret | default('') }}"
+        VPNWEB_SIP_HOST: "{{ vpnweb_sip_host | default('') }}"
+        VPNWEB_SIP_PORT: "{{ vpnweb_sip_port | default('') }}"
+        VPNWEB_SIP_LIBR_LOCATION: "{{ vpnweb_sip_location | default('') }}"
+        VPNWEB_SIP_TERMINATOR: "{{ vpnweb_sip_terminator | default('') }}"
+        VPNWEB_PASSWORD_POLICY: "{{ vpnweb_password_policy | default('') }}"
   public_endpoints:
     - name: api
       port: 8000

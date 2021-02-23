@@ -1,8 +1,5 @@
 ---
 
-- set_fact:
-    container_runtime: "podman"
-
 - include_tasks: docker.yml
   when: "container_runtime == 'docker'"
 
@@ -14,54 +11,18 @@
   changed_when: False
   when: "docker_registry_url != ''"
 
-- name: Create docker scripts dir
-  file:
-    path: /usr/lib/float/docker
-    state: directory
-
-- name: Install float-pull-image script
+- name: Install docker-related scripts
   template:
-    src: float-pull-image.j2
-    dest: /usr/sbin/float-pull-image
+    src: "{{ item.src }}"
+    dest: "{{ item.dst }}"
     mode: 0755
-
-- include_tasks: start.yml
-
-# Grab the list of currently running containers, and stop / cleanup
-# the ones that are not specified in services.yml.
-
-- name: Get list of running containers
-  shell: "{{ container_runtime }} ps --format={% raw %}'{{.Names}}'{% endraw %}"
-  changed_when: false
-  check_mode: no
-  register: docker_running_containers
-  ignore_errors: true
-
-- set_fact:
-    enabled_container_tags: "{{ float_enabled_containers | map(attribute='tag') | list }}"
-
-- systemd:
-    name: "docker-{{ item }}"
-    state: stopped
-    enabled: no
-  with_items:
-    - "{{ docker_running_containers.stdout_lines }}"
-  when: "item not in enabled_container_tags"
-  ignore_errors: true
-
-- file:
-    path: "/var/lib/prometheus/node-exporter/container-{{ item }}.prom"
-    state: absent
-  with_items:
-    - "{{ docker_running_containers.stdout_lines }}"
-  when: "docker_running_containers is succeeded and item not in enabled_container_tags"
-  ignore_errors: true
-
-- name: Install docker cleanup script
-  template:
-    src: cleanup.sh.j2
-    dest: /usr/local/bin/docker-cleanup
-    mode: 0755
+  loop:
+    - src: "float-pull-image.j2"
+      dst: "/usr/sbin/float-pull-image"
+    - src: "cleanup.sh.j2"
+      dst: "/usr/local/bin/docker-cleanup"
+    - src: "in-container.j2"
+      dst: "/usr/local/bin/in-container"
 
 - name: Install docker cleanup cron job
   copy:
@@ -69,8 +30,62 @@
     content: "33 */3 * * * root runcron --quiet /usr/local/bin/docker-cleanup\n"
     mode: 0644
 
-- name: Install in-container script
-  template:
-    src: in-container.j2
-    dest: /usr/local/bin/in-container
-    mode: 0755
+- import_tasks: start.yml
+
+# Grab the list of currently running containers, and stop / cleanup
+# the ones that are not specified in services.yml.
+
+- name: Stop containers that should not be running
+  block:
+
+    - name: Get list of running containers
+      shell: "{{ container_runtime }} ps --format={% raw %}'{{.Names}}'{% endraw %}"
+      changed_when: false
+      check_mode: no
+      register: docker_running_containers
+      ignore_errors: true
+
+    - set_fact:
+        containers_to_cleanup: "{{ docker_running_containers.stdout_lines | difference(float_enabled_containers | map(attribute='tag') | list) | list }}"
+
+    - name: Stop containers that should not be running
+      systemd:
+        name: "docker-{{ item }}.service"
+        state: stopped
+        enabled: no
+      loop: "{{ containers_to_cleanup }}"
+
+    - file:
+        path: "/var/lib/prometheus/node-exporter/container-{{ item }}.prom"
+        state: absent
+      loop: "{{ containers_to_cleanup }}"
+
+  rescue:
+    - debug:
+        msg: "Failed to clean up containers"
+
+# Restart containers that have an old /etc/hosts file, to update their
+# service discovery.
+
+- name: Restart containers with an old /etc/hosts
+  block:
+
+    - stat:
+        path: "/etc/hosts"
+      register: etc_hosts_stat
+
+    - name: Find containers that need a restart
+      shell: "{{ container_runtime }} ps --format={% raw %}'{{.Names}} {{.Created}}'{% endraw %} | awk '$2 < {{ etc_hosts_stat.stat.mtime | int }} {print $1}'"
+      register: containers_to_restart
+      changed_when: false
+      check_mode: no
+
+    - name: Restart containers with an old /etc/hosts
+      systemd:
+        name: "docker-{{ item }}.service"
+        state: restarted
+      loop: "{{ containers_to_restart.stdout_lines }}"
+
+  rescue:
+    - debug:
+        msg: "Failed to restart containers with old /etc/hosts"

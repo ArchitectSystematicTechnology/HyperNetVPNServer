@@ -1,4 +1,3 @@
-image: registry.git.autistici.org/ai3/docker/float-runner:master
 
 stages:
   - docker_build
@@ -6,42 +5,68 @@ stages:
 
 variables:
   IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  BUILD_DIR: build-$CI_JOB_ID
 
-base_test:
+.base_test_template: &base_test
   stage: test
+  image: registry.git.autistici.org/ai3/docker/float-runner:bullseye
+  before_script:
+    - mkdir -p $BUILD_DIR
   script:
-    - mkdir -p .vagrant.d && ln -s $PWD/.vagrant.d $HOME/.vagrant.d
-    - "cd test && timeout 1h with-ssh-key ./run-test.sh --docker ${APT_PROXY_ADDR:+--apt-proxy $APT_PROXY_ADDR} base"
+    - >
+      ./float create-env
+      --domain=example.com
+      --services=${TEST_DIR}/services.yml
+      --passwords=${TEST_DIR}/passwords.yml
+      --num-hosts=1
+      ${LIBVIRT:+-e libvirt.remote_host=${LIBVIRT#*@} -e libvirt.remote_user=${LIBVIRT%@*}}
+      ${MITOGEN:+-e ansible_cfg.defaults.strategy=mitogen_linear -e ansible_cfg.defaults.strategy_plugins=${MITOGEN}/ansible_mitogen/plugins/strategy}
+      ${APT_PROXY:+-e config.apt_proxy=${APT_PROXY}}
+      $CREATE_ENV_VARS $BUILD_DIR
+
+    - with-ssh-key ./scripts/floatup.py ${LIBVIRT:+--ssh $LIBVIRT} --inventory $BUILD_DIR/hosts.yml --ram 2048 --image ${VM_IMAGE:-buster} up
+    - with-ssh-key ./test-driver init --no-vagrant $BUILD_DIR
+    - with-ssh-key ./test-driver run $BUILD_DIR
+  after_script:
+    - with-ssh-key ./test-driver cleanup --no-vagrant $BUILD_DIR
+    - with-ssh-key ./scripts/floatup.py ${LIBVIRT:+--ssh $LIBVIRT} down
+  variables:
+    CREATE_ENV_VARS: ""
+    TEST_DIR: ""
   tags: [ai3]
   except:
     - schedules
-  cache:
-    key: buster
-    paths:
-      - .vagrant.d
-
-base_bullseye_test:
-  extends: base_test
-  image: registry.git.autistici.org/ai3/docker/float-runner:bullseye
-
-full_test:
-  stage: test
-  script:
-    - mkdir -p .vagrant.d && ln -s $PWD/.vagrant.d $HOME/.vagrant.d
-    - "cd test && timeout 1h with-ssh-key ./run-test.sh --save-logs ${CI_PROJECT_DIR}/test-logs --docker --wait-time 300 ${APT_PROXY_ADDR:+--apt-proxy $APT_PROXY_ADDR} full"
-  tags: [ai3]
-  only:
-    - schedules
-  cache:
-    key: buster
-    paths:
-      - .vagrant.d
   artifacts:
     when: on_failure
     expire_in: 1 week
     name: "${CI_JOB_NAME}_${CI_COMMIT_REF_SLUG}_${CI_COMMIT_SHORT_SHA}"
     paths:
-      - test-logs
+      - "${BUILD_DIR}/ansible.log"
+      - "${BUILD_DIR}/logs"
+
+base_test:
+  <<: *base_test
+  variables:
+    TEST_DIR: "test/base.ref"
+
+base_bullseye_test:
+  <<: *base_test
+  variables:
+    VM_IMAGE: "bullseye"
+    CREATE_ENV_VARS: "-e config.float_debian_dist=bullseye -e inventory.group_vars.vagrant.ansible_python_interpreter=/usr/bin/python3"
+    TEST_DIR: "test/base.ref"
+
+full_test:
+  <<: *base_test
+  variables:
+    TEST_DIR: "test/full.ref"
+
+full_bullseye_test:
+  <<: *base_test
+  variables:
+    VM_IMAGE: "bullseye"
+    CREATE_ENV_VARS: "-e config.float_debian_dist=bullseye -e inventory.group_vars.vagrant.ansible_python_interpreter=/usr/bin/python3"
+    TEST_DIR: "test/full.ref"
 
 docker_build_and_release_tests:
   stage: docker_build

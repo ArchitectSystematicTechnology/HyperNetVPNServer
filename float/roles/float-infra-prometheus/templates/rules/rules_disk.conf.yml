@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/rules_disk.conf
+- name: roles/float-infra-prometheus/templates/rules/rules_disk.conf
   rules:
   - record: instance:node_disk_writes_completed_total:irate1m
     expr: sum(irate(node_disk_writes_completed_total{device=~"([vs]d|nvme).*"}[1m])) WITHOUT (device)

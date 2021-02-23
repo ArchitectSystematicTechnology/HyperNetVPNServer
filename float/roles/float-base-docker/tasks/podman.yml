@@ -1,37 +1,6 @@
 ---
 
-- name: Remove podman repository key
-  apt_key:
-    id: 2472D6D0D2F66AF87ABA8DA34D64390375060AA4
-    url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x4D64390375060AA4'
-    state: absent
-
-- name: Remove opensuse podman repository
-  apt_repository:
-    repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /"
-    state: absent
-
-- name: Install podman repository
-  apt_repository:
-    repo: "deb http://deb.autistici.org/urepo buster-podman/"
-    state: present
-
-- name: Pin podman packages to our repository
-  copy:
-    dest: "/etc/apt/preferences.d/99podman"
-    content: |
-        Package: podman
-        Pin: origin deb.autistici.org
-        Pin-Priority: 1001
-
-- name: Install podman packages
-  apt:
-    name: "{{ packages }}"
-    state: present
-    default_release: "buster-backports"
-  vars:
-    packages:
-      - podman
+- include_tasks: "podman_{{ podman_package_source }}.yml"
 
 - name: Symlink podman to docker
   file:
@@ -44,10 +13,4 @@
   copy:
     src: containers.conf
     dest: "/etc/containers/containers.conf"
-
-# TODO: remove this once the podman packaging issues are fixed.
-- name: Install a working seccomp.json
-  copy:
-    src: "seccomp-0.3.2.json"
-    dest: "/usr/share/containers/seccomp.json"
 

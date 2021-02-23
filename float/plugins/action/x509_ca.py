@@ -4,7 +4,9 @@ import contextlib
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
+
 from ansible.plugins.action import ActionBase
 
 
@@ -18,8 +20,13 @@ def temp_dir():
 
 
 def vault_encrypt(srcpath, dstpath):
-    subprocess.check_call(
-        ['ansible-vault', 'encrypt', '--output=' + dstpath, srcpath])
+    if os.getenv('ANSIBLE_VAULT_PASSWORD_FILE'):
+        subprocess.check_call(
+            ['ansible-vault', 'encrypt', '--output=' + dstpath, srcpath])
+    else:
+        print('Warning: no ANSIBLE_VAULT_PASSWORD_FILE, secrets will be '
+              'stored unencrypted!', file=sys.stderr)
+        shutil.copy(srcpath, dstpath)
 
 
 class ActionModule(ActionBase):

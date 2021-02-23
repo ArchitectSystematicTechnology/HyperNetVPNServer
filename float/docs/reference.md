@@ -797,6 +797,10 @@ This points the www domain at the frontends via a CNAME (all the
 could have just as easily used A records but this is simpler and works
 with both IPv4 and IPv6.
 
+The *@base* template already adds NS records (pointing at the
+*frontend* hosts where the DNS servers are), and A records for the
+unqualified zone name
+
 Finally, we need a handler to reload the updated DNS configuration,
 which goes in *roles/myservice-dns/handlers/main.yml* and runs a shell
 command to update zonetool:
@@ -834,6 +838,22 @@ myservice:
         - myservice.org
       port: ...
 ```
+
+While the above is sufficient to have the float DNS servers serve
+authoritative records for the zone, you also have to ensure that the
+servers are properly plugged in to the global DNS service. How to do
+so depends on many details specific of each situation, and is beyond
+the scope of *float*, however it generally involves (assuming your
+float infrastructure has *example.com* as domain_public, and you want
+to serve *myservice.org* as in the examples above):
+
+* Having at least 2 hosts in the *frontend* group. Float will
+  automatically create A records for *ns1.example.com*,
+  *ns2.example.com*, etc.
+* Setting the nameserver records of *myservice.org* with the domain
+  registrar to *ns1.example.com* and, say, *ns2.example.com*.
+* Eventually adding glue A records, at the domain registrar, with the
+  IP addresses for ns1.example.com and ns2.example.com.
 
 ## SSL
 
@@ -1100,7 +1120,7 @@ all the XML and weird enterprise edge cases.
   / Apache2 modules.
 * [git.autistici.org/id/go-sso](https://git.autistici.org/id/go-sso)
   SSO server and SSO proxy implementation.
-* [the sso-server role README](../roles/sso-server/README.md) has
+* [the sso-server role README](../roles/float-infra-sso-server/README.md) has
   details about the Ansible configuration of SSO parameters.
 
 ### User-encrypted secrets
@@ -1245,8 +1265,7 @@ Monitoring dashboards are provided by Grafana.
 
 A few alerting rules are provided by default
 in
-[roles/prometheus/files/rules/](roles/prometheus/files/rules/). This
-includes:
+[roles/float-infra-prometheus/templates/rules/](roles/float-infra-prometheus/templates/rules/). This includes:
 
 * host-level alerts (high CPU usage, disk full, network errors...)
 * service failures (systemd services down, or crash-looping)
@@ -1259,9 +1278,25 @@ hosts in the *prometheus* group, e.g.:
 *roles/my-alerts/tasks/main.yml*
 
 ```yaml
-- copy:
-    src: rules/
-    dest: /etc/prometheus/rules/
+- name: Install my alerts
+  template:
+    src: "{{ item }}"
+    dest: "/etc/prometheus/rules/"
+    variable_start_string: "[["
+    variable_end_string: "]]"
+  with_fileglob:
+    - templates/rules/*.conf.yml
+  notify: "reload prometheus"
+```
+
+*roles/my-alerts/handlers/main.yml*
+```yaml
+- name: reload prometheus
+  uri:
+    url: "http://localhost:9090/-/reload"
+    method: POST
+  ignore_errors: true
+  listen: "reload prometheus"
 ```
 
 *playbook.yml*
@@ -1272,7 +1307,7 @@ hosts in the *prometheus* group, e.g.:
     - my-alerts
 ```
 
-and your custom rules / alerts would be in *roles/my-alerts/files/rules/*.
+and your custom rules / alerts would be in *roles/my-alerts/templates/rules/*.
 
 The alertmanager configuration expects some common labels to be set on
 your alerts in order to apply its inhibition hierarchy (and make
@@ -1452,7 +1487,7 @@ indexes. Float uses the following index types:
 * *audit-\** for audit logs, which usually have a longer retention
 
 We use Elasticsearch index templates (in
-roles/log-collector/templates/elasticsearch/templates) to optimize the
+roles/float-infra-log-collector/templates/elasticsearch/templates) to optimize the
 schema a bit, disabling indexing on problematic fields, and setting
 sane replication options.
 
@@ -1584,7 +1619,8 @@ be a member of
 
 Note that due to ordering issues it is advised to set the
 *resolver_mode* attribute on hosts only after the first setup is
-complete, to avoid breaking DNS resolution while Ansible is running.
+complete, to avoid breaking DNS resolution while Ansible is running
+the first time.
 
 ### Example
 
@@ -1778,6 +1814,11 @@ for this host - it is assumed that some other automation will do it.
 
 `extra_nginx_config`: Additional NGINX directives that should be
 included (at the *server* level) in the generated configuration.
+
+`enable_sso_proxy`: If true, place the service behind authentication
+using single sign-on, allowing access only to administrators (members
+of the *admins* group). This is quite useful for admin web interfaces
+of internal services that do not support SSO integration of their own.
 
 #### HTTP (All domains)
 
@@ -2164,8 +2205,9 @@ logstash: 15, http: 15 }`.
 
 ### Monitoring
 
-`alert_playbook_url` is the base URL for all the playbook links
-associated with the alerts.
+`alert_runbook_fmt` is a format expression used to generate runbook
+URLs for alerts. The format expression should contain a single `%s`
+token which will be replaced by the alert name.
 
 `prometheus_tsdb_retention` controls the time horizon of the primary
 Prometheus instances (default 90d). Set it to a shorter value when
@@ -2181,17 +2223,32 @@ instances should scrape their targets (default 10s).
 `prometheus_lts_scrape_interval` sets how often the long-term
 Prometheus instances should scrape the primary ones (default 1m).
 
-`prometheus_external_targets` allows adding additional targets to
-Prometheus beyond those that are described by the service metadata. It
-is a list of entries with *name* and *targets* attributes, where
-*targets* is also a list of host:port entries.
+`prometheus_external_targets` allows adding additional targets to Prometheus
+beyond those that are described by the service metadata. It is a list of entries
+with *name*, *targets* attributes. Optionally, you may specify a *scheme*
+(eg. 'https') if the default 'http' is insufficient; as well as *basic_auth*
+details; or *tls_config* options, if necessary. For example:
+
+```
+  - { name: 'node-external', 
+      targets: [ 'foo.example.com:9100', 'bar.example.com:9100' ] }
+  - { name: 'restic', 
+      targets: [ 'baz.example.com:8000' ], 
+      scheme: 'https',
+      basic_auth: { username: foo, password: bar }
+      tls_config: { insecure_skip_verify: true }
+    }
+```
+
 
 `prometheus_federated_targets` is a list of external Prometheus
 instances to scrape ("federate" in Prometheus lingo).
 
 `alert_webhook_receivers` is a list of entries with *name* / *url*
 attributes representing escalation webhook URLs for the alertmanager,
-allowing alert delivery over non-email transports.
+allowing alert delivery over non-email transports. Additionally, the
+*send_resolved* boolean can be also be indicated for each, if you want
+to be notified about resolved alerts (default False).
 
 ### Third-party services
 
@@ -2478,33 +2535,83 @@ The *float* tool has a command-based syntax. The known commands are:
 
 ### `create-env`
 
-The *create-env* command generates a configuration template for a new
-*float* environment. You must pass it the path to a (new) directory
-where the configuration files will be written. Command-line flags
-control some details of the generated configuration:
+The *create-env* command generates a configuration for a new *float*
+test environment (i.e. with *testing=true*). Its primary focus is test
+jobs in a Continuous Integration system, where it is useful to have
+the ability to programmatically evaluate different combinations of
+service and runtime configurations. The intention is to support the
+distinction between the service description ("what to test"), read
+from the filesystem, and the runtime configuration ("how to test it"),
+controlled via command-line flags.
 
-* *--domain* defines the base domain for the environment. The default
-  is *example.com*. The internal domain used for service discovery is
-  derived from this value by prepending the *infra* component.
+The command expects an existing service description: it needs
+pre-existing services.yml, passwords.yml and site.yml files
+(respectively the service metadata, the credentials metadata, and the
+top-level playbook for your infrastructure). You should use the
+*--services*, *--passwords* and *--playbook* options to specify their
+location, or it will just use float's uninteresting defaults. If your
+playbook includes custom Ansible roles, use the *--roles-path* option
+to let Ansible find them.
 
-* *--vagrant* is a boolean flag that tells float to generate a
-  Vagrantfile and an inventory file with a number of VMs controlled by
-  the *--num-hosts* flag (by default 3).
+The resulting configuration will include an auto-generated inventory
+file, and a matching Vagrantfile to run test VMs.
 
-* *--mitogen* is an optional flag that should point at a directory
-  containing the [Mitogen](https://mitogen.readthedocs.io/) source
-  repository. When this flag is specified, the generated *ansible.cfg*
-  will include the Mitogen plugin, and it will specify the
-  *mitogen_linear* strategy. We've found Mitogen to dramatically
-  increase Ansible performance and we use it often, so this option
-  saves from further editing of the *ansible.cfg* file.
+Command-line options control characteristics of the runtime
+environment and its configuration:
 
-There are many other options used to control specific parameters of
-the generated Vagrant configuration (including support for *libvirt*
-and other features), check out "float create-env --help" for more
-details.
+* *--domain* and *--infra-domain* allow you to quickly set the
+  top-level float configuration variables *domain* and
+  *domain_public*.
 
-You will most definitely need to edit the generated files.
+* *--num-hosts* specifies how many hosts should be created in the
+  inventory.
+
+* *--services*, *--passwords* and *--playbook* specify the location of
+  service descriptions, credentials metadata, and the top-level
+  playbook for the infrastructure to be tested. These flags can be
+  specified multiple times, the resulting configuration will include
+  all of them.
+
+Further configuration is available via the '-e' command-line option,
+which allows you to set internal configuration variables. The internal
+configuration is a dictionary with the following elements:
+
+* *libvirt*: Configuration for remote libvirt usage
+  * *remote_host*: Hostname of the remote libvirt server
+  * *remote_user*: Username on the remote libvirt server
+    * *ssh_key_file*: SSH key file (in ~/.ssh/config) to use to
+      authenticate to the remote libvirt server
+* *ansible_cfg*: Ansible configuration, split into sections, the most
+  interesting one of which is *defaults*
+* *config*: Configuration variables for float, common to all hosts
+  (i.e. variables that end up in group_vars/all)
+
+Dotted notation is used to address elements nested in the internal
+configuration dictionary, e.g.:
+
+```
+-e ansible_cfg.defaults.strategy=mitogen_linear
+```
+
+will enable Mitogen if it's installed system-wide, and
+
+```
+-e config.apt_proxy=1.2.3.4:3024
+```
+
+will set the "apt_proxy" float configuration variable, enabling usage
+of a HTTP caching proxy for APT packages.
+
+The script will auto-generate an inventory consisting of the desired
+number of hosts (selected via --num-hosts), named *host1*...*hostN*,
+with IPs in a randomly-selected 10.x network (starting from .10, since
+.1 is reserved for the Vagrant host itself).
+
+The first host will be a member of the *frontend* group, all others of
+the *backend* group, unless there is just a single host, in which case
+it will be part of both frontend and backend groups at
+once. Additional groups can be defined, along with their host
+memberships, using the *--additional-host-group* command-line option.
 
 ### `run`
 

@@ -1,5 +1,7 @@
 ---
 
+container_runtime: "podman"
+
 docker_registry_url: ""
 docker_registry_username: ""
 docker_registry_password: ""
@@ -14,3 +16,10 @@ docker_daemon_config:
   experimental: true
 docker_daemon_config_testing:
   insecure-registries: ["192.168.10.1:5000"]
+
+# Where should we get the Podman packages from?  Possible choices are
+# 'ai' (a version pinned in our repository, tested working on Debian
+# buster), 'debian' (use standard Debian packages, only available from
+# bullseye) or 'kubic' (use the upstream Kubic repositories, with the
+# latest release). The default is distribution-dependent.
+podman_package_source: "{{ 'debian' if float_debian_dist == 'bullseye' else 'ai' }}"

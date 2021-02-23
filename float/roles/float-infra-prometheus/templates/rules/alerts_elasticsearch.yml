@@ -1,0 +1,31 @@
+groups:
+  - name: roles/prometheus/files/rules/alerts_elasticsearch.conf
+    rules:
+      - alert: ElasticsearchTooFewNodesRunning
+        expr: elasticsearch_cluster_health_up < 1
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          description: Elasticsearch on {{$labels.host}} is unhealthy.
+          summary: Elasticsearch is unhealthy
+
+      - alert: ElasticsearchHeapTooHigh
+        expr: elasticsearch_jvm_memory_used_bytes{area="heap"} / elasticsearch_jvm_memory_max_bytes{area="heap"} > 0.9
+        for: 15m
+        labels:
+          severity: page
+        annotations:
+          description: The heap usage is over 90% for 15m
+          summary: Elasticsearch on {{$labels.host}} heap usage is high
+
+      - alert: ElasticsearchLowFreeSpace
+        expr: min(elasticsearch_filesystem_data_free_percent) by (host) < 10
+        for: 1h
+        labels:
+          severity: page
+          scope: host
+        annotations:
+          summary: Elasticsearch on {{$labels.host}} is about to run out of disk space
+          description: "The Elasticsearch instance on {{$labels.host}} has > 90% disk utilization on its data volume. When the utilization reaches 95%, ES will switch indexes to read-only mode and we'll start discarding logs. Try to free some space."
+

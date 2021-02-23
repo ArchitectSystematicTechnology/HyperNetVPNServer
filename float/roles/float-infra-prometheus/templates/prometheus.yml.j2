@@ -263,6 +263,12 @@ scrape_configs:
       - targets: {{ target.targets | to_json }}
         labels:
           zone: external
+{% if target.basic_auth|default([]) %}
+    basic_auth: {{ target.basic_auth | to_json }}
+{% endif %}
+{% if target.tls_config|default([]) %}
+    tls_config: {{ target.tls_config | to_json }}
+{% endif %}
     relabel_configs:
       - source_labels: [__address__]
         target_label: host

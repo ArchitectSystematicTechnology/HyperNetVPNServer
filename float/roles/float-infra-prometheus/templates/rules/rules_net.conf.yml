@@ -1,16 +1,26 @@
 groups:
-- name: roles/prometheus/files/rules/rules_net.conf
+- name: roles/float-infra-prometheus/templates/rules/rules_net.conf
   rules:
   - record: instance:conntrack_full:ratio
     expr: node_nf_conntrack_entries / node_nf_conntrack_entries_limit
+
   - record: instance:node_network_errs_total
     expr: node_network_receive_errs_total + node_network_transmit_errs_total
   - record: instance:node_network_drop_total
     expr: node_network_receive_drop_total + node_network_transmit_drop_total
+  - record: instance:node_network_packets_total
+    expr: node_network_receive_packets_total + node_network_transmit_packets_total
   - record: instance:node_network_errs_total:rate5m
     expr: rate(instance:node_network_errs_total[5m])
   - record: instance:node_network_drop_total:rate5m
     expr: rate(instance:node_network_drop_total[5m])
+  - record: instance:node_network_packets_total:rate5m
+    expr: rate(instance:node_network_packets_total[5m])
+  - record: instance:node_network_errs:ratio
+    expr: instance:node_network_errs_total:rate5m / instance:node_network_packets_total:rate5m
+  - record: instance:node_network_drop:ratio
+    expr: instance:node_network_drop_total:rate5m / instance:node_network_packets_total:rate5m
+
   - record: instance:network_transmit_bytes_total:rate5m
     expr: sum(rate(node_network_transmit_bytes_total{device!="lo"}[5m])) without (device)
   - record: instance:network_receive_bytes_total:rate5m

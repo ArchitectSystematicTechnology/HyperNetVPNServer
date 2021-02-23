@@ -1,0 +1,35 @@
+---
+
+# Install Podman using packages from the Debian distribution
+# (available starting with Bullseye).
+
+- fail:
+    msg: "Debian packages for Podman are only present in Bullseye"
+  when: "float_debian_dist in ('stretch', 'buster')"
+
+- name: Remove podman Kubic repository key
+  file:
+    path: "/etc/apt/trusted.gpg.d/kubic.gpg"
+    state: absent
+
+- name: Remove other podman repositories
+  apt_repository:
+    repo: "{{ item }}"
+    state: absent
+  loop:
+    - "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /"
+    - "deb http://deb.autistici.org/urepo buster-podman/"
+
+- name: Remove podman package pins
+  file:
+    path: "/etc/apt/preferences.d/99podman"
+    state: absent
+
+- name: Install Podman packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - podman
+      - crun

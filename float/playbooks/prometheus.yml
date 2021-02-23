@@ -1,6 +1,7 @@
 ---
 
 - hosts: prometheus
+  gather_facts: no
   roles:
     - float-infra-prometheus
 

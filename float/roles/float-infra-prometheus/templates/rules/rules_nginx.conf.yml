@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/rules_nginx.conf
+- name: roles/float-infra-prometheus/templates/rules/rules_nginx.conf
   rules:
   - record: host:nginx_http_requests_total:rate5m
     expr: sum(rate(nginx_http_requests[5m])) by (host, vhost)

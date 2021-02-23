@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/alerts_system_health.conf
+- name: roles/float-infra-prometheus/templates/rules/alerts_system_health.conf
   rules:
     - alert: DiskUnhealthy
       expr: smartmon_device_smart_healthy < 1
@@ -28,5 +28,5 @@ groups:
       annotations:
         summary: "A physical component is running too hot on {{ $labels.host }}"
         description: "A sensor is reporting that a physical component ({{ $labels.sensor }}/{{ $labels.chip }}) on {{ $labels.host }} has been running very close to the critical level ({{ $value }}) for the last 2 hours."
-        runbook: '[[ alert_playbook_url ]]/PhysicalComponentTooHot'
+        runbook: '[[ alert_runbook_fmt | format("PhysicalComponentTooHot") ]]'
 

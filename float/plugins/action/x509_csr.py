@@ -97,7 +97,7 @@ class ActionModule(ActionBase):
         for ip in ip_addrs:
             cmd.append('--ip=' + ip)
         result = self._cmd(task_vars, cmd)
-        if result['rc'] != 0:
+        if result.get('rc', 0) != 0:
             raise Exception('CSR generation failed: cmd="%s", result=%s' % (
                 ' '.join(cmd), str(result)))
         return result['stdout']
@@ -121,4 +121,4 @@ class ActionModule(ActionBase):
             cmd.append('--ca-cert=' + ca_cert_path)
 
         result = self._cmd(task_vars, cmd)
-        return (result['rc'] != 0), result['stdout']
+        return (result.get('rc', 0) != 0), result['stdout']

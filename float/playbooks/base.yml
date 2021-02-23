@@ -3,7 +3,8 @@
 - hosts: all
   roles:
     - float-base
-    - float-base-service-credentials
+    - float-base-datasets
+    - float-base-volumemgr
     - float-util-vagrant-compat
 
 - hosts: net-overlay

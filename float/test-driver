@@ -1,0 +1,153 @@
+#!/bin/sh
+
+# Find the absolute path to this script's directory
+# (so that we can find the 'float' root dir).
+bin_dir=$(dirname "$0")
+bin_dir=${bin_dir:-.}
+bin_dir=$(cd "${bin_dir}" && pwd)
+float_dir="${bin_dir}"
+use_vagrant=1
+
+log() {
+    echo " ***" >&2
+    echo " *** $*" >&2
+    echo " ***" >&2
+}
+
+die() {
+    echo "ERROR: $*" >&2
+    exit 1
+}
+
+start_vagrant() {
+    log Starting VMs
+    vagrant box update
+    vagrant up ${VAGRANT_PROVIDER:+--provider ${VAGRANT_PROVIDER}}
+    return $?
+}
+
+stop_vagrant() {
+    log Stopping VMs
+    vagrant destroy --force --parallel
+}
+
+wait_for_vms() {
+    log Waiting for VMs to become available
+
+    # Wait at most 30 seconds for the vms to become reachable.
+    local i=0
+    local ok=1
+    while [ $i -lt 10 ]; do
+        sleep 3
+        if ansible -v -i config.yml all -m ping; then
+            ok=0
+            break
+        fi
+        i=$(($i + 1))
+    done
+    return $ok
+}
+
+save_logs() {
+    local out_dir="$1"
+
+    # Try to keep ansible-playbook output to a minimum so as not to
+    # take too much space in the CI job logs.
+    log "Saving logs from VMs (if any)"
+    mkdir -p "${out_dir}"
+    ANSIBLE_STDOUT_CALLBACK=null \
+    ${float_dir}/float run --extra-vars "out_dir=${out_dir}" \
+        ${float_dir}/test/save-logs.yml
+}
+
+run_init() {
+    if [ $use_vagrant -eq 1 ]; then
+        start_vagrant \
+            || die "could not start VMs"
+    fi
+
+    wait_for_vms \
+        || die "could not reach the VMs with Ansible"
+
+    log Running init-credentials playbook
+    ${float_dir}/float run init-credentials.yml \
+        || die "failed to run the init-credentials playbook"
+
+    log Running main playbook
+    ${float_dir}/float run site.yml \
+        || die "failed to run the main playbook"
+}
+
+run_cleanup() {
+    if [ $use_vagrant -eq 1 ]; then
+        stop_vagrant
+    fi
+}
+
+usage() {
+    cat <<EOF
+Usage: test-driver [COMMAND] [DIR]
+Commands:
+
+  init       Initialize the test environment (turn up VMs, set up
+             credentials, run the main float playbook)
+
+  wait-ready Wait until the VMs are ready (part of "init")
+
+  cleanup    Cleanup the test environment (turn down VMs, etc)
+
+  run        Run the test suite, using the playbooks specified by
+             the remaining command-line arguments
+
+If DIR is specified, chdir there before running anything.
+
+The 'init' and 'cleanup' commands understand a --no-vagrant option
+(which must immediately follow the command) in which case Vagrant
+will not be invoked at all, and the virtual machines will be expected
+to be already up and running.
+
+EOF
+    exit 2
+}
+
+cmd="$1"
+shift
+
+if [ "x$1" = "x--no-vagrant" ]; then
+    use_vagrant=0 ; shift
+fi
+
+if [ $# -gt 0 ]; then
+    cd "$1"
+    shift
+fi
+
+case "$cmd" in
+    init)
+        run_init
+        ;;
+
+    wait-ready)
+        wait_for_vms \
+            || die "could not reach the VMs with Ansible"
+        ;;
+
+    cleanup)
+        save_logs logs
+        run_cleanup
+        ;;
+
+    run)
+        for playbook in "${float_dir}/test/integration-test-docker.yml" "$@"; do
+            log Running test playbook ${playbook}
+            ${float_dir}/float run ${playbook} \
+                || die "test playbook failed"
+        done
+        ;;
+
+    *)
+        usage
+        ;;
+esac
+
+exit 0

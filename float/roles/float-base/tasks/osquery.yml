@@ -1,10 +1,11 @@
 ---
 
-- name: Install osquery APT key
-  apt_key:
-    id: 1484120AC4E9F8A1A577AEEE97A80C63C9D8B80B
-    keyserver: keyserver.ubuntu.com
-    state: present
+- name: Setup apt osquery keyring
+  copy:
+    src: "osquery/{{ item }}"
+    dest: "/etc/apt/trusted.gpg.d/{{ item }}"
+  with_items:
+    - osquery.gpg
 
 - name: Install osquery APT repository
   apt_repository:

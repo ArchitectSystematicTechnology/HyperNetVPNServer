@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/alerts_systemd.conf
+- name: roles/float-infra-prometheus/templates/rules/alerts_systemd.conf
   rules:
   - alert: SystemdUnitFailed
     expr: node_systemd_unit_state{state="failed"} > 0
@@ -19,5 +19,5 @@ groups:
     annotations:
       summary: 'Service {{ $labels.unit }} is crash-looping on {{ $labels.host }}'
       description: 'Systemd unit {{ $labels.unit }} is being restarted repeatedly. Likely a configuration problem.'
-      runbook: '[[ alert_playbook_url ]]/SystemdUnitCrashLooping'
+      runbook: '[[ alert_runbook_fmt | format("SystemdUnitCrashLooping") ]]'
 

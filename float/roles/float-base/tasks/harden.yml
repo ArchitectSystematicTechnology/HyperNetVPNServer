@@ -74,8 +74,8 @@
 
 - name: Audispd plugins configured
   copy:
-    src: "audisp/plugins.d/{{ item }}"
-    dest: "/etc/audisp/plugins.d/{{ item }}"
+    src: "audit/plugins.d/{{ item }}"
+    dest: "/etc/{{ 'audisp' if float_debian_dist in ('stretch', 'buster') else 'audit' }}/plugins.d/{{ item }}"
   with_items:
     - syslog.conf
     - json.conf

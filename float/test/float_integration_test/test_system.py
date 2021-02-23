@@ -41,6 +41,9 @@ class TestBuiltinServiceURLs(URLTestBase):
             self.skipTest('service %s not enabled' % service_name)
         self._assert_endpoint_ok(public_endpoint_name)
 
+    def test_okserver(self):
+        self._assert_endpoint_ok_if_enabled('ok', 'ok')
+
     def test_admin_dashboard(self):
         self._assert_endpoint_ok_if_enabled('admin-dashboard', 'admin')
 

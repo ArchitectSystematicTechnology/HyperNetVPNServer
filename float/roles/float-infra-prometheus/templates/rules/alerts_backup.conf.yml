@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/alerts_backup.conf
+- name: roles/float-infra-prometheus/template/rules/alerts_backup.conf
   rules:
   - alert: BackupFailed
     expr: backup_ok != 1
@@ -17,4 +17,4 @@ groups:
     annotations:
       summary: '{{ $labels.dataset }} backup failure on {{ $labels.host }}'
       description: 'Dataset {{ $labels.dataset }} has failed its backups on {{ $labels.host }} for two days.'
-      runbook: '[[ alert_playbook_url ]]/BackupFailed'
+      runbook: '[[ alert_runbook_fmt | format("BackupFailed") ]]'

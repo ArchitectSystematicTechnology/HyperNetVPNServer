@@ -8,9 +8,11 @@
         depth: 2
         recurse: yes
       register: remote_logs
+      no_log: true
 
     - name: Fetch syslog files
       fetch:
         src: "{{ item.path }}"
         dest: "{{ out_dir }}"
       with_items: "{{ remote_logs.files }}"
+      no_log: true
