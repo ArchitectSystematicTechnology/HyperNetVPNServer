@@ -1,6 +1,0 @@
-RUN=yes
-DAEMON=/usr/sbin/sslh
-
-# The targets must use a FQDN so that we can resolve to either IPv4
-# or IPv6 via /etc/hosts.
-DAEMON_OPTS="--user sslh --listen {{ ip }}:443 {% if ip6 is defined %}--listen {{ ip6 }}:443 {% endif %}--transparent --openvpn {{ inventory_hostname }}.{{ domain }}:1194 --ssl {{ inventory_hostname }}.{{ domain }}:{{ nginx_https_port }} --pidfile /var/run/sslh/sslh.pid"

@@ -1,6 +1,3 @@
 
 - listen: reload openvpn DNS config
   shell: "/usr/sbin/update-dns && rndc reload"
-
-- listen: add gateway address
-  shell: '/usr/local/sbin/add_gateway_ips.sh'

@@ -21,4 +21,8 @@ Vagrant.configure(2) do |config|
     m.vm.hostname = "floatapp1"
     m.vm.network "private_network", ip: "10.121.20.11", libvirt__dhcp_enabled: false
   end
+  config.vm.define "gateway1" do |m|
+    m.vm.hostname = "gateway1"
+    m.vm.network "private_network", ip: "10.121.20.12", libvirt__dhcp_enabled: false
+  end
 end

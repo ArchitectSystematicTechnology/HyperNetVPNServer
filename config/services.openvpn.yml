@@ -34,7 +34,7 @@ openvpn:
   # connection based, and we want to also be able to do UDP, so we do not really
   # want to have a reverse proxy for openvpn, instead we want to set it up as a
   # user-facing service, and just rely on DNS for request routing and balancing.
-  scheduling_group: frontend
+  scheduling_group: openvpn
   num_instances: 1
   monitoring_endpoints:
     - job_name: openvpn
