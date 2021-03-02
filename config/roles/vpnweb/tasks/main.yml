@@ -29,13 +29,12 @@
     path: "/etc/leap/config/vpnweb/{{ item }}"
     state: directory
   with_items:
-    - 1
-    - 3
+    - 4
 
 - name: "Render the eip-service.json template"
   template:
     src: 'eip-config.json.j2'
-    dest: '/etc/leap/config/vpnweb/3/eip-service.json'
+    dest: '/etc/leap/config/vpnweb/4/eip-service.json'
   notify:
     - "restart docker-vpnweb-vpnweb"
 
