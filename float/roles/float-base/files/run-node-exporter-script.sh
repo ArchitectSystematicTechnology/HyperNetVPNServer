@@ -24,7 +24,7 @@ output_file="${output_dir}/${script_name}.prom"
 tmp_file="${output_file}.$$"
 trap "rm -f $tmp_file 2>/dev/null" EXIT INT TERM
 
-runcron --no-metrics --splay 60 --name "node-exporter-$script_name" -- \
+runcron --no-syslog --no-metrics --splay 60 --name "node-exporter-$script_name" -- \
         "$script_path" > "$tmp_file"
 if [ $? -gt 0 ]; then
     rm -f "$tmp_file" 2>/dev/null

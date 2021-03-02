@@ -1163,7 +1163,7 @@
             }
           ],
           "dsType": "elasticsearch",
-          "expr": "avg_over_time(elasticsearch_process_cpu_percent{cluster=~\"$cluster\", name=~\"$node\"}[5m])",
+          "expr": "avg_over_time(elasticsearch_process_cpu_percent{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1439,7 +1439,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg_over_time(elasticsearch_jvm_memory_used_bytes{area=\"heap\", cluster=~\"$cluster\", name=~\"$node\"}[1m]) / elasticsearch_jvm_memory_max_bytes{area=\"heap\", cluster=~\"$cluster\", name=~\"$node\"}",
+          "expr": "avg_over_time(elasticsearch_jvm_memory_used_bytes{area=\"heap\", cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval]) / elasticsearch_jvm_memory_max_bytes{area=\"heap\", cluster=~\"$cluster\", name=~\"$node\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1543,7 +1543,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"young\"}[$__interval])",
+          "expr": "rate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"young\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }}",
@@ -1630,7 +1630,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"old\"}[$__interval])",
+          "expr": "rate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"old\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }}",
@@ -1720,7 +1720,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_jvm_gc_collection_seconds_sum{cluster=~\"$cluster\", name=~\"$node\", gc=\"young\"}[$__interval])) by (name) / sum(rate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"young\"}[$__interval])) by (name)\nor\nsum(irate(elasticsearch_jvm_gc_collection_seconds_sum{cluster=~\"$cluster\", name=~\"$node\", gc=\"young\"}[5m])) by (name) / sum(irate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"young\"}[5m])) by (name)",
+          "expr": "sum(rate(elasticsearch_jvm_gc_collection_seconds_sum{cluster=~\"$cluster\", name=~\"$node\", gc=\"young\"}[$__rate_interval])) by (name) / sum(rate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"young\"}[$__rate_interval])) by (name)\nor\nsum(irate(elasticsearch_jvm_gc_collection_seconds_sum{cluster=~\"$cluster\", name=~\"$node\", gc=\"young\"}[$__rate_interval])) by (name) / sum(irate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"young\"}[$__rate_interval])) by (name)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1811,7 +1811,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_jvm_gc_collection_seconds_sum{cluster=~\"$cluster\", name=~\"$node\", gc=\"old\"}[$__interval])) by (name) / sum(rate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"old\"}[$__interval])) by (name)\nor\nsum(irate(elasticsearch_jvm_gc_collection_seconds_sum{cluster=~\"$cluster\", name=~\"$node\", gc=\"old\"}[5m])) by (name) / sum(irate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"old\"}[5m])) by (name)",
+          "expr": "sum(rate(elasticsearch_jvm_gc_collection_seconds_sum{cluster=~\"$cluster\", name=~\"$node\", gc=\"old\"}[$__rate_interval])) by (name) / sum(rate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"old\"}[$__rate_interval])) by (name)\nor\nsum(irate(elasticsearch_jvm_gc_collection_seconds_sum{cluster=~\"$cluster\", name=~\"$node\", gc=\"old\"}[$__rate_interval])) by (name) / sum(irate(elasticsearch_jvm_gc_collection_seconds_count{cluster=~\"$cluster\", name=~\"$node\", gc=\"old\"}[$__rate_interval])) by (name)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1918,7 +1918,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_thread_pool_completed_count{cluster=~\"$cluster\", type!=\"management\", name=~\"$node\"}[$__interval])) by (type) or sum(irate(elasticsearch_thread_pool_completed_count{cluster=~\"$cluster\", type!=\"management\", name=~\"$node\"}[5m])) by (type)",
+          "expr": "sum(rate(elasticsearch_thread_pool_completed_count{cluster=~\"$cluster\", type!=\"management\", name=~\"$node\"}[$__rate_interval])) by (type) or sum(irate(elasticsearch_thread_pool_completed_count{cluster=~\"$cluster\", type!=\"management\", name=~\"$node\"}[$__rate_interval])) by (type)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -2188,7 +2188,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_thread_pool_completed_count{cluster=~\"$cluster\", name=~\"$node\"}[$__interval])) by (type)",
+          "expr": "sum(rate(elasticsearch_thread_pool_completed_count{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (type)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ type }}",
@@ -2279,7 +2279,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_thread_pool_rejected_count{cluster=~\"$cluster\", type!=\"management\", name=~\"$node\"}[$__interval])) by (type)",
+          "expr": "sum(rate(elasticsearch_thread_pool_rejected_count{cluster=~\"$cluster\", type!=\"management\", name=~\"$node\"}[$__rate_interval])) by (type)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -2385,7 +2385,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(elasticsearch_transport_rx_packets_total{cluster=~\"$cluster\", name=~\"$node\"}[$__interval])",
+          "expr": "rate(elasticsearch_transport_rx_packets_total{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }} RX",
@@ -2393,7 +2393,7 @@
           "step": 240
         },
         {
-          "expr": "rate(elasticsearch_transport_tx_packets_total{cluster=~\"$cluster\", name=~\"$node\"}[$__interval]) * -1",
+          "expr": "rate(elasticsearch_transport_tx_packets_total{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval]) * -1",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }} TX",
@@ -2481,7 +2481,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(elasticsearch_transport_rx_size_bytes_total{cluster=~\"$cluster\", name=~\"$node\"}[$__interval])",
+          "expr": "rate(elasticsearch_transport_rx_size_bytes_total{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -2489,7 +2489,7 @@
           "refId": "A"
         },
         {
-          "expr": "rate(elasticsearch_transport_tx_size_bytes_total{cluster=~\"$cluster\", name=~\"$node\"}[$__interval]) * -1 ",
+          "expr": "rate(elasticsearch_transport_tx_size_bytes_total{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval]) * -1 ",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }} TX",
@@ -2588,7 +2588,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_indices_search_query_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) / sum(rate(elasticsearch_indices_search_query_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval]))",
+          "expr": "sum(rate(elasticsearch_indices_search_query_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) / sum(rate(elasticsearch_indices_search_query_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval]))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -2597,7 +2597,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(elasticsearch_indices_search_fetch_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) / sum(rate(elasticsearch_indices_search_fetch_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval]))",
+          "expr": "sum(rate(elasticsearch_indices_search_fetch_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) / sum(rate(elasticsearch_indices_search_fetch_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval]))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -2687,7 +2687,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_indices_get_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) by (name) / sum(rate(elasticsearch_indices_get_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) by (name) \nor\nsum(irate(elasticsearch_indices_get_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[5m])) by (name)  / sum(irate(elasticsearch_indices_get_total{cluster=\"$cluster\", name=~\"$node\"}[5m])) by (name) ",
+          "expr": "sum(rate(elasticsearch_indices_get_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name) / sum(rate(elasticsearch_indices_get_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name) \nor\nsum(irate(elasticsearch_indices_get_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name)  / sum(irate(elasticsearch_indices_get_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name) ",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }}",
@@ -2775,14 +2775,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_indices_indexing_index_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) / sum(rate(elasticsearch_indices_indexing_index_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval]))\nor\nsum(irate(elasticsearch_indices_indexing_index_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[5m])) / sum(irate(elasticsearch_indices_indexing_index_total{cluster=\"$cluster\", name=~\"$node\"}[5m]))",
+          "expr": "sum(rate(elasticsearch_indices_indexing_index_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) / sum(rate(elasticsearch_indices_indexing_index_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval]))\nor\nsum(irate(elasticsearch_indices_indexing_index_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) / sum(irate(elasticsearch_indices_indexing_index_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval]))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "index",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(elasticsearch_indices_indexing_delete_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) / sum(rate(elasticsearch_indices_indexing_delete_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval]))\nor\nsum(irate(elasticsearch_indices_indexing_delete_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[5m])) / sum(irate(elasticsearch_indices_indexing_delete_total{cluster=\"$cluster\", name=~\"$node\"}[5m]))",
+          "expr": "sum(rate(elasticsearch_indices_indexing_delete_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) / sum(rate(elasticsearch_indices_indexing_delete_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval]))\nor\nsum(irate(elasticsearch_indices_indexing_delete_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) / sum(irate(elasticsearch_indices_indexing_delete_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval]))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "delete",
@@ -2876,14 +2876,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_indices_merges_total_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) by (name) / sum(rate(elasticsearch_indices_merges_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) by (name)\nor\nsum(irate(elasticsearch_indices_merges_total_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[5m])) by (name) / sum(irate(elasticsearch_indices_merges_total\t{cluster=\"$cluster\", name=~\"$node\"}[5m])) by (name)",
+          "expr": "sum(rate(elasticsearch_indices_merges_total_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name) / sum(rate(elasticsearch_indices_merges_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name)\nor\nsum(irate(elasticsearch_indices_merges_total_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name) / sum(irate(elasticsearch_indices_merges_total\t{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }} time",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(elasticsearch_indices_merges_total_size_bytes_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) by (name) / sum(rate(elasticsearch_indices_merges_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) by (name)\nor\nsum(irate(elasticsearch_indices_merges_total_size_bytes_total{cluster=\"$cluster\", name=~\"$node\"}[5m])) by (name) / sum(irate(elasticsearch_indices_merges_total\t{cluster=\"$cluster\", name=~\"$node\"}[5m])) by (name)",
+          "expr": "sum(rate(elasticsearch_indices_merges_total_size_bytes_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name) / sum(rate(elasticsearch_indices_merges_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name)\nor\nsum(irate(elasticsearch_indices_merges_total_size_bytes_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name) / sum(irate(elasticsearch_indices_merges_total\t{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }} size",
@@ -2968,7 +2968,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_indices_flush_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) / sum(rate(elasticsearch_indices_flush_total\t{cluster=\"$cluster\", name=~\"$node\"}[$__interval]))\nor\nsum(irate(elasticsearch_indices_flush_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[5m])) / sum(irate(elasticsearch_indices_flush_total\t{cluster=\"$cluster\", name=~\"$node\"}[5m]))",
+          "expr": "sum(rate(elasticsearch_indices_flush_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) / sum(rate(elasticsearch_indices_flush_total\t{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval]))\nor\nsum(irate(elasticsearch_indices_flush_time_seconds{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) / sum(irate(elasticsearch_indices_flush_total\t{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval]))",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "flush",
@@ -3056,7 +3056,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_indices_refresh_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) by (name) / sum(rate(elasticsearch_indices_refresh_total\t{cluster=\"$cluster\", name=~\"$node\"}[$__interval])) by (name)\nor\nsum(irate(elasticsearch_indices_refresh_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[5m])) by (name) / sum(irate(elasticsearch_indices_refresh_total\t{cluster=\"$cluster\", name=~\"$node\"}[5m])) by (name)",
+          "expr": "sum(rate(elasticsearch_indices_refresh_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name) / sum(rate(elasticsearch_indices_refresh_total\t{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name)\nor\nsum(irate(elasticsearch_indices_refresh_time_seconds_total{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name) / sum(irate(elasticsearch_indices_refresh_total\t{cluster=\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "refresh",
@@ -3161,7 +3161,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_indices_fielddata_evictions{cluster=~\"$cluster\", name=~\"$node\"}[$__interval])) by (name)",
+          "expr": "sum(rate(elasticsearch_indices_fielddata_evictions{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }} evictions",
@@ -3355,7 +3355,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_indices_query_cache_count{cluster=~\"$cluster\", name=~\"$node\"}[$__interval])) by (name, cache)",
+          "expr": "sum(rate(elasticsearch_indices_query_cache_count{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name, cache)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }} {{ cache }}",
@@ -3443,7 +3443,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(elasticsearch_indices_query_cache_evictions{cluster=~\"$cluster\", name=~\"$node\"}[$__interval])\nor\nirate(elasticsearch_indices_query_cache_evictions{cluster=~\"$cluster\", name=~\"$node\"}[5m])",
+          "expr": "rate(elasticsearch_indices_query_cache_evictions{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])\nor\nirate(elasticsearch_indices_query_cache_evictions{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }}",
@@ -3721,7 +3721,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_indices_request_cache_count{cluster=~\"$cluster\", name=~\"$node\"}[$__interval])) by (name, cache)",
+          "expr": "sum(rate(elasticsearch_indices_request_cache_count{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name, cache)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }} {{ cache }}",
@@ -3809,7 +3809,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_indices_request_cache_evictions{cluster=~\"$cluster\", name=~\"$node\"}[$__interval])) by (name)",
+          "expr": "sum(rate(elasticsearch_indices_request_cache_evictions{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }}",
@@ -4202,7 +4202,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(elasticsearch_indices_store_throttle_time_seconds_total{cluster=~\"$cluster\"}[$__interval])",
+          "expr": "rate(elasticsearch_indices_store_throttle_time_seconds_total{cluster=~\"$cluster\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }}",
@@ -4681,7 +4681,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(elasticsearch_indices_translog_operations{cluster=~\"$cluster\", name=~\"$node\"}[$__interval])",
+          "expr": "rate(elasticsearch_indices_translog_operations{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }}",
@@ -4769,7 +4769,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(elasticsearch_indices_translog_size_in_bytes{cluster=~\"$cluster\", name=~\"$node\"}[$__interval])",
+          "expr": "rate(elasticsearch_indices_translog_size_in_bytes{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }}",
@@ -4959,7 +4959,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(elasticsearch_breakers_tripped{cluster=~\"$cluster\", name=~\"$node\"}[$__interval])) by (name, breaker)",
+          "expr": "sum(rate(elasticsearch_breakers_tripped{cluster=~\"$cluster\", name=~\"$node\"}[$__rate_interval])) by (name, breaker)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ name }} {{ breaker }}",

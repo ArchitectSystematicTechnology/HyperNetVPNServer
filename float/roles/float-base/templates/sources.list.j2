@@ -1,4 +1,6 @@
+{% if apt_sources_list_override is defined %}{{ apt_sources_list_override }}{% else %}
 deb http://deb.debian.org/debian {{ float_debian_dist }} main contrib non-free
 deb http://deb.debian.org/debian {{ float_debian_dist }}-backports main
 deb http://deb.debian.org/debian {{ float_debian_dist }}-updates main contrib non-free
 deb http://security.debian.org/ {{ float_debian_dist }}/updates main contrib non-free
+{% endif %}

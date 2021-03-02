@@ -34,8 +34,8 @@ else
     fi
 fi
 
-{% if dataset_owner %}
-chown -R "{{ dataset_owner }}":"{{ dataset_owner }}" "{{ dataset_path }}"
+{% if dataset_path and dataset_owner %}
+chown -R "{{ dataset_owner }}":"{{ dataset_group }}" "{{ dataset_path }}"
 {% endif %}
 
 echo "marking restore successful" >&2

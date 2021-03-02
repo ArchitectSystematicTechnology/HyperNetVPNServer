@@ -34,7 +34,7 @@ backend be_{{ service_name }}_{{ ep.name }}_{{ port }}
         balance leastconn
         option independant-streams
 {% for s in groups[service_name]|sort %}   
-        server task{{ loop.index -1 }} {{ s }}.{{ service_name }}.{{ domain }}:{{ port }} check fall 3 id {{ loop.index + 999 }} inter 5000 rise 3 slowstart 60000 weight 50
+        server task{{ loop.index -1 }} {{ s }}.{{ service_name }}.{{ domain }}:{{ port }} check fall 3 id {{ loop.index + 999 }} inter 5000 rise 3 slowstart 60000 weight 50{% if ep.get('use_proxy_protocol') %} send-proxy-v2{% endif %}
 {% endfor %}
 
 {% endfor %} # ep.ports
@@ -50,7 +50,7 @@ backend be_{{ service_name }}_{{ ep.name }}_{{ ep.port }}
         balance leastconn
         option independant-streams
 {% for s in groups[service_name]|sort %}
-        server task{{ loop.index -1 }} {{ s }}.{{ service_name }}.{{ domain }}:{{ ep.port }} check fall 3 id {{ loop.index + 999 }} inter 5000 rise 3 slowstart 60000 weight 50
+        server task{{ loop.index -1 }} {{ s }}.{{ service_name }}.{{ domain }}:{{ ep.port }} check fall 3 id {{ loop.index + 999 }} inter 5000 rise 3 slowstart 60000 weight 50{% if ep.get('use_proxy_protocol') %} send-proxy-v2{% endif %}
 {% endfor %}
 
 {% endif %} # ep.get('ports')

@@ -15,8 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
-  "id": null,
-  "iteration": 1560209742277,
+  "iteration": 1614086490638,
   "links": [
     {
       "icon": "external link",
@@ -26,18 +25,40 @@
   ],
   "panels": [
     {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 10,
+      "panels": [],
+      "title": "Performance",
+      "type": "row"
+    },
+    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
       "datasource": "localhost",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 0,
-        "y": 0
+        "y": 1
       },
+      "hiddenSeries": false,
       "id": 2,
       "legend": {
         "avg": false,
@@ -52,7 +73,11 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
+      "pluginVersion": "7.4.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -62,14 +87,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(cgroup_cpu_usage{mode=\"user\",service=\"$service.service\"}[5m])",
+          "expr": "rate(cgroup_cpu_usage{mode=\"user\",service=\"$service.service\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{host}}/user",
           "refId": "A"
         },
         {
-          "expr": "rate(group_cpu_usage{mode=\"system\",service=\"$service.service\"}[5m])",
+          "expr": "rate(group_cpu_usage{mode=\"system\",service=\"$service.service\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{host}}/sys",
@@ -123,13 +148,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "localhost",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 8,
-        "y": 0
+        "y": 1
       },
+      "hiddenSeries": false,
       "id": 4,
       "legend": {
         "avg": false,
@@ -144,7 +177,11 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
+      "pluginVersion": "7.4.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -209,13 +246,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "localhost",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 16,
-        "y": 0
+        "y": 1
       },
+      "hiddenSeries": false,
       "id": 6,
       "legend": {
         "avg": false,
@@ -230,7 +275,11 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
+      "pluginVersion": "7.4.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -240,7 +289,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(cgroup_blkio_bytes{service=\"$service.service\"}[5m])) by (host,mode)",
+          "expr": "sum(rate(cgroup_blkio_bytes{service=\"$service.service\"}[$__rate_interval])) by (host,mode)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -295,13 +344,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "localhost",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 6
       },
+      "hiddenSeries": false,
       "id": 8,
       "legend": {
         "avg": false,
@@ -316,12 +373,23 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
+      "pluginVersion": "7.4.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
       "repeat": "vhosts",
       "repeatDirection": "h",
+      "scopedVars": {
+        "vhosts": {
+          "selected": false,
+          "text": "noblogs-cdn.autistici.org:443",
+          "value": "noblogs-cdn.autistici.org:443"
+        }
+      },
       "seriesOverrides": [],
       "spaceLength": 10,
       "stack": false,
@@ -375,10 +443,128 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 12,
+      "panels": [],
+      "repeat": "service",
+      "scopedVars": {
+        "service": {
+          "selected": true,
+          "text": "docker-noblogs-http",
+          "value": "docker-noblogs-http"
+        }
+      },
+      "title": "Versions",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "localhost",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "hiddenSeries": false,
+      "id": 14,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.4.0",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": true,
+      "targets": [
+        {
+          "expr": "count(container_digest{service=\"$service\"}) by (digest)",
+          "interval": "",
+          "legendFormat": "{{digest}}",
+          "queryType": "randomWalk",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Container Digest",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
   "refresh": "5s",
-  "schemaVersion": 18,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -388,13 +574,18 @@
         "current": {},
         "datasource": "localhost",
         "definition": "",
+        "description": null,
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "Service",
         "multi": false,
         "name": "service",
         "options": [],
-        "query": "label_values(cgroup_cpu_usage, service)",
+        "query": {
+          "query": "label_values(cgroup_cpu_usage, service)",
+          "refId": "localhost-service-Variable-Query"
+        },
         "refresh": 1,
         "regex": "/(.*)\\.service/",
         "skipUrlSync": false,
@@ -410,13 +601,18 @@
         "current": {},
         "datasource": "localhost",
         "definition": "",
+        "description": null,
+        "error": null,
         "hide": 2,
         "includeAll": false,
         "label": null,
         "multi": false,
         "name": "vhosts",
         "options": [],
-        "query": "query_result(sum (vhostmap{service=\"$service.service\"}) by (vhost))",
+        "query": {
+          "query": "query_result(sum (vhostmap{service=\"$service.service\"}) by (vhost))",
+          "refId": "localhost-vhosts-Variable-Query"
+        },
         "refresh": 1,
         "regex": "/^.*vhost=\"([^\"]*)\".*$/",
         "skipUrlSync": false,
@@ -461,5 +657,5 @@
   "timezone": "",
   "title": "Service overview",
   "uid": "xfV2rd7ik",
-  "version": 3
+  "version": 7
 }

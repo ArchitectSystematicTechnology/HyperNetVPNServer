@@ -28,7 +28,7 @@
       {
         "datasource": "$datasource",
         "enable": true,
-        "expr": "sum(changes(prometheus_config_last_reload_success_timestamp_seconds[10m])) by (instance)",
+        "expr": "sum(changes(prometheus_config_last_reload_success_timestamp_seconds[$__rate_interval])) by (instance)",
         "hide": false,
         "iconColor": "#fceaca",
         "limit": 100,
@@ -2306,7 +2306,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(prometheus_tsdb_reloads_total{instance=\"$instance\"}[30m])) by (instance)",
+          "expr": "sum(increase(prometheus_tsdb_reloads_total{instance=\"$instance\"}[$__rate_interval])) by (instance)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ instance }}",
@@ -2986,7 +2986,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(prometheus_tsdb_compaction_duration_sum{instance=\"$instance\"}[30m]) / increase(prometheus_tsdb_compaction_duration_count{instance=\"$instance\"}[30m])) by (instance)",
+          "expr": "sum(increase(prometheus_tsdb_compaction_duration_sum{instance=\"$instance\"}[$__rate_interval]) / increase(prometheus_tsdb_compaction_duration_count{instance=\"$instance\"}[$__rate_interval])) by (instance)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{ instance }}",

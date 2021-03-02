@@ -54,7 +54,7 @@
 {% endmacro %}
 
 global:
-  scrape_interval: "10s"
+  scrape_interval: "{{ prometheus_scrape_interval }}"
 
   # Set an external label unique to this host, but remove it
   # from the generated alerts so that they match across all

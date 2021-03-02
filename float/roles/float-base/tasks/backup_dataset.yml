@@ -9,14 +9,35 @@
     dataset_name: "{{ item.0.name }}/{{ item.1.name }}"
     dataset_filename: "{{ item.0.name }}_{{ item.1.name }}"
     dataset_owner: "{{ item.1.get('owner', '') }}"
+    dataset_group: "{{ item.1.get('group', 'root') }}"
+    dataset_mode: "{{ item.1.get('mode', '0700') }}"
     dataset_path: "{{ item.1.get('path', '') }}"
     dataset_type: "{% if 'backup_command' in item.1 %}pipe{% else %}file{% endif %}"
+    dataset_is_present: "{{ (item.0.name in float_enabled_services) }}"
     dataset_should_backup: "{{ (item.0.name in float_enabled_services) and ((not item.1.get('on_master_only', False)) or (item.0.get('master_host') == inventory_hostname)) }}"
 
 - set_fact:
     dataset_should_restore: "{{ dataset_should_backup and not item.1.get('sharded', False) }}"
 
-- name: Set up configuration for dataset {{ dataset.name }} (source)
+- name: "Create path for dataset {{ dataset_name }}"
+  file:
+    path: "{{ dataset_path }}"
+    mode: "{{ dataset_mode | default('0700') }}"
+    state: directory
+  when: "(dataset_is_present) and (dataset_path) and (dataset_mode)"
+
+# Try to set permissions. Ignore errors because it is possible that
+# the user does not (yet) exist.
+- name: "Set permissions for dataset directory of {{ dataset_name }}"
+  file:
+    path: "{{ dataset_path }}"
+    state: directory
+    owner: "{{ dataset_owner }}"
+    group: "{{ dataset_group | default('root') }}"
+  when: "(dataset_is_present) and (dataset_path) and (dataset_owner)"
+  ignore_errors: true
+
+- name: Set up configuration for dataset {{ dataset_name }} (source)
   template:
     src: "tabacco/sources/source.yml.j2"
     dest: "/etc/tabacco/sources/{{ dataset_filename }}.yml"
@@ -25,7 +46,7 @@
   notify:
     - reload backup agent
 
-- name: Set up configuration for dataset {{ dataset.name }} (handler)
+- name: Set up configuration for dataset {{ dataset_name }} (handler)
   template:
     src: "tabacco/handlers/{{ dataset_type }}.yml.j2"
     dest: "/etc/tabacco/handlers/{{ dataset_filename }}.yml"
@@ -34,7 +55,7 @@
   notify:
     - reload backup agent
 
-- name: Clear configuration for dataset {{ dataset.name }}
+- name: Clear configuration for dataset {{ dataset_name }}
   file:
     path: "/etc/tabacco/{{ diritem }}/{{ dataset_filename }}.yml"
     state: absent

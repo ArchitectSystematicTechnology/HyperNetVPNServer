@@ -10,7 +10,7 @@ with user-defined roles. They are roughly grouped into sections:
   top of the *base* layer, i.e. within containers etc).
 
 * *util* for internal roles that are included by other roles, either to
-  expose common functionality to user roles (geoip, mariadb instances),
-  or to handle Ansible-related logic shared by multiple roles.
+  expose common functionality to user roles (geoip), or to handle
+  Ansible-related logic shared by multiple roles.
 
 

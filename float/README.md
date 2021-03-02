@@ -65,7 +65,7 @@ and in README files for individual Ansible roles:
 ### General Documentation
 
 * [Quick start guide](docs/quickstart.md)
-* [Reference](docs/reference.md)
+* [Reference](docs/reference.md) ([PDF](docs/reference.pdf))
 * [Testing](docs/testing.md)
 
 # Requirements

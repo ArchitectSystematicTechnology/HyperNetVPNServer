@@ -32,9 +32,10 @@
 
 - name: Get list of running containers
   shell: "{{ container_runtime }} ps --format={% raw %}'{{.Names}}'{% endraw %}"
-  changed_when: False
+  changed_when: false
   check_mode: no
   register: docker_running_containers
+  ignore_errors: true
 
 - set_fact:
     enabled_container_tags: "{{ float_enabled_containers | map(attribute='tag') | list }}"
@@ -53,7 +54,7 @@
     state: absent
   with_items:
     - "{{ docker_running_containers.stdout_lines }}"
-  when: "item not in enabled_container_tags"
+  when: "docker_running_containers is succeeded and item not in enabled_container_tags"
   ignore_errors: true
 
 - name: Install docker cleanup script

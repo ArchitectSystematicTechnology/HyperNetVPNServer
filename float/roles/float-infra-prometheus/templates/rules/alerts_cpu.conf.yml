@@ -24,3 +24,13 @@ groups:
       description: 'Load average on host {{$labels.host}} is very high ({{$value}}), the host is likely unresponsive.'
       runbook: '[[ alert_playbook_url ]]/HostThrashing'
 
+  - alert: ThermalEnvelopeThrottling
+    expr: host:kernel_cpu_throttled:max > 0
+    for: 2h
+    labels:
+      scope: host
+      severity: warn
+    annotations:
+      summary: 'Host {{$labels.host}} is running too hot'
+      description: |
+        The CPU on {{$labels.host}} is being throttled because it is running too hot.

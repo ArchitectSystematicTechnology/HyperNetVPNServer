@@ -273,7 +273,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(apache_sent_kilobytes_total{instance=~\"^$host:$port\"}[5m])",
+          "expr": "rate(apache_sent_kilobytes_total{instance=~\"^$host:$port\"}[$__rate_interval])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -371,7 +371,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(apache_accesses_total{instance=~\"^$host:$port\"}[5m])",
+          "expr": "rate(apache_accesses_total{instance=~\"^$host:$port\"}[$__rate_interval])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,

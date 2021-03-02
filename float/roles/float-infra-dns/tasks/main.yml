@@ -9,6 +9,7 @@
       - bind9
       - dnsutils
       - python-zonetool
+      - prometheus-bind-exporter
 
 - name: Install bind9 configuration (dirs)
   file:

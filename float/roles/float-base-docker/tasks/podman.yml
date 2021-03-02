@@ -40,6 +40,11 @@
     state: link
     force: true
 
+- name: Install containers.conf
+  copy:
+    src: containers.conf
+    dest: "/etc/containers/containers.conf"
+
 # TODO: remove this once the podman packaging issues are fixed.
 - name: Install a working seccomp.json
   copy:

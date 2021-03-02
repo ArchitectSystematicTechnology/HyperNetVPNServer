@@ -26,13 +26,6 @@
     append: true
   loop: "{{ float_enabled_containers }}"
 
-# TODO: get rid of this once the existing environments have been updated!
-- name: Remove obsolete container environment files
-  file:
-    path: "/etc/default/{{ item.service }}-{{ item.container.name }}"
-    state: absent
-  loop: "{{ float_enabled_containers }}"
-
 - name: Create run scripts
   template:
     src: run.sh.j2

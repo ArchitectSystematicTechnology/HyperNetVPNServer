@@ -148,7 +148,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "topk(10, sum(rate(nginx_http_requests{vhost=~\"^$vhost\",code=~\"[45].*\"}[5m])) by (code))",
+          "expr": "topk(10, sum(rate(nginx_http_requests{vhost=~\"^$vhost\",code=~\"[45].*\"}[$__rate_interval])) by (code))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -238,7 +238,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "topk(10, sum(rate(nginx_http_requests{vhost=~\"^$vhost$\"}[5m])) by (backend))",
+          "expr": "topk(10, sum(rate(nginx_http_requests{vhost=~\"^$vhost$\"}[$__rate_interval])) by (backend))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{backend}}",
@@ -417,7 +417,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.5, sum(rate(nginx_http_requests_ms{vhost=~\"^$vhost$\"}[5m])) by (vhost,le))",
+          "expr": "histogram_quantile(0.5, sum(rate(nginx_http_requests_ms{vhost=~\"^$vhost$\"}[$__rate_interval])) by (vhost,le))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -425,14 +425,14 @@
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.9, sum(rate(nginx_http_requests_ms{vhost=~\"^$vhost$\"}[5m])) by (vhost,le))",
+          "expr": "histogram_quantile(0.9, sum(rate(nginx_http_requests_ms{vhost=~\"^$vhost$\"}[$__rate_interval])) by (vhost,le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{vhost}}/90pct",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(rate(nginx_http_requests_ms{vhost=~\"^$vhost$\"}[5m])) by (vhost,le))",
+          "expr": "histogram_quantile(0.99, sum(rate(nginx_http_requests_ms{vhost=~\"^$vhost$\"}[$__rate_interval])) by (vhost,le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{vhost}}/99pct",

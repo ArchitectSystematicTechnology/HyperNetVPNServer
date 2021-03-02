@@ -405,12 +405,14 @@ myservice:
 - template:
     src: myservice.conf.j2
     dest: /etc/myservice.conf
+    group: docker-myservice
+    mode: 0640
 ```
 
 *roles/myservice/templates/myservice.conf.j2*
 
 ```yaml
-# just an example
+# Just an example of an Ansible template, with no particular meaning.
 domain={{ domain }}
 ```
 
@@ -425,15 +427,65 @@ float can't automatically generate this association itself):
 ```
 
 This takes advantage of the fact that float defines an Ansible group
-for each service, which includes the hosts that the service instances
-have been scheduled on.
+for each service (with the same name as the service itself), which
+includes the hosts that the service instances have been scheduled
+on. **Note** that since Ansible 2.9, the group names will be
+"normalized" according to the rules for Python identifiers,
+i.e. dashes will be turned into underscores.
+
+### On the Ansible requirement
+
+Does the above mean you have to learn Ansible in order to use float?
+Should you be concerned about investing effort into writing a
+configuration for my service in yet another configuration management
+system's language? The answer is *yes*, but to a very limited extent:
+
+* You do need knowledge of how to set up an Ansible environment: the
+  role of `ansible.cfg`, how to structure `group_vars` etc.  Writing a
+  dedicated configuration push system for float was surely an option,
+  but we preferred relying on a popular existing ecosystem for this,
+  both for convenience of implementation and also to allow a migration
+  path of co-existence for legacy systems. To counter-balance, float
+  tries to keep its usage of Ansible as limited as possible, to allow
+  eventual replacement.
+
+* Most services will only need an extremely simple Ansible role to
+  generate the service configuration, normally a mix of *template* and
+  *copy* tasks, which are possibly the most basic functionality of any
+  configuration management system. This should guarantee a certain
+  *ease of portability* to other mechanisms, should one decide to
+  migrate away from float. Besides, it is a good sanity check: if your
+  service requires complicated setup steps, perhaps it might be
+  possible to move some of that complexity *inside* the service
+  containers.
+
+To emphasize portability, it might be wise to adhere to the following
+rules when writing Ansible roles:
+
+* Try to use only *copy*, *file* and *template* tasks, rather than
+  complex Ansible modules;
+* avoid using complex conditional logic or loops in your Ansible tasks
+* keep the configuration "local" to the service: do not reference
+  other services except using the proper service discovery APIs (DNS),
+  do not try to look up configuration attributes for other services
+  (instead make those into global configuration variables);
+* do not use facts from other hosts that need to be discovered (these
+  break if you are not using a fact cache when doing partial runs):
+  instead, define whatever host attributes you need, explicitly, in
+  the inventory;
+
+More generally, the integration with Ansible as the underlying
+configuration management engine is the "escape hatch" that allows the
+implemention of setups that are not explicitly modeled by float
+itself.
+
 
 # Infrastructure Part 1: Base Layer
 
 We can subdivide what is done by float in two separate sections:
-operations and services done on each host, the so-called "base" layer
-of infrastructure, and then the fundamental services that are part of
-the "cluster-level" infrastructure (logging, monitoring,
+operations and services affecting every host, the so-called "base"
+layer of infrastructure, and then the fundamental services that are
+part of the "cluster-level" infrastructure (logging, monitoring,
 authentication, etc): the latter are part of float but run on the base
 layer itself as proper services, with their own descriptions and
 Ansible roles to configure them.
@@ -923,7 +975,7 @@ delegated to the external automation.
 
 ## Authentication and Identity
 
-The fkiat infrastructure provides a full AAA solution that is used by
+The float infrastructure provides a full AAA solution that is used by
 all the built-in services, and that can be easily integrated with your
 services (or at least that would be the intention). It aims to
 implement modern solutions, and support moderately complex scenarios,
@@ -1184,11 +1236,8 @@ infrastructure:
 * it is possible to separate short-term and long-term metrics storage
   by using the *prometheus-lts* service to scrape the other Prometheus
   instances and retain metrics long term. The Thanos layer will again
-  transparently support this configuration.
-
-To enable long-term metrics storage, include
-*services.prometheus-lts.yml* in your service definitions, and add the
-corresponding *playbooks/prometheus-lts.yml* playbook to your own.
+  transparently support this configuration. See the *Scaling up the
+  monitoring infrastructure* section below for details.
 
 Monitoring dashboards are provided by Grafana.
 
@@ -1234,6 +1283,42 @@ alerting less noisy):
 * `scope` should be one of *host* (for prober-based alerts),
   *instance* (for all other targets), or *global*.
 
+### Scaling up the monitoring infrastructure
+
+Float upholds the philosophy that collecting lots and lots of metrics
+is actually a good thing, because it enables post-facto diagnosis of
+issues. However, even with relatively small numbers of services and
+machines, the amount of timeseries data that needs to be stored will
+grow very quickly.
+
+Float allows you to split the monitoring data collection into two
+logical "parts" (which themselves can consist of multiple identical
+instances for redundancy purposes), let's call them *environments* to
+avoid overloading the term *instance*:
+
+* A *short-term* Prometheus environment that scrapes all the service
+  targets with high frequency, evaluates alerts, but has a short
+  retention time (hours / days, depending on storage
+  requirements). Storage requirements for this environment are
+  bounded, for a given set of services and targets.
+
+* A *long-term* Prometheus environment that scrapes data from the
+  short-term environment, with a lower frequency, and discarding
+  high-cardinality metrics for which we have aggregates. The storage
+  requirement grows much more slowly over time than the short-term
+  environment. Float calls this service *prometheus-lts* (long-term
+  storage).
+
+This effectively implements a two-tiered (high-resolution /
+low-resolution) timeseries database, which is then reconciled
+transparently when querying through the Thanos service layer.
+
+To enable long-term metrics storage, include
+*services.prometheus-lts.yml* in your service definitions, and add the
+corresponding *playbooks/prometheus-lts.yml* playbook to your own.
+
+You will also need to set *prometheus_tsdb_retention* and
+*prometheus_lts_tsdb_retention* variables appropriately.
 
 
 ## Log Collection and Analysis
@@ -1264,10 +1349,12 @@ added:
 
 ### Metric extraction
 
-It is often useful to extract real-time metrics from logs, for
-instance this is how we compute real-time HTTP statistics. Float runs
-an instance of [mtail](https://github.com/google/mtail) on every host
-to process the local logs and compute metrics based on them.
+It is often useful to extract real-time metrics from logs, most often
+when dealing with software that does not export its own metrics. An
+example is NGINX, where logs are parsed in order to compute real-time
+access metrics. Float runs an instance of
+[mtail](https://github.com/google/mtail) on every host to process the
+local logs and compute metrics based on them.
 
 Custom rules can be added simply by dropping mtail programs in
 */etc/mtail*. This would generally be done by the relevant
@@ -1277,14 +1364,33 @@ service-specific Ansible role.
 
 Syslog logs received by the log-collector will be subject to further
 processing in order to extract metadata fields that will be stored and
-indexed.
+indexed. Metadata extracted from logs is useful for searching and
+filtering, even though those cases are already well served by
+full-text search (or *grep*), and most importantly for aggregation
+purposes: these can be either used for visualizations (dashboards), or
+for analytical queries, that would be difficult to answer using the
+coarse view provided by monitoring metrics.
 
-The implementation uses
-the
-[mmnormalize](https://www.rsyslog.com/doc/v8-stable/configuration/modules/mmnormalize.html) rsyslog
-module, which parses logs using
-the [liblognorm](http://www.liblognorm.com/files/manual/index.html)
-engine to extract metadata fields.
+Perhaps it's best to make an example to better illustrate the relation
+between metadata-annotated logs and monitoring metrics, especially
+log-derived ones, which are obviously related being derived from the
+same source. Let's consider the canonical example of the HTTP access
+logs of a website which is having problems: the monitoring system can
+tell which fraction of the incoming requests is returning, say, an
+error 500, while properly annotated logs can answer more detailed
+queries such as "the list of top 10 URLs that have returned an error
+500 in the last day". The extremely large cardinality of the URL field
+(which is user-controlled) makes it too impractical to use for
+monitoring purposes, but the monitoring metric is cheap to compute and
+easy to alert on in real-time, while the metadata-annotated logs
+provide us with the (detailed, but more expensive to compute)
+analytical view.
+
+The implementation uses the
+[mmnormalize](https://www.rsyslog.com/doc/v8-stable/configuration/modules/mmnormalize.html)
+rsyslog module, which parses logs with the
+[liblognorm](http://www.liblognorm.com/files/manual/index.html) engine
+to extract metadata fields.
 
 Liblognorm rulebase files are a bit verbose but relatively simple to
 write. Rules can be manually tested using the *lognormalizer* utility,
@@ -1354,7 +1460,12 @@ sane replication options.
 # Configuration
 
 Float is an Ansible plugin with its own configuration, that replaces
-the native Ansible inventory configuration.
+the native Ansible inventory configuration. You will still be running
+Ansible (`ansible-playbook` or whatever frontend you prefer) in order
+to apply your configuration to your production environment. Float only
+provides its own roles and plugins, but it does not interfere with the
+rest of the Ansible configuration: playbooks, host and group
+variables, etc. which will have to be present for a functional setup.
 
 The toolkit configuration is split into two parts, the *service
 description metadata*, containing definitions of the known services,
@@ -1363,7 +1474,8 @@ same information you would have in a normal Ansible inventory). A
 number of global Ansible variables are also required to customize the
 infrastructure for your application.
 
-All files are YAML-encoded and should usually have a *.yml* extension.
+All configuration files are YAML-encoded and should usually have a
+*.yml* extension.
 
 Float is controlled by a top-level configuration file, which you
 should pass to the ansible command-line tool as the inventory with the
@@ -1377,6 +1489,9 @@ hosts_file: hosts.yml
 credentials_dir: credentials/
 plugin: float
 ```
+
+This file **must** exist and it must contain at the very least the
+"plugin: float" directive.
 
 The attributes supported are:
 
@@ -1695,6 +1810,9 @@ publicly exported (at least in the current implementation), which
 unfortunately means that the service itself shouldn't be running on
 *frontend* nodes.
 
+`use_proxy_protocol`: When true, enable the HAProxy proxy protocol for
+the service, to propagate the original client IP to the backends.
+
 #### Other endpoints
 
 Other endpoints are used when the service runs their own reverse
@@ -1806,8 +1924,10 @@ attempt to restore it on new servers: the idea is that for sharded
 datasets, the application layer is responsible for data management.
 This attribute is false by default.
 
-`owner`: For filesystem paths, the user that will own the files upon
-restore.
+`owner`, `group`, `mode`: For filesystem-backed datasets, float will
+create the associated directory if it does not exist; these parameters
+specify ownership and permissions. These permissions will also be
+reset upon restore.
 
 ### Volumes
 
@@ -2050,6 +2170,16 @@ associated with the alerts.
 `prometheus_tsdb_retention` controls the time horizon of the primary
 Prometheus instances (default 90d). Set it to a shorter value when
 enabling long-term storage mode.
+
+`prometheus_lts_tsdb_retention` controls the time horizon of the
+long-term Prometheus instances (default 1 year), when they are
+enabled.
+
+`prometheus_scrape_interval` sets how often the primary Prometheus
+instances should scrape their targets (default 10s).
+
+`prometheus_lts_scrape_interval` sets how often the long-term
+Prometheus instances should scrape the primary ones (default 1m).
 
 `prometheus_external_targets` allows adding additional targets to
 Prometheus beyond those that are described by the service metadata. It

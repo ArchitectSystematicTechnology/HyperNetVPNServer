@@ -204,7 +204,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(process_resident_memory_bytes{job=~\"^($job)$\",host=~\"^($host)$\"}[$interval])",
+          "expr": "rate(process_resident_memory_bytes{job=~\"^($job)$\",host=~\"^($host)$\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{job}}@{{host}} - resident",
@@ -213,7 +213,7 @@
           "step": 4
         },
         {
-          "expr": "deriv(process_virtual_memory_bytes{job=~\"^($job)$\",host=~\"^($host)$\"}[$interval])",
+          "expr": "deriv(process_virtual_memory_bytes{job=~\"^($job)$\",host=~\"^($host)$\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{job}}@{{host}} - virtual",
@@ -435,7 +435,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "deriv(go_memstats_alloc_bytes{job=~\"^($job)$\",host=~\"^($host)$\"}[$interval])",
+          "expr": "deriv(go_memstats_alloc_bytes{job=~\"^($job)$\",host=~\"^($host)$\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{job}}@{{host}} - bytes allocated",
@@ -444,7 +444,7 @@
           "step": 4
         },
         {
-          "expr": "rate(go_memstats_alloc_bytes_total{job=~\"^($job)$\",host=~\"^($host)$\"}[$interval])",
+          "expr": "rate(go_memstats_alloc_bytes_total{job=~\"^($job)$\",host=~\"^($host)$\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{job}}@{{host}} - alloc rate",
@@ -453,7 +453,7 @@
           "step": 4
         },
         {
-          "expr": "deriv(go_memstats_stack_inuse_bytes{job=~\"^($job)$\",host=~\"^($host)$\"}[$interval])",
+          "expr": "deriv(go_memstats_stack_inuse_bytes{job=~\"^($job)$\",host=~\"^($host)$\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{job}}@{{host}} - stack inuse",
@@ -462,7 +462,7 @@
           "step": 4
         },
         {
-          "expr": "deriv(go_memstats_heap_inuse_bytes{job=~\"^($job)$\",host=~\"^($host)$\"}[$interval])",
+          "expr": "deriv(go_memstats_heap_inuse_bytes{job=~\"^($job)$\",host=~\"^($host)$\"}[$__rate_interval])",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -647,7 +647,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "deriv(process_open_fds{job=~\"^($job)$\",host=~\"^($host)$\"}[$interval])",
+          "expr": "deriv(process_open_fds{job=~\"^($job)$\",host=~\"^($host)$\"}[$__rate_interval])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{job}}@{{host}}",
@@ -937,7 +937,7 @@
           "value": "5m"
         },
         "datasource": null,
-        "hide": 0,
+        "hide": 2,
         "includeAll": false,
         "label": "",
         "multi": false,

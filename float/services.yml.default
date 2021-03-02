@@ -15,6 +15,10 @@ frontend:
     - replds@acme.service
   ports:
     - 5005
+  monitoring_endpoints:
+    - name: bind
+      port: 9119
+      scheme: http
   volumes:
     - name: cache
       path: /var/cache/nginx

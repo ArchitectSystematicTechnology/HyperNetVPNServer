@@ -23,11 +23,11 @@ def syslog {
     kernel_ooms_total++
   }
 
-  /CPU(?P<cpu>\d+): (?:Core|Package) temperature above threshold, cpu clock throttled/ {
+  /CPU(?P<cpu>\d+): \w+ temperature above threshold, cpu clock throttled/ {
     kernel_cpu_throttled[$cpu] = 1
   }
 
-  /CPU(?P<cpu>\d+): (?:Core|Package) temperature\/speed normal/ {
+  /CPU(?P<cpu>\d+): \w+ temperature\/speed normal/ {
     kernel_cpu_throttled[$cpu] = 0
   }
 }

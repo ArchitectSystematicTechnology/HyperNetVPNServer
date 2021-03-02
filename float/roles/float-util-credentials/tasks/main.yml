@@ -96,7 +96,7 @@
     # This should use the systemd module but it doesn't take lists of services.
     - name: "Restart associated services"
       shell: "systemctl restart {{ services[item.0.service].systemd_services | join(' ') }}"
-      when: "item.1.changed and item.0.service != 'LOCAL'"
+      when: "item.1.changed and item.0.service != 'LOCAL' and services[item.0.service].systemd_services"
       loop: "{{ credentials | zip(x509_sign.results) | list }}"
 
   rescue:
