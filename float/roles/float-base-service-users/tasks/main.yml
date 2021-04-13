@@ -1,0 +1,32 @@
+---
+
+# Create service users for services that have containers defined. For
+# the other ones, we are going to assume that either Debian packages
+# or Ansible roles will be handling user setup.
+#
+# The filter expression here is equivalent to the following:
+#
+#     [services[x.service].user for x in float_enabled_containers]
+#
+- set_fact:
+    local_service_users: "{{ float_enabled_containers | map(attribute='service') | map('extract', services) | map(attribute='user') | unique | list }}"
+
+- name: Create container runtime primary groups
+  group:
+    name: "{{ item }}"
+  loop: "{{ local_service_users }}"
+
+- name: Create container users
+  user:
+    name: "{{ item }}"
+    group: "{{ item }}"
+    home: "/var/empty"
+    createhome: false
+  loop: "{{ local_service_users }}"
+
+- name: Add container user to the credentials groups
+  user:
+    name: "{{ services[item.service].user }}"
+    groups: "{{ services[item.service].service_credentials | default([]) | map(attribute='name') | map('regex_replace', '^(.*)$', '\\1-credentials') | list }}"
+    append: true
+  loop: "{{ float_enabled_containers }}"

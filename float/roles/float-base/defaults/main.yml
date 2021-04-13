@@ -1,7 +1,6 @@
-apt_proxy_enable_https: false
 admins: []
 enable_ssh: true
-enable_osquery: true
+enable_osquery: false
 ssh_host_key_types:
   - ed25519
 mail_relay: {}

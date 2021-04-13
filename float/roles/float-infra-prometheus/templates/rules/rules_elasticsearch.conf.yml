@@ -1,25 +1,7 @@
 groups:
-  - name: roles/prometheus/files/rules/rules_elasticsearch.conf
+  - name: roles/float-infra-prometheus/templates/rules/rules_elasticsearch.conf
     rules:
       - record: elasticsearch_filesystem_data_used_percent
         expr: 100 * (elasticsearch_filesystem_data_size_bytes - elasticsearch_filesystem_data_free_bytes) / elasticsearch_filesystem_data_size_bytes
       - record: elasticsearch_filesystem_data_free_percent
         expr: 100 - elasticsearch_filesystem_data_used_percent
-
-      - alert: ElasticsearchTooFewNodesRunning
-        expr: elasticsearch_cluster_health_up < 1
-        for: 5m
-        labels:
-          severity: page
-        annotations:
-          description: Elasticsearch on {{$labels.host}} is unhealthy.
-          summary: Elasticsearch is unhealthy
-
-      - alert: ElasticsearchHeapTooHigh
-        expr: elasticsearch_jvm_memory_used_bytes{area="heap"} / elasticsearch_jvm_memory_max_bytes{area="heap"} > 0.9
-        for: 15m
-        labels:
-          severity: page
-        annotations:
-          description: The heap usage is over 90% for 15m
-          summary: Elasticsearch on {{$labels.host}} heap usage is high

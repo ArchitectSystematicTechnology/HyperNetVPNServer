@@ -6,6 +6,14 @@
     name: x509ca
     state: present
 
+# Get the list of currently known systemd service units. Unfortunately
+# the systemd version in Debian Buster does not yet support --output
+# to set a reasonable format, so we have to use 'awk'.
+# This will be used to restart services only if they actually exist.
+- name: List systemd service units
+  shell: "systemctl list-units --no-legend --no-pager --full --type service | awk '{print $1}'"
+  register: all_systemd_units
+
 # Get the credential names from the list of certs.
 - set_fact:
     credentials_names: "{{ credentials | map(attribute='credentials') | map(attribute='name') | unique | list }}"
@@ -95,8 +103,8 @@
 
     # This should use the systemd module but it doesn't take lists of services.
     - name: "Restart associated services"
-      shell: "systemctl restart {{ services[item.0.service].systemd_services | join(' ') }}"
-      when: "item.1.changed and item.0.service != 'LOCAL' and services[item.0.service].systemd_services"
+      shell: "systemctl try-reload-or-restart {{ all_systemd_units.stdout_lines | intersect(services[item.0.service].systemd_services) | join(' ') }}"
+      when: "item.1.changed and item.0.service != 'LOCAL' and (all_systemd_units.stdout_lines | intersect(services[item.0.service].systemd_services))"
       loop: "{{ credentials | zip(x509_sign.results) | list }}"
 
   rescue:

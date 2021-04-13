@@ -1,0 +1,19 @@
+---
+openvpn_config:
+  'tls-version-min': '1.2'
+  'auth': 'SHA512'
+  'cipher': 'AES-256-GCM'
+  'keepalive': '10 30'
+  'tls-cipher': 'TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384'
+  'tun-ipv6': true
+  'dev': 'tun'
+  'sndbuf': '0'
+  'rcvbuf': '0'
+  'nobind': true
+  'persist-key': true
+  'key-direction': '1'
+  'verb': '3'
+
+openvpn_network: "10.41.0.0/21"
+openvpn_network6: "2001:db8:123::/64"
+

@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/alerts_acme.conf
+- name: roles/float-infra-prometheus/templates/rules/alerts_acme.conf
   rules:
 
   - alert: CertMissing
@@ -23,7 +23,7 @@ groups:
     annotations:
       summary: 'Failure to renew certificate for {{$labels.cn}}'
       description: 'The ACME automation has failed to renew the domain "{{$labels.cn}}" for the last 6 hours. If the situation does not recover, the certificate will eventually expire.'
-      runbook: '[[ alert_playbook_url ]]/CertRenewalFailures'
+      runbook: '[[ alert_runbook_fmt | format("CertRenewalFailures") ]]'
 
   # Let us know if the ACME automation is completely broken or has
   # failed to load its certificates.
@@ -36,4 +36,4 @@ groups:
     annotations:
       summary: 'ACME automation completely broken'
       description: 'It seems that the ACME automation has loaded zero valid certificates, something must be broken.'
-      runbook: '[[ alert_playbook_url ]]/ACMEBroken'
+      runbook: '[[ alert_runbook_fmt | format("ACMEBroken") ]]'

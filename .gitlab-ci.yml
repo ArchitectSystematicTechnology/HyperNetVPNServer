@@ -1,0 +1,60 @@
+
+stages:
+  - test
+
+variables:
+  BUILD_DIR: build-$CI_JOB_ID
+  VMINE_SSH: leap_ci@remotevirt.riseup.net
+  VMINE_URL: http://127.0.0.1:5959
+
+.base_test_template: &base_test
+  stage: test
+  image: $CI_REGISTRY/leap/container-platform/float-runner:master
+  before_script:
+    - mkdir -p $BUILD_DIR
+  script:
+    - >
+      ./float/float create-env
+      --domain=hexacab.org
+      --infra-domain=float.hexacab.org
+      --services=${TEST_DIR}/services.yml
+      --passwords=${TEST_DIR}/passwords.yml
+      --playbook=${TEST_DIR}/site.yml
+      --roles-path=config/roles
+      --num-hosts=3
+      --additional-host-group=openvpn=host3
+      -e ansible_cfg.defaults.strategy=mitogen_linear
+      -e ansible_cfg.defaults.strategy_plugins=${CI_PROJECT_DIR}/mitogen/ansible_mitogen/plugins/strategy
+      -e libvirt.remote_host=${VMINE_SSH#*@}
+      -e libvirt.remote_user=${VMINE_SSH%@*}
+      ${APT_PROXY:+-e config.apt_proxy=${APT_PROXY}}
+      $CREATE_ENV_VARS $BUILD_DIR
+    - cp -v ${TEST_DIR}/group_vars/all/*.yml ${BUILD_DIR}/group_vars/all/
+    - with-ssh-key ./float/scripts/floatup.py --url $VMINE_URL --ssh $VMINE_SSH --inventory $BUILD_DIR/hosts.yml --ram 3072 --image ${VM_IMAGE:-buster} up
+    - (cd ${BUILD_DIR} && with-ssh-key ../float/float run ../playbooks/init-credentials.yml)
+    - with-ssh-key ./float/test-driver init --no-vagrant $BUILD_DIR
+    - sleep 10
+    - with-ssh-key ./float/test-driver run $BUILD_DIR
+  after_script:
+    - with-ssh-key ./float/test-driver cleanup --no-vagrant $BUILD_DIR
+    - with-ssh-key ./float/scripts/floatup.py --url $VMINE_URL --ssh $VMINE_SSH down
+  variables:
+    CREATE_ENV_VARS: ""
+    TEST_DIR: ""
+    ANSIBLE_VAULT_PASSWORD: 'test-password'
+  except:
+    - schedules
+  artifacts:
+    when: on_failure
+    expire_in: 1 week
+    name: "${CI_JOB_NAME}_${CI_COMMIT_REF_SLUG}_${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - "${BUILD_DIR}/ansible.log"
+      - "${BUILD_DIR}/logs"
+
+full_test:
+  <<: *base_test
+  variables:
+    TEST_DIR: "test/test-full"
+
+

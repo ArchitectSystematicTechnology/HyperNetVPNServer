@@ -4,29 +4,15 @@
 #
 # See also ansible sources: lib/ansible/parsing/yaml/constructor.py
 
-from __future__ import print_function
-
 import argparse
 import base64
 import binascii
 import os
-import random
 import shutil
-import six
 import subprocess
-import string
 import sys
 import tempfile
 import yaml
-
-# six.ensure_str does not seem to be in Debian stretch.
-try:
-    ensure_str = six.ensure_str
-except:
-    def ensure_str(x):
-        if isinstance(x, unicode):
-            return x.encode('utf-8')
-        return x
 
 
 # Possible exit codes for this program.
@@ -60,19 +46,32 @@ def _read_yaml(path):
     return out
 
 
-def decrypt(src):
+# Encrypt/decrypt functions for Ansible Vault.
+def ansible_vault_decrypt(src):
     return subprocess.check_output(
         ['ansible-vault', 'decrypt', '--output=-', src])
 
 
-def encrypt(data, dst):
+def ansible_vault_encrypt(data, dst):
     p = subprocess.Popen(
         ['ansible-vault', 'encrypt', '--output=' + dst, '-'],
+        encoding='utf-8',
         stdin=subprocess.PIPE)
-    p.communicate(data.encode())
+    p.communicate(data)
     rc = p.wait()
     if rc != 0:
         raise Exception('ansible-vault encrypt error')
+
+
+# Encrypt/decrypt functions for when there is no Ansible Vault.
+def nop_decrypt(src):
+    with open(src) as fd:
+        return fd.read()
+
+
+def nop_encrypt(data, dst):
+    with open(dst, 'w') as fd:
+        fd.write(data)
 
 
 def generate_simple_password(length=32):
@@ -82,8 +81,7 @@ def generate_simple_password(length=32):
     cut&pastable and usable on the command line.
     """
     n = int(length * 5 / 8)
-    return ensure_str(
-        base64.b32encode(os.urandom(n)).rstrip('='.encode()))
+    return base64.b32encode(os.urandom(n)).decode().rstrip('=')
 
 
 def generate_binary_secret(length=32):
@@ -96,14 +94,12 @@ def generate_binary_secret(length=32):
 
     """
     n = int(length * 3 / 4)
-    return ensure_str(
-        base64.b64encode(os.urandom(n)).rstrip('='.encode()))
+    return base64.b64encode(os.urandom(n)).decode().rstrip('=')
 
 
 def generate_hex_secret(length=16):
     """Binary password generator (hex-encoded)."""
-    return ensure_str(
-        binascii.hexlify(os.urandom(int(length/2))))
+    return binascii.hexlify(os.urandom(int(length/2))).decode('ascii')
 
 
 def _dnssec_keygen():
@@ -118,8 +114,7 @@ def _dnssec_keygen():
         base = subprocess.check_output([
             '/usr/sbin/dnssec-keygen', '-a', 'HMAC-SHA512', '-b', '512',
             '-n', 'USER', '-K', tmp_dir, 'pwgen',
-        ]).strip()
-        base = base.decode()
+        ], encoding='ascii').strip()
         result = {'algo': 'HMAC-SHA512'}
         with open(os.path.join(tmp_dir, base + '.key')) as fd:
             result['public'] = fd.read().split()[7]
@@ -137,10 +132,10 @@ def _tsig_keygen():
     dnssec-keygen anymore, but tsig-keygen.
     """
     base = subprocess.check_output([
-        '/usr/sbin/tsig-keygen', '-a', 'HMAC-SHA512', 'pwgen'
-    ]).strip().split()
+        '/usr/sbin/tsig-keygen', '-a', 'HMAC-SHA512', 'pwgen',
+    ], encoding='ascii').strip().split()
     result = {'algo': 'HMAC-SHA512'}
-    result['private'] = base[6].decode()[1:-2]
+    result['private'] = base[6][1:-2]
     result['public'] = result['private'][-32:]
     return result
 
@@ -166,24 +161,24 @@ def generate_rsa_key(bits):
 
     The result is a PEM-encoded string.
     """
-    return ensure_str(
-        subprocess.check_output(['openssl', 'genrsa', str(bits)]))
+    return subprocess.check_output(
+        ['openssl', 'genrsa', str(bits)],
+        encoding='ascii')
 
 
 def generate_password(entry):
     ptype = entry.get('type', 'simple')
     if ptype == 'simple':
         return generate_simple_password(length=int(entry.get('length', 32)))
-    elif ptype == 'binary':
+    if ptype == 'binary':
         return generate_binary_secret(length=int(entry.get('length', 32)))
-    elif ptype == 'hex':
+    if ptype == 'hex':
         return generate_hex_secret(length=int(entry.get('length', 32)))
-    elif ptype == 'tsig':
+    if ptype == 'tsig':
         return generate_tsig_key()
-    elif ptype == 'rsakey':
+    if ptype == 'rsakey':
         return generate_rsa_key(bits=int(entry.get('bits', 2048)))
-    else:
-        raise Exception('Unknown password type "%s"' % ptype)
+    raise Exception('Unknown password type "%s"' % ptype)
 
 
 def main():
@@ -201,8 +196,12 @@ ANSIBLE_VAULT_PASSWORD_FILE environment variable must be defined.
         help='Secrets metadata')
     args = parser.parse_args()
 
+    decrypt, encrypt = (ansible_vault_decrypt,
+                        ansible_vault_encrypt)
     if not os.getenv('ANSIBLE_VAULT_PASSWORD_FILE'):
-        raise Exception("You need to set ANSIBLE_VAULT_PASSWORD_FILE")
+        print('Warning: ANSIBLE_VAULT_PASSWORD_FILE is unset, bypassing Ansible Vault',
+              file=sys.stderr)
+        decrypt, encrypt = (nop_decrypt, nop_encrypt)
 
     passwords = {}
 
@@ -231,4 +230,3 @@ if __name__ == '__main__':
     except Exception as e:
         print("Error: %s" % str(e), file=sys.stderr)
         sys.exit(EXIT_ERROR)
-

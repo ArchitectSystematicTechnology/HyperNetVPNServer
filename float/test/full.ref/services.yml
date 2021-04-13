@@ -1,0 +1,22 @@
+---
+
+include:
+  - "../../services.yml.no-elasticsearch"
+
+ok:
+  scheduling_group: backend
+  containers:
+    - name: http
+      image: registry.git.autistici.org/ai3/docker/okserver:latest
+      port: 3100
+      env:
+        PORT: 3100
+      resources:
+        ram: 1g
+        cpu: 0.5
+  public_endpoints:
+    - name: ok
+      port: 3100
+      scheme: http
+
+

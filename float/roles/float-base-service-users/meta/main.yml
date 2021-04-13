@@ -1,0 +1,4 @@
+---
+
+dependencies:
+  - role: float-base-service-credentials

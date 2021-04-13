@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/alerts_ssl_probes.conf
+- name: roles/float-infra-prometheus/templates/rules/alerts_ssl_probes.conf
   rules:
   - alert: SSLCertificateAboutToExpire
     expr: target:probe_ssl_cert_expiry:days < 10
@@ -10,5 +10,5 @@ groups:
     annotations:
       summary: 'SSL certificate about to expire for {{ $labels.probe }}@{{ $labels.target }}'
       description: 'The "{{ $labels.probe }}" prober reports that {{ $labels.target }} is serving a SSL certificate that will expire in {{ $value }} days.'
-      runbook: '[[ alert_playbook_url ]]/SSLCertificateAboutToExpire'
+      runbook: '[[ alert_runbook_fmt | format("SSLCertificateAboutToExpire") ]]'
 

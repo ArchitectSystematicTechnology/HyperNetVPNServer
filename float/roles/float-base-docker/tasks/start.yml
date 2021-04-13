@@ -1,30 +1,9 @@
 ---
 
-#- set_fact:
-#    service: "{{ services[item.service] }}"
-#    container: "{{ item.container }}"
-#    systemd_service: "docker-{{ item.tag }}"
-#    container_user: "docker-{{ item.service }}"
-
-- name: Create container runtime primary groups
-  group:
-    name: "docker-{{ item.service }}"
-  loop: "{{ float_enabled_containers }}"
-
-- name: Create container users
-  user:
-    name: "docker-{{ item.service }}"
-    group: "docker-{{ item.service }}"
-    home: "/var/empty"
-    createhome: false
-  loop: "{{ float_enabled_containers }}"
-
-- name: Add container user to the credentials groups
-  user:
-    name: "docker-{{ item.service }}"
-    groups: "{{ services[item.service].service_credentials | default([]) | map(attribute='name') | map('regex_replace', '^(.*)$', '\\1-credentials') | list }}"
-    append: true
-  loop: "{{ float_enabled_containers }}"
+- name: Create docker scripts dir
+  file:
+    path: /usr/lib/float/docker
+    state: directory
 
 - name: Create run scripts
   template:
@@ -68,6 +47,7 @@
         no_block: yes
       #changed_when: false
       loop: "{{ float_enabled_containers | zip(docker_systemd_run_script.results, docker_systemd_unit.results, container_image.results) | list }}"
+
   rescue:
     - debug:
         msg: "Failed to set up one or more containers"
@@ -78,9 +58,3 @@
   template:
     src: container-limits.j2
     dest: "/var/lib/prometheus/node-exporter/container_resources.prom"
-
-- name: Remove legacy container resource node-exporter files
-  file:
-    path: "/var/lib/prometheus/node-exporter/container-*.prom"
-    state: absent
-

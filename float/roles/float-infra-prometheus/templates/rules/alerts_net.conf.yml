@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/alerts_net.conf
+- name: roles/float-infra-prometheus/templates/rules/alerts_net.conf
   rules:
   - alert: ConntrackTableFull
     expr: instance:conntrack_full:ratio > 0.9
@@ -7,36 +7,31 @@ groups:
     labels:
       severity: page
     annotations:
-      description: 'Conntrack table on {{ $labels.instance }} is more than 90% full.'
-      summary: 'Conntrack table on {{ $labels.instance }} is almost full'
-      runbook: '[[ alert_playbook_url ]]/ConntrackTableFull'
+      description: 'Conntrack table on {{ $labels.host }} is more than 90% full.'
+      summary: 'Conntrack table on {{ $labels.host }} is almost full'
+      runbook: '[[ alert_runbook_fmt | format("ConntrackTableFull") ]]'
 
   - alert: NetworkErrors
-    expr: instance:node_network_errs_total:rate5m > 5
+    expr: >
+      (instance:node_network_errs:ratio > [[ prometheus_network_error_ratio_threshold | default(0.1) ]]) and
+      (instance:node_network_packets_total:rate5m > 10)
     for: 15m
     labels:
       severity: page
     annotations:
-      summary: 'High rate of packet errors on {{ $labels.instance }}/{{ $labels.device }}'
-      description: 'High rate of packet errors on {{ $labels.instance }} device {{ $labels.device }}.'
-      runbook: '[[ alert_playbook_url ]]/NetworkErrors'
+      summary: 'High rate of packet errors on {{ $labels.host }}/{{ $labels.device }}'
+      description: 'High rate of packet errors on {{ $labels.host }} device {{ $labels.device }}.'
+      runbook: '[[ alert_runbook_fmt | format("NetworkErrors") ]]'
 
   - alert: NetworkDrops
-    expr: instance:node_network_drop_total:rate5m > 10
+    expr: >
+      (instance:node_network_drop:ratio > [[ prometheus_network_drop_ratio_threshold | default(0.1) ]]) and
+      (instance:node_network_packets_total:rate5m > 10)
     for: 15m
     labels:
-      severity: page
+      severity: warn
     annotations:
-      summary: 'High rate of packet drops on {{ $labels.instance }}/{{ $labels.device }}'
-      description: 'High rate of packet drops on {{ $labels.instance }} device {{ $labels.device }}.'
-      runbook: '[[ alert_playbook_url ]]/NetworkDrops'
+      summary: 'High rate of packet drops on {{ $labels.host }}/{{ $labels.device }}'
+      description: 'High rate of packet drops on {{ $labels.host }} device {{ $labels.device }}.'
+      runbook: '[[ alert_runbook_fmt | format("NetworkDrops") ]]'
 
-  - alert: HostUnreachable
-    expr: probe_success{job="blackbox_ping"} < 1
-    for: 5m
-    labels:
-      severity: page
-    annotations:
-      summary: 'Host {{ $labels.instance }} is unreachable'
-      description: 'Host {{ $labels.instance }} is unreachable (does not respond to icmp).'
-      runbook: '[[ alert_playbook_url ]]/HostUnreachable'

@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/alerts_mtail.conf
+- name: roles/float-infra-prometheus/templates/rules/alerts_mtail.conf
   rules:
     - alert: MtailProgramErrors
       expr: delta(mtail_prog_load_errors_total[1h]) > 0
@@ -10,5 +10,5 @@ groups:
       annotations:
         summary: "Error in mtail program {{ $labels.prog }} on {{ $labels.host }}"
         description: "The mtail program /etc/mtail/{{ $labels.prog }} on {{ $labels.host }} has failed to load. There might be a syntax error in it, check the mtail.service logs on that host."
-        runbook: '[[ alert_playbook_url ]]/MtailProgramErrors'
+        runbook: '[[ alert_runbook_fmt | format("MtailProgramErrors") ]]'
 

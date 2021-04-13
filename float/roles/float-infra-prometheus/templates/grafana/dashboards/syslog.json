@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 26,
-  "iteration": 1597009835639,
+  "iteration": 1616591682585,
   "links": [],
   "panels": [
     {
@@ -68,8 +68,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -161,8 +164,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -172,7 +178,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rsyslog_queue_discarded:rate5m{job=\"$job\",host=~\"$host\"} > 0",
+          "expr": "rsyslog_queue_discarded:rate5m{job=\"$job\",host=~\"$host\",queue!=\"action-1-builtin:ompipe queue\"} > 0",
           "interval": "",
           "legendFormat": "{{host}}/{{queue}}",
           "refId": "A"
@@ -268,8 +274,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -360,8 +369,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -453,8 +465,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -530,8 +545,12 @@
       "description": "Rsyslog is having trouble sending messages to some destinations, check its logs to figure out why.",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {
-            "align": null
+            "align": null,
+            "filterable": false
           },
           "mappings": [],
           "thresholds": {
@@ -566,7 +585,7 @@
           }
         ]
       },
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "targets": [
         {
           "expr": "sum(rsyslog_action_suspended) without (instance, job, service) > 0",
@@ -584,7 +603,7 @@
       "type": "table"
     }
   ],
-  "schemaVersion": 26,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -598,65 +617,19 @@
         },
         "datasource": "localhost",
         "definition": "label_values(up{job=\"rsyslog\"}, host)",
+        "description": null,
+        "error": null,
         "hide": 0,
         "includeAll": true,
         "label": "Host",
         "multi": false,
         "name": "host",
-        "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          },
-          {
-            "selected": false,
-            "text": "assenza",
-            "value": "assenza"
-          },
-          {
-            "selected": false,
-            "text": "confino",
-            "value": "confino"
-          },
-          {
-            "selected": false,
-            "text": "contumacia",
-            "value": "contumacia"
-          },
-          {
-            "selected": false,
-            "text": "devianza",
-            "value": "devianza"
-          },
-          {
-            "selected": false,
-            "text": "dipendenza",
-            "value": "dipendenza"
-          },
-          {
-            "selected": false,
-            "text": "indolenza",
-            "value": "indolenza"
-          },
-          {
-            "selected": false,
-            "text": "ingerenza",
-            "value": "ingerenza"
-          },
-          {
-            "selected": false,
-            "text": "latitanza",
-            "value": "latitanza"
-          },
-          {
-            "selected": false,
-            "text": "sofferenza",
-            "value": "sofferenza"
-          }
-        ],
-        "query": "label_values(up{job=\"rsyslog\"}, host)",
-        "refresh": 0,
+        "options": [],
+        "query": {
+          "query": "label_values(up{job=\"rsyslog\"}, host)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,
@@ -670,30 +643,24 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "text": "rsyslog-collector",
-          "value": "rsyslog-collector"
+          "text": "rsyslog",
+          "value": "rsyslog"
         },
         "datasource": "localhost",
         "definition": "label_values(up{job=~\"rsyslog.*\"}, job)",
+        "description": null,
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "Job",
         "multi": false,
         "name": "job",
-        "options": [
-          {
-            "selected": false,
-            "text": "rsyslog",
-            "value": "rsyslog"
-          },
-          {
-            "selected": true,
-            "text": "rsyslog-collector",
-            "value": "rsyslog-collector"
-          }
-        ],
-        "query": "label_values(up{job=~\"rsyslog.*\"}, job)",
-        "refresh": 0,
+        "options": [],
+        "query": {
+          "query": "label_values(up{job=~\"rsyslog.*\"}, job)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -726,5 +693,5 @@
   "timezone": "",
   "title": "Syslog",
   "uid": "vpP0KpSMz",
-  "version": 2
+  "version": 3
 }

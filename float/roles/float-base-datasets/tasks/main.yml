@@ -24,7 +24,7 @@
 
 - name: Create backup agent config
   template:
-    src: tabacco/agent.yml.j2
+    src: agent.yml.j2
     dest: /etc/tabacco/agent.yml
     mode: 0600
   notify:
@@ -42,8 +42,5 @@
     path: /usr/lib/float/datasets
     state: directory
 
-- include_tasks: backup_dataset.yml
-  with_subelements:
-    - "{{ services }}"
-    - datasets
-    - { skip_missing: true }
+- include_tasks: dataset.yml
+  loop: "{{ services | subelements('datasets', skip_missing=True) }}"

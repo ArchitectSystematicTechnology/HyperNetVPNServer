@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/alerts_prometheus.conf
+- name: roles/float-infra-prometheus/templates/rules/alerts_prometheus.conf
   rules:
 
   - alert: NodeExporterBroken
@@ -14,7 +14,7 @@ groups:
         The prometheus-node-exporter job on {{$labels.host}} is unable to
         read the /var/lib/prometheus/node-exporter directory: some metrics
         which we rely upon are not being collected.
-      runbook: '[[ alert_playbook_url ]]/NodeExporterBroken'
+      runbook: '[[ alert_runbook_fmt | format("NodeExporterBroken") ]]'
     
   - alert: PrometheusRuleEvaluationSlow
     expr: prometheus_evaluator_duration_seconds{job=~"prometheus.*",quantile="0.9"}
@@ -64,7 +64,7 @@ groups:
       description: '{{$labels.job}} at {{$labels.instance}} has not ingested any samples
         in the last 10 minutes.'
       summary: '{{$labels.job}} is not ingesting samples'
-      runbook: '[[ alert_playbook_url ]]/PrometheusNotIngestingSamples'
+      runbook: '[[ alert_runbook_fmt | format("PrometheusNotIngestingSamples") ]]'
 
   - alert: PrometheusPersistErrors
     expr: rate(prometheus_local_storage_persist_errors_total{job=~"prometheus.*"}[10m])
@@ -88,7 +88,7 @@ groups:
         notifications queue. The queue has not been empty for 10 minutes. Current
         queue length: {{$value}}.'
       summary: '{{$labels.job}} is backlogging on the notifications queue'
-      runbook: '[[ alert_playbook_url ]]/PrometheusNotificationsBacklog'
+      runbook: '[[ alert_runbook_fmt | format("PrometheusNotificationsBacklog") ]]'
 
   - alert: PrometheusScrapingSlowly
     expr: prometheus_target_interval_length_seconds{interval!~".*m.*",job=~"prometheus.*",quantile="0.9"}
@@ -138,7 +138,7 @@ groups:
       description: '{{$labels.job}} at {{$labels.instance}} is approaching critical
         persistence pressure. Throttled ingestion expected within the next 2h.'
       summary: '{{$labels.job}} can not keep up persisting'
-      runbook: '[[ alert_playbook_url ]]/PrometheusPersistencePressureTooHigh'
+      runbook: '[[ alert_runbook_fmt | format("PrometheusPersistencePressureTooHigh") ]]'
 
   - alert: PrometheusSeriesMaintenanceStalled
     expr: prometheus_local_storage_memory_series{job=~"prometheus.*"} / ON(job, instance)
@@ -164,7 +164,7 @@ groups:
       description: The configuration file for {{$labels.job}} at {{$labels.instance}}
         is invalid and was therefore not reloaded.
       summary: '{{$labels.job}} has an invalid config'
-      runbook: '[[ alert_playbook_url ]]/PrometheusInvalidConfigFile'
+      runbook: '[[ alert_runbook_fmt | format("PrometheusInvalidConfigFile") ]]'
 
   - alert: PrometheusOutOfOrderSamplesDiscarded
     expr: increase(prometheus_local_storage_out_of_order_samples_total{job=~"prometheus.*"}[10m])

@@ -12,8 +12,12 @@
                options=[],
                has_custom_tmp_volume=False)
 -%}
-{%- macro opt(name, value) -%}
+{%- macro opt(name, value=None) -%}
+{% if value is not none -%}
   {{ g.options.append('--%s=%s' % (name, value)) }}
+{% else -%}
+  {{ g.options.append('--%s' % name) }}
+{% endif -%}
 {%- endmacro -%}
 {%- if item.container.docker_options is defined -%}
   {{ g.options.append(item.container.docker_options) }}
@@ -26,13 +30,22 @@
   {{ opt('env', '%s=%s' % (k, v | quote)) }}
 {% endfor %}
 
-{# Port configuration, and bind mounts #}
+{# Port configuration #}
 {% if item.container.get('ports', []) %}
   {% for port in item.container.get('ports',[]) %}
     {{ opt('expose', port) }}
   {% endfor %}
 {% elif item.container.get('port') %}
   {{ opt('expose', item.container.port) }}
+{% endif %}
+
+{# Root read-only? #}
+{% if item.container.get('readonly', True) %}
+  {{ opt('read-only') }}
+  {# podman will mount /run /tmp and /var/tmp with writable tmpfs when
+     the --read-only option is specified (see --read-only-tmpfs), so 
+     do not add our own /tmp mount #}
+  {% set g.has_custom_tmp_volume = True %}
 {% endif %}
 
 {# Define mountpoints / volumes. We treat /tmp specially as the container
@@ -56,12 +69,12 @@
 
 {# System-level volumes that all containers have.
    Include by default tmpfs mounts for standard Debian locations (/tmp,
-   /run/lock), and a bind mount for the syslog socket in /dev/log. #}
-{{ opt('mount', 'type=tmpfs,destination=/run/lock,tmpfs-mode=01777,tmpfs-size=16M') }}
-{{ opt('mount', 'type=bind,source=/dev/log,destination=/dev/log') }}
+   /run), and a bind mount for the syslog socket in /dev/log. #}
+{{ opt('mount', 'type=tmpfs,destination=/run,tmpfs-mode=01777,tmpfs-size=16M,noexec=false,notmpcopyup') }}
 {% if not g.has_custom_tmp_volume %}
-  {{ opt('mount', 'type=tmpfs,destination=/tmp,tmpfs-mode=01777,tmpfs-size=64M') }}
+  {{ opt('mount', 'type=tmpfs,destination=/tmp,tmpfs-mode=01777,tmpfs-size=64M,notmpcopyup') }}
 {% endif %}
+{{ opt('mount', 'type=bind,source=/dev/log,destination=/dev/log') }}
 
 {# Mount the service credentials inside the container. #}
 {% for creds in services[item.service].get('service_credentials', []) %}
@@ -83,11 +96,11 @@ fi
 
 {% if not item.container.get('root') %}
 # Run as unprivileged user.
-container_uid=$(id -u docker-{{ item.service }})
-container_gid=$(id -g docker-{{ item.service }})
+container_uid=$(id -u {{ services[item.service].user }})
+container_gid=$(id -g {{ services[item.service].user }})
 opts="$opts --user=$container_uid:$container_gid"
 # Add additional groups that the user is a member of.
-for gid in $(id -G docker-{{ item.service }}); do
+for gid in $(id -G {{ services[item.service].user }}); do
     if [ $gid -ne $container_gid ]; then
         opts="$opts --group-add=$gid"
     fi
@@ -95,21 +108,16 @@ done
 {% endif %}
 
 {% if container_runtime == 'podman' %}
-# Remove 'created' (but never started) and 'exited' containers to avoid name conflicts
-podman ps --quiet --all \
-  --filter status=created \
-  --filter name={{ item.service }}-{{ item.container.name }} \
-  | xargs --no-run-if-empty podman rm
-
-podman ps --quiet --all \
-  --filter status=exited \
-  --filter name={{ item.service }}-{{ item.container.name }} \
-  | xargs --no-run-if-empty podman rm
-
 exec /usr/bin/podman run \
+{% if float_debian_dist in ('stretch', 'buster') %}
   --cgroup-manager=cgroupfs \
   --cgroup-parent /system.slice/docker-{{ item.tag }}.service \
+{% else %}
+  --cgroups=disabled \
+{% endif %}
   --rm --name {{ item.service }}-{{ item.container.name }} \
+  --no-healthcheck \
+  --replace \
   $opts \
 {% for opt in g.options %}
   {{ opt }} \

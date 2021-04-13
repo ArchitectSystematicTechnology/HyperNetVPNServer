@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/alerts_base.conf
+- name: roles/float-infra-prometheus/templates/rules/alerts_base.conf
   rules:
 
   # HostUnreachable is used as a gate for most other host-based pages
@@ -63,7 +63,7 @@ groups:
     annotations:
       summary: 'Job {{ $labels.job }} is down globally'
       description: 'Job {{ $labels.job }} is down globally (availability {{ $value }}).'
-      runbook: '[[ alert_playbook_url ]]/JobDown'
+      runbook: '[[ alert_runbook_fmt | format("JobDown") ]]'
 
   - alert: ProbeFailure
     expr: target:probe_success:ratio{probe!="ping",probeset!="service"} < 0.5
@@ -75,7 +75,7 @@ groups:
       summary: 'Probe {{ $labels.probe }}@{{ $labels.target }} is failing'
       description: 'Probe {{ $labels.probe }} ({{ $labels.zone }}) is failing
         for target {{ $labels.target }} (success ratio {{ $value }}).'
-      runbook: '[[ alert_playbook_url ]]/ProbeFailure'
+      runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
 
   - alert: ProbeFailure
     expr: probe:probe_success:ratio{probe!="ping",probeset!="service"} < 0.5
@@ -87,7 +87,7 @@ groups:
       summary: 'Probe {{ $labels.probe }} is failing globally'
       description: 'Probe {{ $labels.probe }} ({{ $labels.zone }}) is failing
         globally (success ratio {{ $value }}).'
-      runbook: '[[ alert_playbook_url ]]/ProbeFailure'
+      runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
 
   - alert: CronJobFailure
     expr: cronjob_ok < 1 and (time() - cronjob_last_success) > 259200
@@ -99,4 +99,4 @@ groups:
       summary: 'Cron job {{$labels.cronjob}} on {{$labels.host}} has been failing consistently'
       description: 'The cron job "{{$labels.cronjob}}" on host {{$labels.host}} has been
         failing for the last 3 days. Check the logs for errors.'
-      runbook: '[[ alert_playbook_url ]]/CronJobFailure'
+      runbook: '[[ alert_runbook_fmt | format("CronJobFailure") ]]'

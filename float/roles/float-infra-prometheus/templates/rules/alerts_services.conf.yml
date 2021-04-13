@@ -1,5 +1,5 @@
 groups:
-  - name: roles/prometheus/files/rules/alerts_services.conf
+  - name: roles/float-infra-prometheus/templates/rules/alerts_services.conf
     rules:
       - alert: ServiceAvailabilityTooLow
         expr: float_service:ok:ratio < 0.6
@@ -10,7 +10,7 @@ groups:
         annotations:
           description: 'Availability too low for service {{ $labels.float_service }}'
           summary: 'Availability too low for service {{ $labels.float_service }}'
-          runbook: '[[ alert_playbook_url ]]/ServiceAvailabilityTooLow'
+          runbook: '[[ alert_runbook_fmt | format("ServiceAvailabilityTooLow") ]]'
 
       - alert: ServiceDegraded
         expr: float_service:ok_by_host == 0

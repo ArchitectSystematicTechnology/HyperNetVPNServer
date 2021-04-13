@@ -1,5 +1,5 @@
 groups:
-  - name: roles/prometheus/files/rules/rules_base.conf
+  - name: roles/float-infra-prometheus/templates/rules/rules_base.conf
     rules:
       - record: job:up:count
         expr: count(up) by (job)

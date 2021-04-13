@@ -11,11 +11,12 @@ alertmanager_smtp_hello: "localhost"
 alertmanager_smtp_auth_username: ""
 alertmanager_smtp_auth_password: ""
 
-# Base URL for playbooks (no trailing slash).
+# Base URL for playbooks (no trailing slash), as a format
+# expression (%s will be replaced by the alert name).
 # Note: do not use template substitution in this var! We are
 # changing the template beg/end markers in the alert rules,
 # so using {{ here will generate broken rules files.
-alert_playbook_url: "https://playbooks"
+alert_runbook_fmt: "https://runbooks/alerts/%s.html"
 
 # Custom blackbox probes.
 prometheus_custom_blackbox_probes: {}

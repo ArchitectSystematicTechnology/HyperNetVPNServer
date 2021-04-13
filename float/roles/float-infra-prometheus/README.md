@@ -48,7 +48,7 @@ but it will still be active and functional (via *amtool*).
 
 A few alerting rules are provided by default
 in
-[roles/prometheus/files/rules/](roles/prometheus/files/rules/). This
+[roles/float-infra-prometheus/templates/rules/](roles/float-infra-prometheus/templates/rules/). This
 includes:
 
 * host-level alerts (high CPU usage, disk full, network errors...)
@@ -81,12 +81,14 @@ It is possible to extend Prometheus to scrape external targets, by
 adding them to the *prometheus_external_targets* configuration
 variable.
 
-Each entry in that list should have the following attributes:
+Each entry in that list can have the following attributes:
 
-* `name` maps to the Prometheus job_name
+* `name` maps to the Prometheus job_name (required)
 * `scheme` can be *http* (default) or *https*
 * `metrics_path` (default /metrics)
-* `targets` is the list of host:port targets to scrape
+* `targets` is the list of host:port targets to scrape (required)
+* `basic_auth` contains *username* and *password*
+* `tls_config` can contain *ca_file*, *cert_file*, *key_file*, *server_name* or *insecure_skip_verify*
 
 ## Scraping external Prometheus instances
 

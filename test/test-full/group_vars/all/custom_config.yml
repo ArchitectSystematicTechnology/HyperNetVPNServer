@@ -1,0 +1,5 @@
+---
+float_limit_bind_to_known_interfaces: true
+geoip_account_id: "{{ lookup('env', 'GEOIP_ACCOUNT_ID') }}"
+geoip_license_key: "{{ lookup('env', 'GEOIP_LICENSE_KEY') }}"
+ 

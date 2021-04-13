@@ -1,5 +1,5 @@
 groups:
-- name: roles/prometheus/files/rules/alerts_cpu.conf
+- name: roles/float-infra-prometheus/templates/rules/alerts_cpu.conf
   rules:
   - alert: CPUUsageHigh
     expr: instance_utilization:rate5m > 0.96
@@ -8,8 +8,8 @@ groups:
       scope: host
       severity: warn
     annotations:
-      summary: 'CPU utilization is high on {{ $labels.instance }}'
-      description: 'CPU utilization is high on {{ $labels.instance }}'
+      summary: 'CPU utilization is high on {{ $labels.host }}'
+      description: 'CPU utilization is high on {{ $labels.host }}'
 
   # The following alert is used as a signal to inhibit most alerts when
   # a host is obviously thrashing.
@@ -22,7 +22,7 @@ groups:
     annotations:
       summary: 'Host {{$labels.host}} is thrashing'
       description: 'Load average on host {{$labels.host}} is very high ({{$value}}), the host is likely unresponsive.'
-      runbook: '[[ alert_playbook_url ]]/HostThrashing'
+      runbook: '[[ alert_runbook_fmt | format("HostThrashing") ]]'
 
   - alert: ThermalEnvelopeThrottling
     expr: host:kernel_cpu_throttled:max > 0

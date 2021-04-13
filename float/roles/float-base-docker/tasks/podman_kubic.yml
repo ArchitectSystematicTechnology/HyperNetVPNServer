@@ -1,0 +1,30 @@
+---
+
+# Install Podman from the upstream "kubic" repository. This is usually
+# the latest Podman release.
+
+
+- name: Add podman Kubic repository key
+  copy:
+    src: "kubic.gpg"
+    dest: "/etc/apt/trusted.gpg.d/kubic.gpg"
+
+- name: Remove A/I podman repository
+  apt_repository:
+    repo: "deb http://deb.autistici.org/urepo buster-podman/"
+    state: absent
+
+- name: Add Kubic podman repository
+  apt_repository:
+    repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /"
+    state: present
+
+- name: Remove podman package pins
+  file:
+    path: "/etc/apt/preferences.d/99podman"
+    state: absent
+
+- name: Install podman packages
+  apt:
+    name: podman
+    state: present

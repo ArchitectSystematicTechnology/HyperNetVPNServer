@@ -1,19 +1,58 @@
 ---
 
-# Disable systemd services that should not be enabled (because the
-# associated service was rescheduled elsewhere).
+# Get the list of failed systemd service units. Unfortunately the
+# systemd version in Debian Buster does not yet support --output to
+# set a reasonable format, so we have to use 'awk'.
+- name: List failed service units
+  shell: "systemctl list-units --no-legend --no-pager --full --type service --failed | awk '{print $1}'"
+  check_mode: no
+  changed_when: false
+  register: failed_systemd_units
+
+# Clear failed status, if any, for the units we want to disable, so
+# that systemd can forget all about them. Unfortunately systemd
+# occasionally fails to recognize the units even though they're
+# loaded, so we have to keep ignore_errors here.
+- name: Reset failed unwanted systemd units
+  command: "systemctl reset-failed {{ failed_systemd_units.stdout_lines | intersect(float_disabled_systemd_units) | join(' ') }}"
+  ignore_errors: true
+
+# Get the list of currently loaded systemd service units. Unfortunately
+# the systemd version in Debian Buster does not yet support --output
+# to set a reasonable format, so we have to use 'awk'.
+- name: List loaded service units
+  shell: "systemctl list-units --no-legend --no-pager --full --type service --state loaded | awk '{print $1}'"
+  check_mode: no
+  changed_when: false
+  register: loaded_systemd_units
+
+# Stop and disable systemd services that should not be enabled
+# (because the associated service was rescheduled elsewhere).
 - name: Disable unwanted systemd units
   systemd:
     name: "{{ item }}"
     enabled: no
     state: stopped
-    masked: yes
-    no_block: yes
-  ignore_errors: true
-  with_items: "{{ float_disabled_systemd_units }}"
-  changed_when: false
+  loop: "{{ loaded_systemd_units.stdout_lines | intersect(float_disabled_systemd_units) }}"
 
-# Also clear failed status if any for disabled units
-- name: Reset failed unwanted systemd units
-  command: "systemctl reset-failed {{ float_disabled_systemd_units | join(' ') }}"
-  ignore_errors: true
+# Remove unit files for unwanted_systemd_units. We are going to
+# naively assume they are always located below /etc/systemd.
+- name: Delete unwanted systemd units
+  file:
+    path: "/etc/systemd/system/{{ item }}"
+    state: absent
+  loop: "{{ float_disabled_systemd_units }}"
+  notify: "reload systemd"
+
+# Add here files that need to be removed (perhaps because they have
+# been renamed at some point in float history, or for other reasons).
+- name: Cleanup obsolete files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/etc/prometheus/node-exporter-scripts/apt.sh"
+    - "/etc/prometheus/node-exporter-scripts/smartmon_float.py"
+    - "/var/lib/prometheus/node-exporter/smartmon_float.prom"
+    - "/etc/cron.d/node-exporter-scripts"
+    - "/usr/local/bin/node-exporter-cron"

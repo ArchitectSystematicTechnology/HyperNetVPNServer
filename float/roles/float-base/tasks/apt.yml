@@ -65,7 +65,6 @@
       - unattended-upgrades
       - rsync
       - git
-      - python-pip
       - ntp
       - openssl
       - curl
@@ -80,6 +79,7 @@
       - lz4
       - man-db
       - jq
+      - gpg
 
 - name: Install extra packages
   apt:
