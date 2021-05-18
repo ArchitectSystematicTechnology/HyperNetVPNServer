@@ -1,4 +1,5 @@
 #!/bin/sh
+PATH=$PATH:/usr/sbin
 
 api_server=${API_SERVER:-api.float.bitmask.net}
 
@@ -20,8 +21,7 @@ fi
 /sbin/ip a s
 /sbin/ip r s
 
-cd ${tmpdir}
-curl -vskL -o cacert.pem --resolve ${api_server}:443:${api_ip} https://${api_server}/ca.crt
-curl -vskL -o openvpn.pem --resolve ${api_server}:443:${api_ip} https://${api_server}/3/cert
+curl -vskL -o ${tmpdir}/cacert.pem --resolve ${api_server}:443:${api_ip} https://${api_server}/ca.crt
+curl -vskL -o ${tmpdir}/openvpn.pem --resolve ${api_server}:443:${api_ip} https://${api_server}/3/cert
 
-/ovpnprobe --host ${ip} --port ${port} --cert openvpn.pem --ca cacert.pem
+./ovpnprobe --host ${ip} --port ${port} --cert ${tmpdir}/openvpn.pem --ca ${tmpdir}/cacert.pem
