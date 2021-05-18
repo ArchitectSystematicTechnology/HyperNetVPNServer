@@ -59,6 +59,13 @@ scrape_configs:
       # Drop replica label 'monitor' to get unique metrics
       - action: labeldrop
         regex: monitor
+      # Drop label 'job' when the metric doesn't have one (i.e.
+      # job=prometheus-federation)
+      - action: replace
+        source_labels: ['job']
+        regex: 'prometheus-federation'
+        replacement: ''
+        target_label: 'job'
       # Drop high cardinality metrics
 {% for metric in prometheus_lts_drop_metrics|sort %}
       - source_labels: ['__name__']

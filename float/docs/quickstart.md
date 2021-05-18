@@ -34,15 +34,11 @@ it manually](https://www.virtualbox.org/wiki/Linux_Downloads). The
 other dependencies can be installed with the following commands:
 
 ```shell
-sudo apt install golang bind9utils ansible vagrant python-jinja2 python-yaml python-six
+sudo apt install golang ansible vagrant
 go get -u git.autistici.org/ale/x509ca
 go get -u git.autistici.org/ale/ed25519gen
 export PATH=$PATH:$HOME/go/bin
 ```
-
-*NOTE*: On Ubuntu, the *dnssec-keygen* command in bind9utils has been
-replaced by *tsig-keygen* from the bind9 package, so you're going to
-need to install that instead.
 
 *Float* should work equally well with both Python 2 and Python 3, and
 it supports scenarios where the Python interpreter used by Ansible is
@@ -50,17 +46,14 @@ different from the system's default.
 
 ### Alternative: libvirt
 
-If you really don't like Virtualbox and don't want to install it
-manually, there's the option to use *libvirt* instead. On Debian,
-install the following packages to set up a local libvirt environment:
+If you don't like Virtualbox and don't want to install it manually,
+you could use *libvirt* instead. On Debian, install the following
+packages to set up a local libvirt environment that will work with
+Vagrant:
 
 ```shell
 sudo apt install libvirt-clients libvirt-daemon-system vagrant-libvirt
 ```
-
-Where specific steps need to be performed for libvirt versus
-virtualbox, this will be called out in the text with a *\[libvirt\]*
-tag.
 
 ## Step 2: Set up a new environment
 
@@ -77,12 +70,9 @@ test environment configs using the `float` command-line tool:
 ```shell
 $HOME/float/float create-env \
     --domain=example.com --net=192.168.10.0 \
-    --vagrant --num-hosts=1 \
+    --num-hosts=1 \
     $HOME/float-test
 ```
-
-> \[libvirt\] Add the *--libvirt=localhost* command-line option to the
-> "float create-env" invocation above.
 
 The *create-env* command will create a bunch of configuration files in
 the *float-test* directory. Here we told it to use *example.com* as
@@ -100,7 +90,7 @@ files for Ansible and Vagrant, with default values filled in by
 * `ansible.cfg` is the Ansible configuration file, which tells Ansible
   where to find the float plugins
 * `Vagrantfile` is the Vagrant configuration file describing our
-  single VM (SO, ip, memory,...).
+  single VM (base image, ip, memory,...).
 * `config.yml` is the main *float* configuration file, which mostly
   just points at the location of the other configs. There is nothing
   to change here, as *create-env* already wrote sensible defaults.
@@ -120,10 +110,6 @@ You can read the [configuration reference](configuration.md) for
 details on the configuration file syntax and what the various options
 mean.
 
-This directory is also your Ansible top-level directory, so it is
-possible to add host_vars, group_vars, etc. as you see fit. We are not
-going to need those features in this example.
-
 ## Step 3: Customize the environment
 
 We want to tell *float* to run an instance of our simple HTTP service
@@ -131,13 +117,27 @@ behind its public HTTP router, and to make it available as
 *ok.example.com*. The service is available as a Docker image with the
 name *registry.git.autistici.org/ai3/docker/okserver*.
 
-Let's add the service specification to the *services.yml* file that
-has been automatically created in the *float-test* directory. Since
-all services in float need statically assigned ports, let's pick port
-3100 (which we know is available). The *services.yml* file already
-contains an "include" section that includes definition of all built-in
-services, so we just need to add the following YAML snippet at the end
-of the file:
+Now, what *float create-env* generated isn't enough for a functional
+environment, you need to create some more files manually, to describe
+the services you want to run:
+
+* `passwords.yml`, which contains the list of secrets that float will
+  automatically generate for us. Since our service does not require
+  any additional secrets, we can just tell it to include float's
+  default *passwords.yml* file, which describes secrets for the
+  built-in default services:
+
+```yaml
+---
+
+- include: "../float/passwords.yml.default"
+```
+
+* `services.yml` describes the services to run. In our case, we're
+  going to run a container with our image, and since all float
+  services need statically assigned ports, let's pick port 3100 (which
+  we know is available). We also need to include the default float
+  services:
 
 ```yaml
 ok:
@@ -155,8 +155,26 @@ ok:
       scheme: http
 ```
 
-This is all the configuration we need in order to set up the service
-and export it via the public HTTP router.
+* `site.yml` is the Ansible playbook, and it is where you would
+  establish the association between float services (and their
+  auto-generated Ansible groups) and Ansible roles. Since the okserver
+  does not require any configuration, beyond the PORT environment
+  variable, we're not going to need to write an Ansible role for it,
+  and this file can just include the default float playbook (which you
+  should always do):
+
+```yaml
+---
+
+- import_playbook: "../float/playbooks/all.yml"
+```
+
+The environment directory is also your Ansible top-level directory, so
+it is possible to add host_vars, group_vars, etc. as you see fit. We
+are not going to need those features in this example.
+
+The above is all the configuration we need in order to set up the
+okserver service and export it via the public HTTP router.
 
 ## Step 4: Initialize the credentials
 
@@ -184,7 +202,10 @@ export ANSIBLE_VAULT_PASSWORD_FILE=$PWD/.ansible_vault_pw
 You can pick any passphrase you want, of course. The
 *ANSIBLE_VAULT_PASSWORD_FILE* environment variable is how we tell
 Ansible which passphrase to use, you're going to need to set it
-whenever you invoke Ansible via *float*.
+whenever you invoke Ansible via *float*. Note that
+ANSIBLE_VAULT_PASSWORD_FILE can also point to an executable (like a
+script), which can be useful for integration with gpg or password
+managers.
 
 We can now initialize the credentials, which by default will be stored
 below the *float-test/credentials/* directory (the value of
@@ -213,9 +234,6 @@ cd $HOME/float-test
 vagrant up
 $HOME/float/float run site.yml
 ```
-
-> \[libvirt\] You should pass the *--provider=libvirt* option to the
-> "vagrant up" command.
 
 When Ansible terminates successfully (it is going to take a few
 minutes the first time it runs, to download packages and Docker

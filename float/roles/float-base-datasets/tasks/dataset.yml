@@ -26,16 +26,23 @@
     state: directory
   when: "(dataset_is_present) and (dataset_path) and (dataset_mode)"
 
-# Try to set permissions. Ignore errors because it is possible that
-# the user does not (yet) exist.
+# Attempt to set permissions on the dataset path, but first check if
+# the user already exists: if the service is not container-based, it's
+# possible that the user will be created on package installation later.
+- name: Check if the dataset owner exists
+  getent:
+    database: passwd
+    key: "{{ dataset_owner }}"
+    fail_key: false
+  when: "(dataset_is_present) and (dataset_path) and (dataset_owner)"
+
 - name: "Set permissions for dataset directory of {{ dataset_name }}"
   file:
     path: "{{ dataset_path }}"
     state: directory
     owner: "{{ dataset_owner }}"
     group: "{{ dataset_group | default('root') }}"
-  when: "(dataset_is_present) and (dataset_path) and (dataset_owner)"
-  ignore_errors: true
+  when: "(dataset_is_present) and (dataset_path) and (dataset_owner) and (getent_passwd.get(dataset_owner))"
 
 - name: Set up configuration for dataset {{ dataset_name }} (source)
   template:

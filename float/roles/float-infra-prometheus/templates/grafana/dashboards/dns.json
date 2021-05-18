@@ -17,7 +17,7 @@
   "gnetId": 12309,
   "graphTooltip": 0,
   "id": 27,
-  "iteration": 1614356044266,
+  "iteration": 1618527684190,
   "links": [
     {
       "icon": "external link",
@@ -113,7 +113,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "max(node_time_seconds{instance=~\"$node:.*\"}) - max(bind_boot_time_seconds{instance=~\"$node:.*\"}) ",
+          "expr": "time() - max(bind_boot_time_seconds{instance=~\"$instance\"}) ",
           "interval": "5m",
           "intervalFactor": 2,
           "legendFormat": "",
@@ -204,7 +204,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "max(node_time_seconds{instance=~\"$node:.*\"}) - max(bind_config_time_seconds{instance=~\"$node:.*\"})",
+          "expr": "time() - max(bind_config_time_seconds{instance=~\"$instance\"})",
           "interval": "5m",
           "intervalFactor": 2,
           "legendFormat": "",
@@ -276,7 +276,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(process_cpu_seconds_total{instance=~\"$node:.*\", job=\"$job\"}[120s])",
+          "expr": "increase(process_cpu_seconds_total{instance=~\"$instance\", job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "",
@@ -381,7 +381,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "process_max_fds{instance=\"$node:$port\",job=\"$job\"}",
+          "expr": "process_max_fds{instance=~\"$instance\",job=\"$job\"}",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "Max",
@@ -390,7 +390,7 @@
           "target": ""
         },
         {
-          "expr": "process_open_fds{instance=\"$node:$port\",job=\"$job\"}",
+          "expr": "process_open_fds{instance=~\"$instance\",job=\"$job\"}",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "Open",
@@ -494,7 +494,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "process_virtual_memory_bytes{instance=\"$node:$port\",job=\"$job\"}",
+          "expr": "process_virtual_memory_bytes{instance=~\"$instance\",job=\"$job\"}",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "Virtual",
@@ -503,7 +503,7 @@
           "target": ""
         },
         {
-          "expr": "process_resident_memory_bytes{instance=\"$node:$port\",job=\"$job\"}",
+          "expr": "process_resident_memory_bytes{instance=~\"$instance\",job=\"$job\"}",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "Resident",
@@ -603,7 +603,8 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(bind_query_duplicates_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "increase(bind_query_duplicates_total{instance=~\"$instance\",job=\"$job\"}[120s])",
+          "interval": "",
           "intervalFactor": 2,
           "legendFormat": "Duplicates",
           "refId": "A",
@@ -611,7 +612,8 @@
           "target": ""
         },
         {
-          "expr": "increase(bind_query_errors_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "increase(bind_query_errors_total{instance=~\"$instance\",job=\"$job\"}[120s])",
+          "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ error }}",
           "refId": "B",
@@ -619,7 +621,8 @@
           "target": ""
         },
         {
-          "expr": "increase(bind_query_recursions_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "increase(bind_query_recursions_total{instance=~\"$instance\",job=\"$job\"}[120s])",
+          "interval": "",
           "intervalFactor": 2,
           "legendFormat": "Recursions",
           "refId": "C",
@@ -737,7 +740,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "irate(bind_incoming_queries_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_incoming_queries_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ type }}",
@@ -841,7 +844,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "irate(bind_incoming_requests_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_incoming_requests_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ opcode }}",
@@ -943,7 +946,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "irate(bind_responses_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_responses_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ result }}",
@@ -1058,7 +1061,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "irate(bind_resolver_response_errors_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_resolver_response_errors_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / {{ error }}",
@@ -1067,7 +1070,7 @@
           "target": ""
         },
         {
-          "expr": "irate(bind_resolver_response_lame_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_resolver_response_lame_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / LAME",
@@ -1076,7 +1079,7 @@
           "target": ""
         },
         {
-          "expr": "irate(bind_resolver_response_mismatch_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_resolver_response_mismatch_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / MISMATCH",
@@ -1085,7 +1088,7 @@
           "target": ""
         },
         {
-          "expr": "irate(bind_resolver_response_truncated_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_resolver_response_truncated_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / TRUNCATED",
@@ -1185,7 +1188,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "irate(bind_resolver_queries_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_resolver_queries_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / {{ type }}",
@@ -1285,7 +1288,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "irate(bind_resolver_query_errors_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_resolver_query_errors_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / {{ error }}",
@@ -1294,7 +1297,7 @@
           "target": ""
         },
         {
-          "expr": "irate(bind_resolver_query_edns0_errors_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_resolver_query_edns0_errors_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / EDNS0",
@@ -1303,7 +1306,7 @@
           "target": ""
         },
         {
-          "expr": "irate(bind_resolver_query_retries_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_resolver_query_retries_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / Retry",
@@ -1403,7 +1406,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "irate(bind_resolver_query_duration_seconds_bucket{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_resolver_query_duration_seconds_bucket{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / {{ le }}",
@@ -1503,7 +1506,8 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "bind_resolver_cache_rrsets{instance=\"$node:$port\",job=\"$job\"}",
+          "expr": "bind_resolver_cache_rrsets{instance=~\"$instance\",job=\"$job\"}",
+          "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / {{ type }}",
           "refId": "A",
@@ -1602,7 +1606,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "irate(bind_resolver_dnssec_validation_errors_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_resolver_dnssec_validation_errors_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / ValErr",
@@ -1611,7 +1615,7 @@
           "target": ""
         },
         {
-          "expr": "irate(bind_resolver_dnssec_validation_success_total{instance=\"$node:$port\",job=\"$job\"}[120s])",
+          "expr": "irate(bind_resolver_dnssec_validation_success_total{instance=~\"$instance\",job=\"$job\"}[120s])",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{ view }} / {{ result }}",
@@ -1729,58 +1733,27 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "text": "devianza.frontend.investici.org",
-          "value": "devianza.frontend.investici.org"
+          "text": "latitanza.frontend.investici.org:9119",
+          "value": "latitanza.frontend.investici.org:9119"
         },
         "datasource": "${DS_PROMETHEUS}",
         "definition": "label_values(bind_up, instance)",
         "description": null,
         "error": null,
         "hide": 0,
-        "includeAll": false,
+        "includeAll": true,
         "label": "Host:",
         "multi": false,
-        "name": "node",
+        "name": "instance",
         "options": [],
         "query": {
           "query": "label_values(bind_up, instance)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 1,
-        "regex": "/([^:]+):.*/",
+        "regex": "",
         "skipUrlSync": false,
         "sort": 1,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "allValue": null,
-        "current": {
-          "selected": false,
-          "text": "9119",
-          "value": "9119"
-        },
-        "datasource": "${DS_PROMETHEUS}",
-        "definition": "label_values(bind_up{instance=~\"$node:(.*)\"}, instance)",
-        "description": null,
-        "error": null,
-        "hide": 0,
-        "includeAll": false,
-        "label": "Port",
-        "multi": false,
-        "name": "port",
-        "options": [],
-        "query": {
-          "query": "label_values(bind_up{instance=~\"$node:(.*)\"}, instance)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 1,
-        "regex": "/[^:]+:(.*)/",
-        "skipUrlSync": false,
-        "sort": 3,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1821,5 +1794,5 @@
   "timezone": "browser",
   "title": "DNS",
   "uid": "XTqyUORMz",
-  "version": 1
+  "version": 2
 }

@@ -5,3 +5,8 @@ groups:
         expr: 100 * (elasticsearch_filesystem_data_size_bytes - elasticsearch_filesystem_data_free_bytes) / elasticsearch_filesystem_data_size_bytes
       - record: elasticsearch_filesystem_data_free_percent
         expr: 100 - elasticsearch_filesystem_data_used_percent
+
+      # Metrics for the end-to-end probers.
+      - record: log_collection_e2e:success:ratio
+        expr: sum(log_collection_e2e_success) / count(log_collection_e2e_success)
+

@@ -15,7 +15,8 @@
   "editable": true,
   "gnetId": 3894,
   "graphTooltip": 0,
-  "iteration": 1597436758516,
+  "id": 6,
+  "iteration": 1618528364784,
   "links": [],
   "panels": [
     {
@@ -83,10 +84,10 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": false
       },
-      "tableColumn": "apache_uptime_seconds_total{host=\"assenza\", instance=\"assenza.web-users.investici.org:8183\", job=\"apache2-users\", service=\"web-users\"}",
+      "tableColumn": "",
       "targets": [
         {
-          "expr": "apache_uptime_seconds_total{instance=~\"^$host:$port\"}",
+          "expr": "min(apache_uptime_seconds_total{instance=~\"^$host:$port\"})",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -146,8 +147,11 @@
       "linewidth": 3,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -262,8 +266,11 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -277,7 +284,7 @@
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
-          "legendFormat": "Kilobytes Sent",
+          "legendFormat": "{{host}}",
           "refId": "A",
           "step": 240
         }
@@ -360,8 +367,11 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -375,7 +385,7 @@
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
-          "legendFormat": "Accesses",
+          "legendFormat": "{{host}}",
           "refId": "A",
           "step": 240
         }
@@ -461,8 +471,11 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -472,7 +485,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "apache_scoreboard{instance=~\"^$host:$port\"}",
+          "expr": "sum(apache_scoreboard{instance=~\"^$host:$port\"}) by (state)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -559,8 +572,11 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": true,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -579,7 +595,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "apache_workers{instance=~\"^$host:$port\"}\n",
+          "expr": "sum(apache_workers{instance=~\"^$host:$port\"}) by (state)\n",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -666,8 +682,11 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.4.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -681,7 +700,7 @@
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
-          "legendFormat": "Load",
+          "legendFormat": "{{host}}",
           "refId": "A",
           "step": 240
         }
@@ -729,7 +748,7 @@
     }
   ],
   "refresh": "1m",
-  "schemaVersion": 26,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -743,13 +762,18 @@
         },
         "datasource": "localhost",
         "definition": "label_values(apache_up, job)",
+        "description": null,
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "job",
         "multi": false,
         "name": "job",
         "options": [],
-        "query": "label_values(apache_up, job)",
+        "query": {
+          "query": "label_values(apache_up, job)",
+          "refId": "localhost-job-Variable-Query"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -764,18 +788,23 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "assenza.web-users.investici.org",
-          "value": "assenza.web-users.investici.org"
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": "localhost",
         "definition": "label_values(apache_up{job=\"$job\"}, instance)",
+        "description": null,
+        "error": null,
         "hide": 0,
-        "includeAll": false,
+        "includeAll": true,
         "label": "host",
         "multi": false,
         "name": "host",
         "options": [],
-        "query": "label_values(apache_up{job=\"$job\"}, instance)",
+        "query": {
+          "query": "label_values(apache_up{job=\"$job\"}, instance)",
+          "refId": "localhost-host-Variable-Query"
+        },
         "refresh": 2,
         "regex": "/([^:]+):.*/",
         "skipUrlSync": false,
@@ -795,13 +824,18 @@
         },
         "datasource": "localhost",
         "definition": "label_values(apache_up{instance=~\"^$host:.*\",job=\"$job\"}, instance)",
+        "description": null,
+        "error": null,
         "hide": 2,
         "includeAll": false,
         "label": null,
         "multi": false,
         "name": "port",
         "options": [],
-        "query": "label_values(apache_up{instance=~\"^$host:.*\",job=\"$job\"}, instance)",
+        "query": {
+          "query": "label_values(apache_up{instance=~\"^$host:.*\",job=\"$job\"}, instance)",
+          "refId": "localhost-port-Variable-Query"
+        },
         "refresh": 1,
         "regex": "/.*:(.*)/",
         "skipUrlSync": false,
@@ -846,5 +880,5 @@
   "timezone": "",
   "title": "Apache",
   "uid": "a_mnQfrik",
-  "version": 4
+  "version": 6
 }

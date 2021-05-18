@@ -66,7 +66,7 @@ and in README files for individual Ansible roles:
 
 * [Quick start guide](docs/quickstart.md)
 * [Reference](docs/reference.md) ([PDF](docs/reference.pdf))
-* [Testing](docs/testing.md)
+* [Notes on testing](test/README.md)
 
 # Requirements
 
@@ -76,7 +76,7 @@ custom tools used to manage credentials. These tools should be built
 on the local machine using [Go](https://golang.org):
 
 ```shell
-sudo apt-get install golang bind9utils
+sudo apt-get install golang
 go get -u git.autistici.org/ale/x509ca
 go get -u git.autistici.org/ale/ed25519gen
 export PATH=$PATH:$HOME/go/bin

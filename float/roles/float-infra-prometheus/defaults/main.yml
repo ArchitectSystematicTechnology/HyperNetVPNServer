@@ -18,9 +18,6 @@ alertmanager_smtp_auth_password: ""
 # so using {{ here will generate broken rules files.
 alert_runbook_fmt: "https://runbooks/alerts/%s.html"
 
-# Custom blackbox probes.
-prometheus_custom_blackbox_probes: {}
-
 thanos_query_frontend_cache_size: '50MB'
 
 # Scrape interval for the primary Prometheus instances.

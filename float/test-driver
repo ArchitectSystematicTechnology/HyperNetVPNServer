@@ -49,14 +49,14 @@ wait_for_vms() {
 }
 
 save_logs() {
-    local out_dir="$1"
+    local out_dir="$(realpath $1)"
 
     # Try to keep ansible-playbook output to a minimum so as not to
     # take too much space in the CI job logs.
     log "Saving logs from VMs (if any)"
     mkdir -p "${out_dir}"
-    ANSIBLE_STDOUT_CALLBACK=null \
-    ${float_dir}/float run --extra-vars "out_dir=${out_dir}" \
+    ANSIBLE_STDOUT_CALLBACK=default \
+    ${float_dir}/float run -v --extra-vars "out_dir=${out_dir}" \
         ${float_dir}/test/save-logs.yml
 }
 
@@ -138,7 +138,7 @@ case "$cmd" in
         ;;
 
     run)
-        for playbook in "${float_dir}/test/integration-test-docker.yml" "$@"; do
+        for playbook in "${float_dir}/test/integration-test.yml" "$@"; do
             log Running test playbook ${playbook}
             ${float_dir}/float run ${playbook} \
                 || die "test playbook failed"

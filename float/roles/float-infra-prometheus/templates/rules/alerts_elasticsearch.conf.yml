@@ -29,3 +29,13 @@ groups:
           summary: Elasticsearch on {{$labels.host}} is about to run out of disk space
           description: "The Elasticsearch instance on {{$labels.host}} has > 90% disk utilization on its data volume. When the utilization reaches 95%, ES will switch indexes to read-only mode and we'll start discarding logs. Try to free some space."
 
+      - alert: LogCollectionBroken
+        expr: log_collection_e2e:success:ratio < 0.5
+        for: 1h
+        labels:
+          severity: page
+          scope: global
+        annotations:
+          summary: Logs are not being indexed
+          description: "The end-to-end log testing system has detected that logs are not reaching the Elasticsearch index. Something must be broken either with Elasticsearch itself, or with the log-collector service (rsyslog)."
+

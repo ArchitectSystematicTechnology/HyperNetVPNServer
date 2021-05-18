@@ -145,17 +145,20 @@
   copy:
     src: favicon.ico
     dest: /var/www/html/favicon.ico
+  when: "not nginx_override_favicon"
 
 - name: Create the custom error directory
   file:
     path: /var/www/html/__errors
     state: directory
+  when: "nginx_install_custom_error_pages | bool"
 
 - name: Copy custom error messages
   copy:
     src: "{{ item }}"
     dest: /var/www/html/__errors/
   with_fileglob: "errors/*"
+  when: "nginx_install_custom_error_pages | bool"
 
 # Create the cache directory.
 - file:
@@ -166,10 +169,16 @@
     mode: 0700
 
 # Configure the firewall.
-- template:
-    src: firewall/20nginx.j2
-    dest: /etc/firewall/filter.d/20nginx
+- name: Configure firewall
+  template:
+    src: "firewall/20nginx.j2"
+    dest: "/etc/firewall/raw.d/20nginx"
   notify: "reload firewall"
+
+- name: Remove legacy firewall rules
+  file:
+    path: "/etc/firewall/filter.d/20nginx"
+    state: absent
 
 # Misc setup.
 - name: Install acme reload hook

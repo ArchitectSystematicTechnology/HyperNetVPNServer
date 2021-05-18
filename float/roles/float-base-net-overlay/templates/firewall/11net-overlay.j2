@@ -1,25 +1,10 @@
-# Allow peer nodes to communicate with our tinc daemon.
-create_chain allow-vpn-{{ tinc_net }}
-{% for h in groups['overlay-' + tinc_net]|sort %}
-{% if h != inventory_hostname %}
-add_rule4 -A allow-vpn-{{ tinc_net }} -s {{ hostvars[h]['ip'] }} -j ACCEPT
-{% if hostvars[h].get('ip6') %}
-add_rule6 -A allow-vpn-{{ tinc_net }} -s {{ hostvars[h]['ip6'] }} -j ACCEPT
-{% endif %}
-{% endif %}
-{% endfor %}
-
-# TODO: Refactor 'net_overlays' to be a dictionary...
-{% for n in net_overlays %}
-{% if n.name == tinc_net %}
-allow_port tcp {{ n.get('port', '655') }} -j allow-vpn-{{ tinc_net }}
-allow_port udp {{ n.get('port', '655') }} -j allow-vpn-{{ tinc_net }}
-{% endif %}
-{% endfor %}
-
 # Create a chain for traffic incoming over the private network {{ tinc_net }}.
 create_chain vpn-{{ tinc_net }}-input
 add_rule4 -A base-input -i {{ tinc_net }} -j vpn-{{ tinc_net }}-input
+
+# Allow auth-server connections over the private network.
+# TODO: not useful?
+add_rule -A vpn-{{ tinc_net }}-input -p tcp --dport 9004 -j ACCEPT
 
 # For each hosted service, allow traffic from internal services.
 {% for s in float_enabled_services|sort %}

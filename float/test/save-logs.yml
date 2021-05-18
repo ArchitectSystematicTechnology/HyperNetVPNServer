@@ -1,18 +1,10 @@
-- hosts: log-collector
+- hosts: all
   gather_facts: no
   tasks:
-    - name: Enumerate syslog files
-      find:
-        paths: /var/log/remote/
-        patterns: "*.log"
-        depth: 2
-        recurse: yes
-      register: remote_logs
-      no_log: true
+    - name: Dump journal
+      shell: "journalctl --output=short-iso | gzip -9c > /tmp/journal.gz"
 
-    - name: Fetch syslog files
+    - name: Fetch remote logs
       fetch:
-        src: "{{ item.path }}"
+        src: /tmp/journal.gz
         dest: "{{ out_dir }}"
-      with_items: "{{ remote_logs.files }}"
-      no_log: true

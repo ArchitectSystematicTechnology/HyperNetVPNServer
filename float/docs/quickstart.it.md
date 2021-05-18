@@ -30,7 +30,7 @@ mano](https://www.virtualbox.org/wiki/Linux_Downloads). Il resto delle
 dipendenze possono essere installate con questo comando:
 
 ```shell
-sudo apt install golang bind9utils ansible vagrant python-jinja2 python-yaml python-six
+sudo apt install golang ansible vagrant
 go get -u git.autistici.org/ale/x509ca
 go get -u git.autistici.org/ale/ed25519gen
 export PATH=$PATH:$HOME/go/bin

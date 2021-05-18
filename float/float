@@ -515,7 +515,7 @@ it will be part of both frontend and backend groups at
 once. Additional groups can be defined, along with their host
 memberships, using the --additional-host-group command-line option.
 
-''')
+''', formatter_class=argparse.RawDescriptionHelpFormatter)
     create_env_parser.add_argument(
         '--domain', metavar='DOMAIN',
         default='example.com',

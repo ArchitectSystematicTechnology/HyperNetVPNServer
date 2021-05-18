@@ -1,0 +1,18 @@
+
+[DEFAULT]
+# Avoid blacklisting any of our own IPs.
+ignoreip = 127.0.0.1/8 ::1 {{ hostvars | dictsort | map(attribute='1') | map(attribute='ip') | join(' ') }} {{ hostvars | dictsort | map(attribute='1') | map(attribute='ip6') | reject('undefined') | join(' ') }} {{ net_overlays | map(attribute='network') | sort | join(' ') }}
+
+# Default to reading from the journal.
+backend = systemd
+
+# Disable DNS resolution.
+usedns = no
+
+# Destination email address used solely for the interpolations in
+# jail.{conf,local,d/*} configuration files.
+destemail = root@localhost
+
+# Sender email address used solely for some actions
+sender = fail2ban@{{ inventory_hostname }}
+

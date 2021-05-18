@@ -41,6 +41,9 @@ net.core.netdev_max_backlog=4000
 # Required by Elasticsearch and other JVM-based Docker images.
 vm.max_map_count=262144
 
+# Conntrack limits.
+net.netfilter.nf_conntrack_max={{ nf_conntrack_max }}
+
 ### Miscellaneous hardening settings
 
 # Restrict core dumps for SUID binaries.

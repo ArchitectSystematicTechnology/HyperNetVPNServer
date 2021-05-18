@@ -35,6 +35,9 @@ DEFAULT_SERVICE_CREDENTIALS = [
     {
         'name': 'backup-agent',
     },
+    {
+        'name': 'auth-server',
+    },
 ]
 
 

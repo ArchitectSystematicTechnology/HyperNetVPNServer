@@ -1,0 +1,20 @@
+---
+
+- hosts: host1
+  tasks:
+
+    - name: Dump float configuration
+      copy:
+        dest: /tmp/test-config.yml
+        content: "{{ vars | to_nice_yaml }}"
+
+    - name: Pull the test suite container image
+      command: "float-pull-image {{ test_image }}"
+      register: test_container_image
+      failed_when: "test_container_image.rc not in [0, 42]"
+
+    - name: Run tests
+      command: "docker run --rm --network host --mount type=bind,source=/tmp/test-config.yml,destination=/test-config.yml {{ test_image }}"
+
+  vars:
+    test_image: "registry.git.autistici.org/ai3/float:integration-test"

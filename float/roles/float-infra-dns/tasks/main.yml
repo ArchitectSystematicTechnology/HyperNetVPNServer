@@ -90,9 +90,14 @@
 
 - name: Install firewall config
   template:
-    src: firewall/20dns.j2
-    dest: /etc/firewall/filter.d/20dns
+    src: "firewall/20dns.j2"
+    dest: "/etc/firewall/raw.d/20dns"
   notify: reload firewall
+
+- name: Remove legacy firewall rules
+  file:
+    path: "/etc/firewall/filter.d/20dns"
+    state: absent
 
 - name: Create dnssec credentials dir
   file:

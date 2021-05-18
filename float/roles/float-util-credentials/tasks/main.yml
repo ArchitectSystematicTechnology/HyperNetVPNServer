@@ -12,6 +12,8 @@
 # This will be used to restart services only if they actually exist.
 - name: List systemd service units
   shell: "systemctl list-units --no-legend --no-pager --full --type service | awk '{print $1}'"
+  check_mode: no
+  changed_when: false
   register: all_systemd_units
 
 # Get the credential names from the list of certs.

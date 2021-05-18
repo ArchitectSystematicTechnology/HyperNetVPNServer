@@ -1,11 +1,10 @@
 import os
 import random
-import subprocess
 import unittest
 import yaml
 import jinja2
 
-from .http import request, Conversation
+from .http import Conversation
 
 
 # Parse the Ansible ai3 configuration file, and read both the
@@ -57,9 +56,9 @@ class TestBase(unittest.TestCase):
         url = _ansible_eval(
             '{{ sso_server_url | default("https://login." + domain_public[0]) }}')
         if not sso_username:
-            sso_username=TEST_PARAMS['priv_user']['name']
+            sso_username = TEST_PARAMS['priv_user']['name']
         if not sso_password:
-            sso_password=TEST_PARAMS['priv_user']['password']
+            sso_password = TEST_PARAMS['priv_user']['password']
         return Conversation(
             sso_username=sso_username,
             sso_password=sso_password,

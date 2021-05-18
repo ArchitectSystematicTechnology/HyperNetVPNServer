@@ -5,8 +5,7 @@ ssh_host_key_types:
   - ed25519
 mail_relay: {}
 auditd_action_mail_acct: root
-enable_fail2ban: false
-bantime_fail2ban: 43200
+enable_fail2ban: true
 
 # These should be set externally to activate backups. NOTE that
 # backup_repository_restic_password is a third-party credential, and
@@ -32,3 +31,5 @@ resolver_mode: "ignore"
 # in the kernels of certain cloud providers.
 disable_restricted_sysctl: false
 
+# Conntrack table size.
+nf_conntrack_max: 524288

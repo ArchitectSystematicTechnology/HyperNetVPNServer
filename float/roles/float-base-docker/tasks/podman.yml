@@ -14,3 +14,20 @@
     src: containers.conf
     dest: "/etc/containers/containers.conf"
 
+- file:
+    path: "/etc/containers/certs.d"
+    state: directory
+  when: "podman_additional_ssl_ca is defined"
+
+- name: Install custom CA for podman
+  copy:
+    dest: "/etc/containers/certs.d/additional.crt"
+    content: "{{ podman_additional_ssl_ca }}\n"
+  when: "podman_additional_ssl_ca is defined"
+
+- name: Install HTTPS proxy for podman
+  copy:
+    dest: "/etc/containers/proxy-settings.sh"
+    content: "export https_proxy={{ podman_https_proxy }}\n"
+  when: "podman_https_proxy is defined"
+

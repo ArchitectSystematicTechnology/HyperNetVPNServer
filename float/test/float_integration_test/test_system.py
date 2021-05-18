@@ -1,19 +1,25 @@
 import json
 import time
-from float_integration_test import *
+import unittest
+from float_integration_test import TestBase, ANSIBLE_VARS
 
 
 UNKNOWN_DOMAIN_MSG = b'You have reached this page because your request could not be properly identified'
 
+
 class URLTestBase(TestBase):
 
-    def _assert_endpoint_ok(self, public_endpoint_name):
+    def _assert_endpoint_ok(self, public_endpoint_name, auth=False):
         c = self.sso_conversation()
         url = 'https://%s.%s/' % (
             public_endpoint_name, ANSIBLE_VARS['domain_public'][0])
         result = c.request(url, self.frontend_ip())
         self.assertFalse(result.get('error'), f'url={url}')
         self.assertEqual(200, result['status'], f'url={url}')
+        self.assertFalse(
+            UNKNOWN_DOMAIN_MSG in result['body'],
+            f'The server returned the generic "unknown domain" page for {url}')
+        self.assertEqual(auth, c.auth_requested)
 
 
 class TestHTTPRouter(URLTestBase):
@@ -36,33 +42,35 @@ class TestBuiltinServiceURLs(URLTestBase):
 
     """
 
-    def _assert_endpoint_ok_if_enabled(self, service_name, public_endpoint_name):
+    def _assert_endpoint_ok_if_enabled(self, service_name,
+                                       public_endpoint_name,
+                                       auth=False):
         if service_name not in ANSIBLE_VARS['services']:
             self.skipTest('service %s not enabled' % service_name)
-        self._assert_endpoint_ok(public_endpoint_name)
+        self._assert_endpoint_ok(public_endpoint_name, auth)
 
     def test_okserver(self):
         self._assert_endpoint_ok_if_enabled('ok', 'ok')
 
     def test_admin_dashboard(self):
-        self._assert_endpoint_ok_if_enabled('admin-dashboard', 'admin')
+        self._assert_endpoint_ok_if_enabled('admin-dashboard', 'admin', True)
 
     def test_monitor(self):
-        self._assert_endpoint_ok_if_enabled('prometheus', 'monitor')
+        self._assert_endpoint_ok_if_enabled('prometheus', 'monitor', True)
 
     def test_alertmanager(self):
-        self._assert_endpoint_ok_if_enabled('prometheus', 'alertmanager')
+        self._assert_endpoint_ok_if_enabled('prometheus', 'alerts', True)
 
     def test_grafana(self):
-        self._assert_endpoint_ok_if_enabled('prometheus', 'grafana')
+        self._assert_endpoint_ok_if_enabled('prometheus', 'grafana', True)
 
     def test_thanos(self):
-        self._assert_endpoint_ok_if_enabled('prometheus', 'thanos')
+        self._assert_endpoint_ok_if_enabled('prometheus', 'thanos', True)
 
     def test_kibana(self):
         if not ANSIBLE_VARS.get('enable_elasticsearch', True):
             self.skipTest('Elasticsearch is disabled')
-        self._assert_endpoint_ok_if_enabled('log-collector', 'logs')
+        self._assert_endpoint_ok_if_enabled('log-collector', 'logs', True)
 
 
 def _alert_to_string(metric):
@@ -101,19 +109,22 @@ class TestSystem(TestBase):
                 break
             except ValueError:
                 time.sleep(1)
-        self.assertFalse(firing_alerts is None,
+        self.assertFalse(
+            firing_alerts is None,
             'Could not load alerts')
         self.assertEqual(
             0, len(firing_alerts),
-            'The following alerts are firing: %s' % (', '.join(firing_alerts),))
-
+            'The following alerts are firing: %s' % (
+                ', '.join(firing_alerts),))
 
     def _get_firing_alerts(self):
         c = self.sso_conversation()
         alerts_uri = 'https://monitor.%s/api/v1/query?query=ALERTS' % (
             ANSIBLE_VARS['domain_public'][0],)
         result = c.request(alerts_uri, self.frontend_ip())
-        self.assertFalse('error' in result, 'Request failed with error: %s' % result.get('error'))
+        self.assertFalse(
+            'error' in result,
+            'Request failed with error: %s' % result.get('error'))
         self.assertEqual(200, result['status'])
         response = json.loads(result['body'])
         self.assertEqual('success', response['status'])
@@ -126,6 +137,7 @@ class TestSystem(TestBase):
                 x['metric']['alertname'] not in self.WHITELISTED_ALERTS)
         ]
         return firing_alerts
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

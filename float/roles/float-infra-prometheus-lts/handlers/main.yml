@@ -4,4 +4,5 @@
   uri:
     url: "http://localhost:9099/-/reload"
     method: POST
+  ignore_errors: true
   listen: "reload prometheus-lts"

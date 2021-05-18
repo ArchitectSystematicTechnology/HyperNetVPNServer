@@ -1,7 +1,36 @@
 ---
 
-# Setup base infra.
-- import_playbook: infra.yml
+
+- hosts: all
+  roles:
+    - float-base
+    - float-base-datasets
+    - float-base-volumemgr
+    - float-base-auth-server
+    - float-util-vagrant-compat
+
+- hosts: net-overlay
+  roles:
+    - float-base-net-overlay
+
+# The following playbooks are separate to facilitate inclusion in
+# other playbooks (these services are likely to be customized with
+# additional roles).
+- import_playbook: docker.yml
+
+- import_playbook: frontend.yml
+
+- import_playbook: prometheus.yml
+
+- hosts: log-collector
+  gather_facts: no
+  roles:
+    - float-infra-log-collector
+
+- hosts: backup-metadata
+  gather_facts: no
+  roles:
+    - float-base-backup-metadata
 
 - hosts: sso-server
   roles:

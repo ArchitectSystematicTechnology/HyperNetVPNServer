@@ -74,6 +74,7 @@ scrape_configs:
 {{ job_static_config('cgroups-exporter', 'all', 3909) }}
 {{ job_static_config('mtail', 'all', 3903) }}
 {{ job_static_config('rsyslog', 'all', 9106) }}
+{{ job_static_config('auth-server', 'all', 9004) }}
 
 {# Only scrape the backup agents if backup is configured! #}
 {% if backup_repository_restic_password|default(False) %}
@@ -103,7 +104,8 @@ scrape_configs:
   - job_name: "prober_ping_{{ loop.index }}"
     metrics_path: "/probe"
     params:
-      module: [ping]
+      module:
+        - ping
     relabel_configs:
       - source_labels: [__address__]
         target_label: target
@@ -126,6 +128,7 @@ scrape_configs:
           zone: internal
           probe: ping
           probeset: base
+          prober_float_service: prometheus
 
   - job_name: "prober_https_{{ prober_idx }}"
     metrics_path: "/probe"
@@ -154,76 +157,7 @@ scrape_configs:
           zone: public
           probe: https
           probeset: base
-
-{% for probe_type, custom_probes in prometheus_custom_blackbox_probes | dictsort %}
-{% for custom_probe in custom_probes %}
-{% if probe_type == 'http' %}
-  - job_name: "prober_https_{{ custom_probe.name }}_{{ prober_idx }}"
-    metrics_path: "/probe"
-    params:
-      module:
-        - http_{{ custom_probe.name }}
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: target
-        regex: "https?://([^.:/]*).*"
-        replacement: "${1}"
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: {{ prober_host }}.prometheus.{{ domain }}:9115
-      - target_label: host
-        replacement: {{ prober_host }}
-    static_configs:
-      - targets:
-{% for host in groups[custom_probe.get('service', 'frontend')]|sort %}
-        - "https://{{ host }}{{ custom_probe.get('path', '/') }}"
-{% endfor %}
-        labels:
-          zone: public
-          probe: https_{{ custom_probe.name }}
-          probeset: custom
-
-{% else %}
-  - job_name: "prober_{{ probe_type }}_{{ custom_probe.name }}_{{ prober_idx }}"
-    metrics_path: "/probe"
-    params:
-      module:
-        - {{ probe_type }}
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: target
-        regex: "([^:]*):.*"
-        replacement: "${1}"
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: {{ prober_host }}.prometheus.{{ domain }}:9115
-      - target_label: host
-        replacement: {{ prober_host }}
-    static_configs:
-      - targets:
-{% if custom_probe.get('hosts') %}
-{% for host in custom_probe.get('hosts')|sort %}
-        - "{{ host }}:{{ custom_probe.port }}"
-{% endfor %}
-{% else %}
-{% for host in groups[custom_probe.get('service', 'frontend')]|sort %}
-        - "{{ host }}:{{ custom_probe.port }}"
-{% endfor %}
-{% endif %}
-        labels:
-          zone: public
-          probe: {{ probe_type }}_{{ custom_probe.name }}
-          probeset: custom
-
-{% endif %}
-{% endfor %}
-{% endfor %}
+          prober_float_service: prometheus
 
   - job_name: "prober_dns_{{ prober_idx }}"
     metrics_path: "/probe"
@@ -251,7 +185,50 @@ scrape_configs:
           zone: public
           probe: dns
           probeset: base
+          prober_float_service: prometheus
 
+{% endfor %}
+
+{# Additional blackbox probers #}
+{% for p in prometheus_additional_blackbox_probers | default([]) | sort(attribute='name') %}
+{% for host in groups[p.service] | sort %}
+  - job_name: "prober_{{ p.name }}_{{ loop.index }}"
+    metrics_path: "/probe"
+    params:
+      module:
+        - {{ p.module | default(p.name) }}
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: target
+        regex: "(?:https?://)?([^.:/]*).*"
+        replacement: "${1}"
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: {{ host }}.{{ p.service }}.{{ domain }}:{{ p.port }}
+      - target_label: host
+        replacement: {{ host }}
+    static_configs:
+      - targets:
+{#
+ # Defining arbitrary blackbox targets is complicated, also
+ # we want to give the option to target a float service with
+ # a simple specification. So we provide a few options:
+ # - caller provides a list of hosts, or a float service
+ # - caller provides a regexp to turn the hosts into targets
+ #}
+{% set custom_blackbox_targets = p.targets if p.targets is defined else groups[p.get('target_service', 'frontend')] %}
+{% for target in custom_blackbox_targets %}
+          - "{{ target | regex_replace('^(.*)$', p.target_regex | default('\\1')) }}"
+{% endfor %}
+        labels:
+          zone: {{ p.zone | default('public') }}
+          probe: {{ p.name }}
+          probeset: custom
+          prober_float_service: {{ p.service }}
+{% endfor %}
 {% endfor %}
 
 {# External targets #}

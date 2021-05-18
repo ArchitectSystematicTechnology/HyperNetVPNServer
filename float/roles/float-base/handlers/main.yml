@@ -38,6 +38,7 @@
   systemd:
     name: fail2ban.service
     state: restarted
+    enabled: yes
 
 - name: reload prometheus-node-exporter
   systemd:

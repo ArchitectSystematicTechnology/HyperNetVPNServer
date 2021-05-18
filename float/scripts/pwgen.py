@@ -8,10 +8,8 @@ import argparse
 import base64
 import binascii
 import os
-import shutil
 import subprocess
 import sys
-import tempfile
 import yaml
 
 
@@ -102,44 +100,6 @@ def generate_hex_secret(length=16):
     return binascii.hexlify(os.urandom(int(length/2))).decode('ascii')
 
 
-def _dnssec_keygen():
-    """Older bind versions use dnssec-keygen to generate TSIG keys.
-
-    dnssec-keygen outputs the random base name it has chosen for
-    its output files. We need to provide a zone name, but it
-    doesn't matter what the value is.
-    """
-    tmp_dir = tempfile.mkdtemp()
-    try:
-        base = subprocess.check_output([
-            '/usr/sbin/dnssec-keygen', '-a', 'HMAC-SHA512', '-b', '512',
-            '-n', 'USER', '-K', tmp_dir, 'pwgen',
-        ], encoding='ascii').strip()
-        result = {'algo': 'HMAC-SHA512'}
-        with open(os.path.join(tmp_dir, base + '.key')) as fd:
-            result['public'] = fd.read().split()[7]
-        with open(os.path.join(tmp_dir, base + '.private')) as fd:
-            for line in fd.readlines():
-                if line.startswith('Key: '):
-                    result['private'] = line.split()[1]
-        return result
-    finally:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
-
-
-def _tsig_keygen():
-    """In newer versions, the utility to generate TSIG keys is not
-    dnssec-keygen anymore, but tsig-keygen.
-    """
-    base = subprocess.check_output([
-        '/usr/sbin/tsig-keygen', '-a', 'HMAC-SHA512', 'pwgen',
-    ], encoding='ascii').strip().split()
-    result = {'algo': 'HMAC-SHA512'}
-    result['private'] = base[6][1:-2]
-    result['public'] = result['private'][-32:]
-    return result
-
-
 def generate_tsig_key():
     """Create TSIG keys to use with Bind version 9.
 
@@ -147,13 +107,13 @@ def generate_tsig_key():
     and 'private'.
 
     """
-    if os.path.exists("/usr/sbin/tsig-keygen"):
-        result = _tsig_keygen()
-    else:
-        result = _dnssec_keygen()
-    if not result.get('public') or not result.get('private'):
-        raise Exception('Could not parse dnssec-keygen output')
-    return result
+    # This looks weird, actually.
+    private = base64.b64encode(os.urandom(64)).decode()
+    return {
+        'algo': 'HMAC-SHA512',
+        'private': private,
+        'public': private[-32:],
+    }
 
 
 def generate_rsa_key(bits):

@@ -21,9 +21,11 @@
     creates: "/etc/credentials/public/{{ cn }}/fullchain.pem"
   register: ssl_cert_selfsigned
 
+# Don't run the following task in check mode, since the file will not
+# have been created in that case.
 - file:
     path: "/etc/credentials/public/{{ cn }}/privkey.pem"
     owner: root
     group: public-credentials
     mode: 0640
-  when: ssl_cert_selfsigned.changed
+  when: "ssl_cert_selfsigned.changed and not ansible_check_mode"

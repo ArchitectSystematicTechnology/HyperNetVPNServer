@@ -14,9 +14,6 @@
   _:
     - $FRONTENDS4
     - AAAA $FRONTENDS6
-{% for h in groups['frontend']|sort %}
-    - MX 10 mx{{ loop.index }}.{{ mx_ns_domain }}.
-{% endfor %}
 
 {#
  # We create a short-ttl DNS zone as "l.{{ domain }}" for all the public domains.

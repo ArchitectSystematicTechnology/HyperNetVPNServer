@@ -4,6 +4,7 @@ backends_dir: /etc/auth-server/backends.d
 services_dir: /etc/auth-server/services.d
 services: {}
 
+{% if 'user-meta-server' in services %}
 user_meta_server:
   url: "https://user-meta-server.{{ domain }}:5505"
   tls:
@@ -11,6 +12,7 @@ user_meta_server:
     key: "/etc/credentials/x509/auth-server/client/private_key.pem"
     ca: "/etc/credentials/x509/auth-server/ca.pem"
   request_max_timeout: "5s"
+{% endif %}
 
 rate_limits:
   # Generic per-IP rate limiter.
@@ -76,5 +78,7 @@ rate_limits:
         value: "{{ hostvars[h]['ip'] }}"
 {% endfor %}
 
+{% if 'auth-cache' in services %}
 memcache_servers:
   - "auth-cache.{{ domain }}:11212"
+{% endif %}

@@ -27,7 +27,7 @@ server {
 {% if endpoint.domains %}
         server_name {{ endpoint.domains | join(' ') }};
 {% else %}
-        server_name {% for d in domain_public %}{% if shard %}{{ shard }}.{% endif %}{{ endpoint.name }}.{{ d }} {% endfor %}{% if shard %}{{ shard }}.{% endif %}{{ endpoint.name }}.{{ domain }};
+        server_name {% for d in domain_public %}{% if shard %}{{ shard }}.{% endif %}{{ endpoint.name }}.{{ d }} {% endfor %};
 {% endif %}
 
         ssl on;

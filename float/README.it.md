@@ -101,7 +101,7 @@ essere compilati nella macchina localmente usando
 [Go](https://golang.org):
 
 ```shell
-sudo apt-get install golang bind9utils
+sudo apt-get install golang
 go get -u git.autistici.org/ale/x509ca
 go get -u git.autistici.org/ale/ed25519gen
 export PATH=$PATH:$HOME/go/bin

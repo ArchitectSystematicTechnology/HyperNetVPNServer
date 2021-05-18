@@ -94,6 +94,8 @@ prometheus:
         - 10904 # query http
         - 10905 # query-frontend grpc
         - 10906 # query-frontend http
+      resources:
+        ram: "1G"
       env:
         QUERY_FLAGS: "--query.replica-label=monitor {% for h in groups['prometheus']|sort %} --store={{ h }}.prometheus.{{ domain }}:10901{% endfor %}"
         SIDECAR_FLAGS: ""
@@ -178,16 +180,6 @@ sso-server:
       port: 5002
       scheme: http
 
-auth-server:
-  scheduling_group: all
-  service_credentials:
-    - name: auth-server
-      enable_server: false
-  monitoring_endpoints:
-    - job_name: auth-server
-      port: 9004
-      scheme: http
-
 auth-cache:
   scheduling_group: backend
   containers:
@@ -223,21 +215,18 @@ admin-dashboard:
     - name: admin-dashboard
   containers:
     - name: http
-      image: registry.git.autistici.org/ai3/tools/float-dashboard:master
+      image: registry.git.autistici.org/ai3/tools/float-dashboard:refactor
       port: 8011
       volumes:
         - /etc/float: /etc/float
       env:
-        ADDR: "0.0.0.0:8011"
+        ADDR: ":8011"
+        DOMAIN: "{{ domain_public[0] }}"
   public_endpoints:
     - name: admin
       port: 8011
-      scheme: https
+      scheme: http
       enable_sso_proxy: true
-  monitoring_endpoints:
-    - job_name: admin-dashboard
-      port: 8011
-      scheme: https
 
 backup-metadata:
   num_instances: 1

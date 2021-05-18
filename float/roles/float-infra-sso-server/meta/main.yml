@@ -1,6 +1,5 @@
 ---
 dependencies:
-  - role: float-infra-auth-server
   - role: float-util-auth-server-users
   - role: float-util-geoip-dataset
     vars:

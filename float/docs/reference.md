@@ -5,6 +5,62 @@
 
 [[_TOC_]]
 
+# Overview
+
+*Float* is a minimalistic toolkit for managing container-based
+services on "bare-metal" hardware or virtual machines. This type of
+software is often known as a *container orchestration* framework.
+
+Compared with other, more powerful and sophisticated entries in this
+space (Kubernetes, Nomad, etc), *float* attempts to be both much, much
+*simpler* in its underlying concepts and data model, and more
+*featureful*, by providing a set of high quality built-in services
+that offer a lot of the common functionality one would expect in a
+distributed environment.
+
+Float attempts to reduce the complexity of the problem space by making
+many explicit and radical decisions on behalf of the user: while this
+limits its flexibility, we think it manages to strike a good balance
+between expressive power and simplicity. The criteria for trade-offs
+is that, while float might not provide high availability mechanisms by
+itself, it must be possible (and easy) to build highly available
+services on top of it.
+
+The first and most important of such decisions is that float is a
+*static* orchestrator: there is no dynamic allocation of resources, no
+auto-scaling of service instances, no automatic rescheduling of
+instances on broken machines, etc. All changes are actuated manually.
+If this looks like the behavior of a *push-based* configuration
+management system, that's because, although its API is isolated from
+the implementation, float is built on top of one of them: Ansible, and
+it is in fact implemented as a set of Ansible plugins and roles. This
+choice allows for a great deal of extensibility (at the cost of
+coupling with this specific CMS), and lets float take advantage of the
+existing ecosystem of tools and best practices. The lowest layer of
+float's functionality (which could be summarized as "using Ansible to
+run containers") is implemented with common and familiar models, using
+*podman* and *systemd* to run containers: this helps with gradually
+transitioning legacy services to a containerized model, as it's easy
+to make any systemd service into a float service and integrate it with
+the built-in functionality.
+
+Other important simplifications include:
+
+* *1:1 instance/host mapping* - the scheduler won't run more than one
+  instance of a service on each host;
+* *manual port assignments* - you must manually pick a unique port for
+  your services, there's no automatic allocation;
+* the *service discovery protocol* is based on simple DNS hostname
+  lookups - as a consequence, clients are expected to know the port
+  that they need to be talking to.
+
+Float does not make assumptions on the shape of the deployment
+infrastructure, but it wants to self-host its built-in services
+(including HTTP and DNS), so a production deployment will probably
+need at least two separate servers for redundancy. The design of some
+of float built-in services, such as the HTTP routing layer, naturally
+suggests a two-tier architecture, but float will not force you to use
+it.
 
 # Services
 
@@ -1290,6 +1346,7 @@ hosts in the *prometheus* group, e.g.:
 ```
 
 *roles/my-alerts/handlers/main.yml*
+
 ```yaml
 - name: reload prometheus
   uri:
@@ -1355,6 +1412,141 @@ corresponding *playbooks/prometheus-lts.yml* playbook to your own.
 You will also need to set *prometheus_tsdb_retention* and
 *prometheus_lts_tsdb_retention* variables appropriately.
 
+### Adding external targets
+
+Since float provides a reasonably good monitoring and alerting
+platform, it might make sense to consolidate other sources of
+monitoring data into it: for example services and hosts that are not
+managed by float.
+
+Float's Prometheus configuration supports three different types of
+additional, external targets:
+
+* Simple targets, for scraping metrics, configured via
+  the *prometheus_external_targets* global variable.
+* External Prometheus instances, configured via
+  *prometheus_federated_targets*: in Prometheus, *federation* implies
+  that the target's labels are imported as-is. This is the correct way
+  to build hierarchies of Prometheus instances.
+* Blackbox probers, which collect report metrics about other services,
+  configured via *prometheus_additional_blackbox_probers*; these
+  require special handling, discussed in the following section.
+
+### Adding blackbox probes
+
+The default float monitoring stack includes a Prometheus blackbox
+exporter (the standard terminology gets slightly confusing here, we're
+going to call it "prober"), which runs a minimal set of probes to
+assess host reachability, and the availability of some critical
+infrastructure services (HTTP, DNS).
+
+For proper blackbox monitoring coverage of your services, you will
+most likely need to run additional probes. Since the prober
+configuration is fairly complex and necessarily service-specific, the
+best way to do so is just to run additional blackbox prober services,
+with your custom configuration. You can even re-use float's
+blackbox-exporter container image:
+
+*services.yml*
+
+```yaml
+my-prober:
+  num_instances: 2
+  containers:
+    - name: blackbox
+      image: registry.git.autistici.org/ai3/docker/prometheus-blackbox:master
+      ports:
+        - 9125
+      volumes:
+        - /etc/my-prober: /etc/prometheus
+      args: "--web.listen-address=:9125 --config.file /etc/prometheus/blackbox.yml"
+      docker_options: "--cap-add=NET_RAW"
+      drop_capabilities: false
+  public_endpoints:
+    - name: my-prober
+      port: 9125
+      scheme: http
+      enable_sso_proxy: true
+  ports:
+    - 9125
+```
+
+*roles/my-prober/tasks/main.yml* (service reload omitted for brevity)
+
+```yaml
+- name: Create my-prober configuration dir
+  file:
+    path: "/etc/my-prober"
+    state: directory
+
+- name: Configure my-prober
+  template:
+    src: "blackbox.yml.j2"
+    dest: "/etc/my-prober/blackbox.yml"
+```
+
+*roles/my-prober/templates/blackbox.yml.j2* (the following is just a
+trivial example, this will contain the service-specific prober
+configuration relevant for your services)
+
+```
+modules:
+  http_2xx:
+    prober: http
+```
+
+*playbook.yml*
+
+```yaml
+- hosts: my-prober
+  roles:
+    - my-prober
+```
+
+Prober jobs however require a different scraping configuration in
+Prometheus: the metrics exported by these jobs refer to *other*
+services, rather than being about the prober job itself. The labels on
+these metrics need to be rewritten in order to account for this.
+Furthermore, in Prometheus, the blackbox exporter configuration does
+not include the list of targets to probe: these are specified in the
+Prometheus configuration instead, and passed to the job as URL
+parameters in the scraping request. Finally, the semantics of prober
+"targets" are specific to each probe: a prober target could be a
+host:port, a URL, etc.
+
+This information is passed to float's Prometheus instance via the
+*prometheus_additional_blackbox_probers* configuration variable, a
+list of dictionaries representing the configuration of individual
+probes. For every probe, the following information needs to be
+provided:
+
+* a unique name to identify the probe (*name*): this must be unique
+  across your whole float configuration.
+* which float service to scrape (this would be the prober service),
+  and also on which port (*service* and *port* attributes)
+* a list of targets for the probes, which can be either:
+  * a manual list, useful for external, non-float-managed services
+  * another float service; in this case, you specify a
+    *target_service* and a *target_regex*: float takes the list of
+    hosts assigned to the *target_service* and applies the regex to
+    obtain the final targets (the target hostname can be referred to
+    as `\\1`).
+
+So, in the context of the previous example, if we wanted to probe
+another float service called *myservice*, which hypothetically serves
+HTTP content on port 2020, we would add this to an Ansible
+configuration in group_vars:
+
+*group_vars/all/custom-monitoring.yml*
+
+```yaml
+prometheus_additional_blackbox_probers:
+  - name: http_myservice
+    service: my-prober
+    port: 9125
+    target_service: myservice
+    target_regex: "http://\\1:2020"
+```
 
 ## Log Collection and Analysis
 
@@ -2229,20 +2421,23 @@ with *name*, *targets* attributes. Optionally, you may specify a *scheme*
 (eg. 'https') if the default 'http' is insufficient; as well as *basic_auth*
 details; or *tls_config* options, if necessary. For example:
 
+```yaml
+- { name: 'node-external',
+    targets: [ 'foo.example.com:9100', 'bar.example.com:9100' ] }
+- { name: 'restic', 
+    targets: [ 'baz.example.com:8000' ], 
+    scheme: 'https',
+    basic_auth: { username: foo, password: bar }
+    tls_config: { insecure_skip_verify: true }
+  }
 ```
-  - { name: 'node-external', 
-      targets: [ 'foo.example.com:9100', 'bar.example.com:9100' ] }
-  - { name: 'restic', 
-      targets: [ 'baz.example.com:8000' ], 
-      scheme: 'https',
-      basic_auth: { username: foo, password: bar }
-      tls_config: { insecure_skip_verify: true }
-    }
-```
-
 
 `prometheus_federated_targets` is a list of external Prometheus
 instances to scrape ("federate" in Prometheus lingo).
+
+`prometheus_additional_blackbox_probers` is a list of additional
+prober targets for Prometheus. See the "Adding blackbox probes"
+section for further details.
 
 `alert_webhook_receivers` is a list of entries with *name* / *url*
 attributes representing escalation webhook URLs for the alertmanager,
@@ -2263,11 +2458,32 @@ the credentials for "docker login":
 
 `docker_registry_password` - password for "docker login"
 
+#### SMTP relay
+
+Even though *float* does not itself generate any email messages
+(email-based notifications don't scale well with the number of
+servers), properly configured systems might still need a way to send
+out system-originated emails. If necessary, float can configure simple
+outbound delivery of such emails via an authenticated SMTP relay
+(using *ssmtp*), by defining the `mail_relay` variable, a dictionary
+with the following parameters (all mandatory):
+
+`server` and `port` - address of the SMTP relay
+`user` and `password` - credentials for SMTP authentication
+`root_user` - the user that should receive all email for root@localhost
+
+**NOTE** that the delivery of email alerts is configured separately,
+see the following *Alert delivery* section.
+
 #### Alert delivery
 
 The float monitoring system requires an external email account to
-deliver its alerts over email. Alert delivery can be configured with
-the following variables:
+deliver its alerts over email. This is configured separately from
+"normal" SMTP delivery to encourage the usage an external
+infrastructure for alert delivery: it's not a good idea to send
+critical alerts over the same infrastructure that you are monitoring.
+
+Alert delivery can be configured with the following variables:
 
 `alert_email` - address that should receive email alerts
 
@@ -2315,15 +2531,11 @@ also requires a Python 3 interpreter, now that Python 2 is
 unsupported.
 
 ```shell
-sudo apt install golang bind9utils ansible python3-six
+sudo apt install golang ansible
 go get git.autistici.org/ale/x509ca
 go get git.autistici.org/ale/ed25519gen
 export PATH=$PATH:$HOME/go/bin
 ```
-
-*NOTE*: On Ubuntu, the *dnssec-keygen* command in bind9utils has been
-replaced by *tsig-keygen* from the bind9 package, so you're going to
-need to install the bind9 package instead of bind9utils.
 
 *NOTE*: the Ansible version packaged with Debian buster (2.7.7) needs
 a patch if your service configuration includes MySQL instances, see

@@ -19,7 +19,11 @@ SyslogIdentifier={{ item.service }}-{{ item.container.name }}
 {% if item.container.resources is defined %}
 {% if item.container.resources.ram is defined %}
 MemoryMax={{ item.container.resources.ram }}
+{% if float_debian_dist == 'buster' %}
 ExecStartPost=+/bin/sh -c "echo 0 > /sys/fs/cgroup/memory/system.slice/%n/memory.swappiness"
+{% else %}
+MemorySwapMax=0
+{% endif %}
 {% endif %}
 {% if item.container.resources.cpu is defined %}
 CPUQuota={{ 100 * item.container.resources.cpu }}%

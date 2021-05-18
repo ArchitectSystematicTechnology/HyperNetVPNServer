@@ -29,7 +29,7 @@
   copy:
     dest: "{{ tinc_dir}}/hosts/{{ h | regex_replace('-', '_') }}"
     content: "{{ hostvars[h]['tinc_host_config'] }}"
-  with_items: "{{ groups['overlay-' + tinc_net] | list }}"
+  loop: "{{ groups['overlay-' + tinc_net] | list }}"
   loop_control:
     loop_var: h
   when: "'tinc_host_config' in hostvars[h]"
@@ -40,7 +40,7 @@
     src: "tinc/{{ f }}.j2"
     dest: "{{ tinc_dir }}/{{ f }}"
     mode: 0755
-  with_items:
+  loop:
     - tinc.conf
     - tinc-up
     - tinc-down
@@ -49,15 +49,30 @@
   register: tinc_config
 
 - name: "Enable systemd service tinc@{{ tinc_net }}"
-  systemd: name="tinc@{{ tinc_net }}.service" state=started enabled=yes masked=no
+  systemd:
+    name: "tinc@{{ tinc_net }}.service"
+    state: started
+    enabled: yes
+    masked: no
 
 # Need an explicit restart with the named service (so can't easily use a handler).
 - name: "Restart tinc@{{ tinc_net }}"
-  systemd: name="tinc@{{ tinc_net }}.service" state=restarted enabled=yes masked=no
+  systemd:
+    name: "tinc@{{ tinc_net }}.service"
+    state: restarted
+    enabled: yes
+    masked: no
   when: "tinc_config.changed or tinc_config_hosts.changed"
 
 - name: "Install firewall rules for {{ tinc_net }}"
   template:
-    src: "firewall/11net-overlay.j2"
-    dest: "/etc/firewall/filter.d/11net-overlay-{{ tinc_net }}"
+    src: "firewall/{{ f.src }}"
+    dest: "/etc/firewall/{{ f.dest }}"
   notify: "reload firewall"
+  loop:
+    - src: "11net-overlay.j2"
+      dest: "filter.d/11net-overlay-{{ tinc_net }}"
+    - src: "11net-overlay-raw.j2"
+      dest: "raw.d/11net-overlay-{{ tinc_net }}"
+  loop_control:
+    loop_var: f

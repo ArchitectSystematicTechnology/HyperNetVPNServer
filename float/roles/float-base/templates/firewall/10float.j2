@@ -27,6 +27,7 @@ create_chain {{ chain }}
 # public IP).
 allow_port tcp 3909 -j allow-monitoring # cgroups-exporter
 allow_port tcp 3903 -j allow-monitoring # mtail
+allow_port tcp 9004 -j allow-monitoring # auth-server
 allow_port tcp 9100 -j allow-monitoring # node-exporter
 allow_port tcp 9106 -j allow-monitoring # rsyslog-exporter
 allow_port tcp 9323 -j allow-monitoring # docker

@@ -8,6 +8,9 @@ set -u
 
 binary={{ container_runtime }}
 
+# Automatically pick up proxy settings if present.
+[ -e /etc/containers/proxy-settings.sh ] && . /etc/containers/proxy-settings.sh
+
 get_main_auth_token() {
     jq -r .auths.\"${registry_hostname}\".auth ~/.docker/config.json 2>/dev/null
 }
@@ -41,8 +44,8 @@ get_local_image_version() {
 }
 
 check() {
-    local_version=$(get_local_image_version)
-    remote_version=$(get_remote_image_version)
+    local local_version=$(get_local_image_version)
+    local remote_version=$(get_remote_image_version)
     if [ -z "${remote_version}" ]; then
         echo "ERROR: Failed to obtain container version from the registry" >&2
         exit 1
@@ -53,16 +56,22 @@ check() {
 }
 
 pull() {
-    pre_version=$(get_local_image_version)
+    local pre_version=$(get_local_image_version)
 
-    $binary pull $image
+    # https://github.com/containers/podman/issues/10116
+    local pull_args=
+    if [ -n "${https_proxy:-}" ]; then
+        pull_args="--cert-dir=/etc/containers/certs.d/"
+    fi
+
+    $binary pull $pull_args $image
     if [ $? -gt 0 ]; then
         exit 1
     fi
 
     post_version=$(get_local_image_version)
 
-    if [ "$pre_version" == "$post_version" ]; then
+    if [ "$pre_version" = "$post_version" ]; then
         exit 42
     fi
 }

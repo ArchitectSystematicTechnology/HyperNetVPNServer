@@ -111,6 +111,8 @@ class CallbackModule(CallbackModule_default):
         self.anything_shown = True
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
+        if ignore_errors:
+            return
         self.display_task_banner()
         self.super_ref.v2_runner_on_failed(result, ignore_errors)
 

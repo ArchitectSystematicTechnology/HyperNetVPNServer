@@ -4,7 +4,8 @@ import os
 import re
 import socket
 import ssl
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
 import urllib.parse
 
 
@@ -30,12 +31,14 @@ class SSOHandler(urllib.request.BaseHandler):
     _form_pattern = re.compile(r'<input type="hidden" name="([^"]+)" value="([^"]+)"')
     _otp_pattern = re.compile(r'<input[^>]+ name="otp"')
 
-    def __init__(self, username, password, otp=None, login_server=None):
+    def __init__(self, username, password, otp=None, login_server=None,
+                 auth_notify_cb=None):
         self._username = username
         self._password = password
         self._otp = otp
         self._login_server = login_server
         self._login_form_url = login_server.rstrip('/') + '/login'
+        self._auth_notify_cb = auth_notify_cb
 
     def _extract_hidden_form_data(self, html):
         form = {}
@@ -59,9 +62,13 @@ class SSOHandler(urllib.request.BaseHandler):
             # See if the form is requesting an OTP token.
             if self._otp_pattern.search(response_data):
                 form_data['otp'] = self._otp
-            newreq = urllib.request.Request(request_baseurl,
+            newreq = urllib.request.Request(
+                request_baseurl,
                 data=urllib.parse.urlencode(form_data).encode('utf-8'))
             newreq.sso_attempt = True
+            # Notify.
+            if self._auth_notify_cb:
+                self._auth_notify_cb()
             resp = self.parent.open(newreq)
         return resp
 
@@ -84,7 +91,6 @@ def _build_opener(ipaddr, follow_redirects=False, *extra_handlers):
                 (_resolve(self.host), self.port), self.timeout)
             self.sock = self._context.wrap_socket(
                 sock, server_hostname=self.host)
-            #self.key_file, self.cert_file
 
     class HTTPHandler(urllib.request.HTTPHandler):
         def http_open(self, req):
@@ -118,7 +124,7 @@ def _request(url, opener, data=None):
         'Accept': '*; p=1',
     })
     result = {}
-    
+
     try:
         resp = opener.open(req, timeout=5)
         result['status'] = resp.code
@@ -148,14 +154,18 @@ class Conversation(object):
         self.sso_username = sso_username
         self.sso_password = sso_password
         self.login_server = login_server
+        self.auth_requested = False
 
     def request(self, url, ip_addr, follow_redirects=True, data=None):
         handlers = [urllib.request.HTTPCookieProcessor(self.jar)]
         if self.sso_username:
+            def _auth_notify_cb():
+                self.auth_requested = True
             handlers.append(SSOHandler(
                 username=self.sso_username,
                 password=self.sso_password,
-                login_server=self.login_server))
+                login_server=self.login_server,
+                auth_notify_cb=_auth_notify_cb))
         opener = _build_opener(
             ip_addr, follow_redirects,
             *handlers)

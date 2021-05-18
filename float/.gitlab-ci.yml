@@ -20,7 +20,7 @@ variables:
       --passwords=${TEST_DIR}/passwords.yml
       --num-hosts=1
       ${LIBVIRT:+-e libvirt.remote_host=${LIBVIRT#*@} -e libvirt.remote_user=${LIBVIRT%@*}}
-      ${MITOGEN:+-e ansible_cfg.defaults.strategy=mitogen_linear -e ansible_cfg.defaults.strategy_plugins=${MITOGEN}/ansible_mitogen/plugins/strategy}
+      -e ansible_cfg.defaults.strategy=mitogen_linear ${MITOGEN:+-e ansible_cfg.defaults.strategy_plugins=${MITOGEN}/ansible_mitogen/plugins/strategy}
       ${APT_PROXY:+-e config.apt_proxy=${APT_PROXY}}
       $CREATE_ENV_VARS $BUILD_DIR
 
@@ -34,8 +34,6 @@ variables:
     CREATE_ENV_VARS: ""
     TEST_DIR: ""
   tags: [ai3]
-  except:
-    - schedules
   artifacts:
     when: on_failure
     expire_in: 1 week

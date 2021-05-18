@@ -24,6 +24,15 @@
     path: "/etc/apt/preferences.d/99podman"
     state: absent
 
+# Podman Kubic packages on buster require a version of libseccomp2
+# from the backports.
+- name: Install libseccomp2 from backports
+  apt:
+    name: libseccomp2
+    state: present
+    default_release: buster-backports
+  when: "float_debian_dist == 'buster'"
+
 - name: Install podman packages
   apt:
     name: podman

@@ -15,15 +15,5 @@
   with_items:
     - name: services.yml
       data: "{{ services | to_nice_yaml }}"
-    - name: service_assignments.yml
-      data: "{{ float_service_assignments | to_nice_yaml }}"
     - name: service_masters.yml
       data: "{{ float_service_masters | to_nice_yaml }}"
-
-- name: Configure the admin dashboard
-  template:
-    src: "dashboard.yml.j2"
-    dest: "/etc/float/dashboard.yml"
-    group: docker-admin-dashboard
-    mode: 0640
-  notify: "reload admin-dashboard"

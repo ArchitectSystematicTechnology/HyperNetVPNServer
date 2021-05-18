@@ -11,3 +11,15 @@ groups:
           description: 'Syslog collector is dropping logs on {{ $labels.host }}'
           summary: 'Syslog collector is dropping logs'
           runbook: '[[ alert_runbook_fmt | format("SyslogDroppingLogs") ]]'
+
+      - alert: MtailNotProcessingLogs
+        expr: rate(mtail_lines_total[10m]) == 0
+        for: 1h
+        labels:
+          scope: host
+          severity: page
+        annotations:
+          summary: 'Mtail is stuck'
+          description: 'Mtail is not processing logs on {{ $labels.host }}, try restarting mtail.socket.'
+          runbook: '[[ alert_runbook_fmt | format("MtailNotProcessingLogs") ]]'
+

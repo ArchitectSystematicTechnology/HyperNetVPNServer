@@ -13,8 +13,11 @@
 # that systemd can forget all about them. Unfortunately systemd
 # occasionally fails to recognize the units even though they're
 # loaded, so we have to keep ignore_errors here.
+- set_fact:
+    unwanted_systemd_units: "{{ failed_systemd_units.stdout_lines | intersect(float_disabled_systemd_units) | list }}"
 - name: Reset failed unwanted systemd units
-  command: "systemctl reset-failed {{ failed_systemd_units.stdout_lines | intersect(float_disabled_systemd_units) | join(' ') }}"
+  command: "systemctl reset-failed {{ unwanted_systemd_units | join(' ') }}"
+  when: "unwanted_systemd_units | length > 0"
   ignore_errors: true
 
 # Get the list of currently loaded systemd service units. Unfortunately

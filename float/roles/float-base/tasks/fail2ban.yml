@@ -2,17 +2,30 @@
 
 - name: Install fail2ban
   apt:
-    name=fail2ban
-    state=present
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - fail2ban
+      - python3-systemd
 
-- name: copy configuration file
+- name: Configure fail2ban jails
   template:
-    src: jail.local.debian.j2
-    dest: /etc/fail2ban/jail.local
+    src: "jail.local.j2"
+    dest: "/etc/fail2ban/jail.local"
   notify: restart fail2ban
 
-- name: ensure fail2ban runs
-  service:
-    name=fail2ban
-    state=started
-    enabled=yes
+- name: Configure fail2ban
+  copy:
+    src: fail2ban.local
+    dest: "/etc/fail2ban/fail2ban.local"
+  notify: restart fail2ban
+
+# We do not desire to enable the sshd jail, which Debian enables
+# by default. If we delete the file, a package upgrade might
+# reinstall it, so let's replace it with an empty file.
+- name: Remove default fail2ban Debian configuration
+  copy:
+    dest: "/etc/fail2ban/jail.d/defaults-debian.conf"
+    content: ""
+

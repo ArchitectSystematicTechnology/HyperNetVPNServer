@@ -42,6 +42,11 @@
     - "files/mtail/*.mtail"
   notify: restart mtail
 
+- name: Cleanup obsolete mtail programs
+  file:
+    path: "/etc/mtail/counter.mtail"
+    state: absent
+
 - file:
     path: /etc/systemd/system/rsyslog.service.d
     state: directory
