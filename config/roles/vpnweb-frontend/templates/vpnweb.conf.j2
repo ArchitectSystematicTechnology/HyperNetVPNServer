@@ -1,4 +1,4 @@
-upstream be_openvpn {
+upstream be_vpnweb {
 {% for host in groups['vpnweb']|sort %}
   server {{ host }}.vpnweb.{{ domain }}:{{ services['vpnweb'].public_endpoints[0].port }};
 {% endfor %}
@@ -22,7 +22,7 @@ server {
   location / {
           include /etc/nginx/snippets/block.conf;
           include /etc/nginx/snippets/proxy.conf;
-          proxy_pass http://be_openvpn;
+          proxy_pass http://be_vpnweb;
           proxy_cache global;
   }
 }
