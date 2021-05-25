@@ -115,10 +115,6 @@ prometheus-pushgateway:
 ooni-exporter:
   scheduling_group: backend
   num_instances: 1
-  monitoring_endpoints:
-    - job_name: ooni-exporter
-      port: 9007
-      scheme: http
   containers:
     - name: ooni-exporter
       image: registry.0xacab.org/leap/ooni-exporter
