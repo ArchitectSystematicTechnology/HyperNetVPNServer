@@ -35,7 +35,7 @@ openvpn:
   # want to have a reverse proxy for openvpn, instead we want to set it up as a
   # user-facing service, and just rely on DNS for request routing and balancing.
   scheduling_group: openvpn
-  num_instances: 1
+  num_instances: all
   monitoring_endpoints:
     - job_name: openvpn
       port: 9176
