@@ -1,3 +1,0 @@
-
-- listen: reload openvpn DNS config
-  shell: "/usr/sbin/update-dns && rndc reload"
