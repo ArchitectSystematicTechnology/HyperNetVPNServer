@@ -12,13 +12,19 @@ duplicate-cn
 keepalive 10 30
 mute-replay-warnings
 mute 5
-proto tcp6
 push "dhcp-option DNS {{ openvpn_network | ipaddr('1') | ipaddr('address') }}"
 push "redirect-gateway def1 ipv6"
+{% if openvpn_network6 is defined and openvpn_network6|length %}
+proto tcp6
+server-ipv6 {{ openvpn_network6 }}
 push "route-ipv6 2000::/3"
+{% else %}
+proto tcp
+push "ifconfig-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1"
+block-ipv6
+{% endif %}
 push "block-outside-dns"
 server {{ openvpn_network | ipaddr('network') }} {{ openvpn_network | ipaddr('netmask') }}
-server-ipv6 {{ openvpn_network6 }}
 status /tmp/openvpn-status-tcp 10
 status-version 3
 tcp-nodelay
