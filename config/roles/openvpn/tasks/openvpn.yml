@@ -11,9 +11,15 @@
     dest: "/etc/firewall/filter.d/50openvpn"
   notify: "reload firewall"
 
-# Set ip forwarding necessary for openvpn
+# Set ip forwarding necessary for openvpn ipv4
 - sysctl:
     name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: yes
+
+# Set ip forwarding necessary for openvpn ipv6
+- sysctl:
+    name: net.ipv6.ip_forward
     value: '1'
     sysctl_set: yes
 
