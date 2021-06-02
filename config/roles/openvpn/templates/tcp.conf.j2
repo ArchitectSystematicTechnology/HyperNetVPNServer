@@ -12,12 +12,13 @@ duplicate-cn
 keepalive 10 30
 mute-replay-warnings
 mute 5
-push "dhcp-option DNS {{ openvpn_network | ipaddr('1') | ipaddr('address') }}"
 push "redirect-gateway def1 ipv6"
+push "dhcp-option DNS {{ openvpn_network | ipaddr('1') | ipaddr('address') }}"
 {% if openvpn_network6 is defined and openvpn_network6|length %}
 proto tcp6
 server-ipv6 {{ openvpn_network6 }}
 push "route-ipv6 2000::/3"
+push "dhcp-option DNS {{ openvpn_network6 }}"
 {% else %}
 proto tcp
 push "ifconfig-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1"

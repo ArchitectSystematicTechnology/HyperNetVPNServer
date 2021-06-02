@@ -1,4 +1,5 @@
-net.listen('127.0.0.1', '::1', 53, { kind = 'dns' })
+net.listen('::', 53, { kind = 'dns' })
+net.listen('0.0.0.0', 53, { kind = 'dns' })
 net.listen('::', 8453, { kind = 'webmgmt' })
 
 -- Load Useful modules
