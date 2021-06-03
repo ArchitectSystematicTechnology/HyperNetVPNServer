@@ -100,6 +100,23 @@ vpnweb:
       port: 8000
       scheme: http
 
+provider:
+  scheduling_group: backend
+  num_instances: 1
+  containers:
+    - name: provider
+      image: registry.0xacab.org/leap/container-platform/static-content:main
+      volumes:
+        - /etc/leap/config/vpnweb: /var/www
+      env:
+        HTTP_PORT: 8080
+  public_endpoints:
+    - name: provider
+      port: 8080
+      scheme: http
+      domains:
+        - "{{ domain_public[0] }}"
+
 prometheus-pushgateway:
   scheduling_group: backend
   num_instances: 1
