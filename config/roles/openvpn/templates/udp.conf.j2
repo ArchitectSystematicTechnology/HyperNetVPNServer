@@ -5,26 +5,19 @@ ca /etc/leap/ca/leap_ca_bundle.crt
 cert /etc/credentials/sspki/openvpn/cert.pem
 key /etc/credentials/sspki/openvpn/private.key
 dh /etc/leap/keys/dh.pem
-auth SHA512
 cipher AES-256-GCM
-ncp-ciphers AES-256-GCM:AES-256-CBC
-tls-cipher TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384
-ecdh-curve ED25519
 tls-version-min 1.2
 dev tun
 duplicate-cn
 keepalive 10 30
-local {{ gateway_address|default(ip) }}
 mute-replay-warnings
 mute 5
 proto udp
-push "dhcp-option DNS 10.41.0.1"
+push "dhcp-option DNS {{ openvpn_network | ipaddr('1') | ipaddr('address') }}"
 push "redirect-gateway def1"
 push "route-ipv6 2000::/3"
 push "block-outside-dns"
-script-security 1
-server-ipv6 2001:db8:123::/64
-server 10.41.0.0 255.255.248.0
+server {{ openvpn_network | ipaddr('network') }} {{ openvpn_network | ipaddr('netmask') }}
 status /tmp/openvpn-status-udp 10
 status-version 3
 tcp-nodelay
