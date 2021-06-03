@@ -9,5 +9,11 @@ allow_port udp 1194
 add_rule4 -A FORWARD -s {{ openvpn_network | ipaddr('network') }}/{{ openvpn_network | ipaddr('netmask') }} -o {{ ansible_default_ipv4.interface }} -j ACCEPT
 # allow re/established *inbound* to vpn hosts
 add_rule4 -A FORWARD -d {{ openvpn_network | ipaddr('network') }}/{{ openvpn_network | ipaddr('netmask') }} -m state --state RELATED,ESTABLISHED -j ACCEPT
+add_rule6 -A FORWARD -s {{ openvpn_network6 }} -o tun0 -j ACCEPT
+# allow re/established *inbound* to vpn gateways
+add_rule6 -A FORWARD -d {{ openvpn_network6 }} -m state --state RELATED,ESTABLISHED -j ACCEPT
+# deny client-to-client communication
+add_rule4 -A FORWARD -i tun0 -o tun0 -j DROP
+add_rule6 -A FORWARD -i tun0 -o tun0 -j DROP
 
 
