@@ -7,9 +7,6 @@
     - openvpn
     - kresd
 
-- hosts: frontend
-  roles: [openvpn-frontend]
-
 - hosts: vpnweb
   roles:
     - vpnweb
