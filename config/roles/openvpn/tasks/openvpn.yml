@@ -19,7 +19,7 @@
 
 # Set ip forwarding necessary for openvpn ipv6
 - sysctl:
-    name: net.ipv6.ip_forward
+    name: net.ipv6.conf.all.forwarding
     value: '1'
     sysctl_set: yes
 
