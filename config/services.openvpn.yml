@@ -94,7 +94,7 @@ provider:
       volumes:
         - /etc/leap/config/vpnweb: /var/www
       env:
-        HTTP_PORT: 8080
+        ADDR: :8080
   public_endpoints:
     - name: provider
       port: 8080
