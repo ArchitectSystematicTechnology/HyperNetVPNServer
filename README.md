@@ -1,12 +1,20 @@
-# Getting started
+# Introduction
 
-Currently, you need at least two different remote machines for the installation process. These can be bare-metal, or virtual machines (eg. KVM). They should have a minimal Debian Buster installation and be reachable by ssh. The machines should be considered to be fully managed by this framework when things have been deployed. It will modify the system-level configuration, install packages, start services, etc. However, it assumes that certain functionality is present, either managed manually or with some external mechanism. Network configuration, partitions, file systems, and logical volumes must be externally (or manually) managed. SSH access and configuration must be externally managed _unless_ you explicitly set enable_ssh=true (and add SSH keys to your admin users), in which case deployment will take over the SSH configuration.
+Lilypad is put together using the [float configuration management toolkit for container-based services](https://git.autistici.org/ai3/float). It is a series of [Ansible](https://www.ansible.com) plugins and roles glued together to provide a simple container-oriented environment. This can be rolled into your own Ansible configuration, or used separately.
 
-One of the hosts will be a reverse proxy and the VPN gateway. *** You will need two publicly addressable IP addresses for this machine ***. The second machine will run the LEAP web API, its gateway selection service, and the infrastructure that provides monitoring and alerting. 
+Monitoring, alerting, log-collection and analysis, DNS and Let's Encrypt certificates for all of the services included are handled automatically. Please see the [float reference documentation](https://git.autistici.org/ai3/float/-/blob/master/docs/reference.md) for further details.
 
-The float platform will manage DNS hostnames and Let's Encrypt certificates for all of its services it handles. You should pick a subdomain and delegate its DNS for the system to manage. For example, if your domain is `example.com`, then you could delegate, for example, the subdomain `float.example.com`. You would do this by adding a `NS` record for `float.example.com` that points to `ns1.example.com` and then an `A` record for `ns1.example.com` that points to the IP address you use for the reverse proxy host (note: not the gateway IP).
+## Pre-requisites
 
-You need to run the following commands ***locally on your computer*** in order to install and deploy the LEAP platfrom on the remote machines.
+You need at least three different remote machines. These can be bare-metal, or virtual machines (eg. KVM). They should have a minimal Debian Buster installation and be reachable by SSH. 
+
+One machine will act as a reverse proxy, and provide the infrastructure front-end. The second machine will run as an application server that the reverse proxy talks to, it runs the LEAP web API, its gateway selection service, and the infrastructure that provides monitoring and alerting. The third+ machine(s) are the VPN gateways, they *** will need two publicly addressable IP addresses ***. 
+
+The machines should be considered to be fully managed by this framework when things have been deployed. It will modify the system-level configuration, install packages, start services, etc. However, it assumes that certain functionality is present, either managed manually or with some external mechanisms: network configuration, partitions, file systems, and logical volumes must be externally (or manually) managed. SSH access and configuration must be externally managed _unless_ you explicitly set enable_ssh=true (and add SSH keys to your admin users), in which case deployment will take over the SSH configuration.
+
+You will need to pick a subdomain and delegate its DNS for the system to manage. For example, if your domain is `example.com`, then you could delegate, for example, the subdomain `float.example.com`. You would do this by adding a `NS` record for `float.example.com` that points to `ns1.example.com` and then an `A` record for `ns1.example.com` that points to the IP address you use for the reverse proxy host (note: not the gateway IP).
+
+The following commands should be run  ***locally on your computer*** in order to install and deploy Lilypad on the remote machines.
 
 ## 0. Install the float and LEAP platform pre-requisites
 
