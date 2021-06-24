@@ -116,7 +116,7 @@ class ActionModule(ActionBase):
         locations = self._task.args['locations']
         public_domain = self._task.args['domain']
         transports = self._task.args.get('transports', [
-            dict(type="openvpn", protocols=["tcp"], ports=["443"]),
+            dict(type="openvpn", protocols=["tcp"], ports=["1194"]),
             dict(type="obfs4", protocols=["tcp"], ports=["23042"]),
         ])
         gateways = self._task.args['gateways']
