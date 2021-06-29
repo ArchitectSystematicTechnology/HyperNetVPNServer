@@ -27,6 +27,17 @@ def patchObfs4Cert(transports, cert):
     return transports
 
 
+def no_nulls(d):
+    if isinstance(d, dict):
+        return dict(
+            (k, no_nulls(v))
+            for k, v in d.items() if v is not None)
+    elif isinstance(d, list):
+        return [no_nulls(x) for x in d if x]
+    else:
+        return d
+
+
 def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
     if obfs4_state_dir:
         obfs4_cert = open(
@@ -52,11 +63,11 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
         } for v in config.gateways],
         "openvpn_configuration": config.openvpn,
     }
-        
+
     # Instead of calling the template here, we just return the
     # 'config' object so that Ansible can use it with its own template
     # module.
-    return eip_config
+    return no_nulls(eip_config)
 
 
 def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_public_crt):
@@ -104,7 +115,7 @@ def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_publi
     # Instead of calling the template here, we just return the
     # 'config' object so that Ansible can use it with its own template
     # module.
-    return provider_config
+    return no_nulls(provider_config)
 
 class ActionModule(ActionBase):
 
