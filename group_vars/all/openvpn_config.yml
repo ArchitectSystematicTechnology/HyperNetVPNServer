@@ -17,10 +17,11 @@ openvpn_config:
 # You can leave this rfc1918 ip block as it is
 openvpn_network: "10.41.0.0/21"
 
-# If you have ipv6, then uncomment the following and change the value to a valid
-# ipv6 netblock. ipv6 NAT is *not* supported because NAT is a work-around for
-# not having enough IPs to be used in a LAN, in ipv6 this is not needed. It is
-# also much more simple, less trouble and less things to take care of including
-# not having to waste resources/performance on NAT
+# For each gateway that has ipv6, you should allocate an ipv6 netblock (probably a /64)
+# for each gateway, and then set the following variable in the hosts.yml to that
+# netblock for each gateway.
+# 
+# Note: ipv6 NAT is *not* supported.
 # openvpn_network6: "2001:db8:123::/64"
+
 
