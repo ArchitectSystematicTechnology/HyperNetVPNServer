@@ -59,7 +59,7 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
     return eip_config
 
 
-def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_public_crt):
+def produceProviderConfig(public_domain, provider_description, provider_api_uri, ca_cert_uri, ca_public_crt):
     ca_fp = get_fingerprint(ca_public_crt)
 
     # Build the JSON data structure that needs to end up in provider.json.
@@ -70,7 +70,7 @@ def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_publi
         "ca_cert_uri": ca_cert_uri,
         "default_language": "en",
         "description": {
-            "en": "LEAP Provider"
+            "en": provider_description
         },
         "domain": "%s" % (public_domain),
         "enrollment_policy": "open",
@@ -78,7 +78,7 @@ def produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_publi
             "en"
         ],
         "name": {
-            "en": "LEAP Provider"
+            "en": provider_description
         },
         "service": {
             "allow_anonymous": True,
@@ -115,6 +115,7 @@ class ActionModule(ActionBase):
         obfs4_state_dir = self._task.args.get('obfs4_state_dir')
         locations = self._task.args['locations']
         public_domain = self._task.args['domain']
+        provider_description = self._task.args['provider_description']
         transports = self._task.args.get('transports', [
             dict(type="openvpn", protocols=["tcp"], ports=["1194"]),
             dict(type="obfs4", protocols=["tcp"], ports=["23042"]),
@@ -129,7 +130,7 @@ class ActionModule(ActionBase):
 
         config = EIPConfig(openvpn, locations, gateways)
         eip_config = produceEipConfig(config, obfs4_state_dir, public_domain, transports)
-        provider_config = produceProviderConfig(public_domain, provider_api_uri, ca_cert_uri, ca_public_crt)
+        provider_config = produceProviderConfig(public_domain, provider_description, provider_api_uri, ca_cert_uri, ca_public_crt)
 
         result = super(ActionModule, self).run(tmp, task_vars)
         result.update({
