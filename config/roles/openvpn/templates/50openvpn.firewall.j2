@@ -23,4 +23,6 @@ add_rule4 -A FORWARD -i tun0 -o tun0 -j DROP
 add_rule6 -A FORWARD -i tun0 -o tun0 -j DROP
 {%- endif %}
 
-
+# allow vpn clients to resolve DNS (i.e. query knot-resolver)
+add_rule -A user-input -i tun0 -p udp --dport 53 -j ACCEPT
+add_rule -A user-input -i tun0 -p tcp --dport 53 -j ACCEPT
