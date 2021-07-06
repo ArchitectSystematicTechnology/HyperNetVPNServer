@@ -51,7 +51,7 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
         "locations": config.locations,
         "gateways": [{
             "host": "%s.%s" % (v["inventory_hostname"], public_domain),
-            "ip_address": v.get("gateway_address", v["ip"]),
+            "ip_address": v.get("ip"),
             "ip_address6": v.get("gateway_address6"),
             "location": v.get("location", "Unknown"),
             "capabilities": {
