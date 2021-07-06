@@ -1,1 +1,1 @@
-add_rule4 -A POSTROUTING -s {{ openvpn_network | ipaddr('network') }}/{{ openvpn_network | ipaddr('netmask') }} -o {{ ansible_default_ipv4.interface }} -j MASQUERADE
+add_rule4 -A POSTROUTING -s {{ openvpn_network | ipaddr('network/prefix') }} -o {{ ansible_default_ipv4.interface }} -j SNAT --to-source {{ ip }}

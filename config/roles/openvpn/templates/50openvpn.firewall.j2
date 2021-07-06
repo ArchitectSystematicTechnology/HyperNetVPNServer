@@ -1,14 +1,19 @@
 # Allow incoming connections to port 1194 for both udp and tcp
-allow_port tcp 1194
-allow_port udp 1194
+add_rule4 -A user-input -p tcp -m tcp -d {{ gateway_address }} --dport 1194 -j ACCEPT
+add_rule4 -A user-input -p udp -m udp -d  {{ gateway_address }} --dport 1194 -j ACCEPT
+{% if openvpn_network6 is defined and openvpn_network6|length -%}
+add_rule6 -A user-input -p tcp -m tcp -d  {{ gateway_address6 }} --dport 1194 -j ACCEPT
+add_rule6 -A user-input -p udp -m udp -d  {{ gateway_address6 }} --dport 1194 -j ACCEPT
+{%- endif %}
+
 # there is nothing special with regard to networking here, openvpn is just a process
 # iptables by default in float prevents us from forwarding packets (DROP policy on FORWARD)
 # so we need something in the FORWARD table that says "allow packets to / from this vpn"
 #
 # let ipv4 vpn hosts reach the internet
-add_rule4 -A FORWARD -s {{ openvpn_network | ipaddr('network') }}/{{ openvpn_network | ipaddr('netmask') }} -o {{ ansible_default_ipv4.interface }} -j ACCEPT
+add_rule4 -A FORWARD -s {{ openvpn_network | ipaddr('network/prefix') }} -o {{ ansible_default_ipv4.interface }} -j ACCEPT
 # allow re/established *inbound* to vpn hosts
-add_rule4 -A FORWARD -d {{ openvpn_network | ipaddr('network') }}/{{ openvpn_network | ipaddr('netmask') }} -m state --state RELATED,ESTABLISHED -j ACCEPT
+add_rule4 -A FORWARD -d {{ openvpn_network | ipaddr('network/prefix') }} -m state --state RELATED,ESTABLISHED -j ACCEPT
 {% if openvpn_network6 is defined and openvpn_network6|length -%}
 # let ipv6 vpn hosts reach the internet
 add_rule6 -A FORWARD -s {{ openvpn_network6 }} -o tun0 -j ACCEPT
