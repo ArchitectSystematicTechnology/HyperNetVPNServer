@@ -1,1 +1,1 @@
-add_rule4 -A POSTROUTING -s {{ openvpn_network | ipaddr('network/prefix') }} -o {{ ansible_default_ipv4.interface }} -j SNAT --to-source {{ ip }}
+add_rule4 -A POSTROUTING -s {{ openvpn_network | ipaddr('network/prefix') }} -o {{ ansible_default_ipv4.interface }} -j SNAT --to-source {{ egress_ip }}
