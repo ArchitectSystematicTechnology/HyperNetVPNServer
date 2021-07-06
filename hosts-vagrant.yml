@@ -16,7 +16,6 @@ hosts:
     ip_vpn0: 172.16.1.3
     location: Seattle
     egress_ip: 10.121.20.44
-    gateway_address6: 2001:db8:123::1
 group_vars:
   vagrant:
     ansible_user: vagrant
