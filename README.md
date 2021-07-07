@@ -79,7 +79,7 @@ This environment variable will only be set for this shell, you will need to add 
 
 Open _hosts.yml_ and change `floatapp1` to your app host's hostname, and specify the `ansible_host` and `ip` values to be the IP addresses for that host. If you have more than one app server, then you would just create a copy of this block, modifying the values, being sure to keep the 'backend' group assigned to each one.
 
-Configure the front-end reverse proxy with in the same way, change the `floatrp1` hostname to your hostname, and the `ansible_host` and `ip` to the IP it should have, and set the  `location` value to where this server is located. For the egress_ip, put the secondary gateway ip.
+Configure the front-end reverse proxy with in the same way, change the `floatrp1` hostname to your hostname, and the `ansible_host` and `ip` to the IP it should have, and set the `location` value to where this server is located. For the egress_ip, put the secondary gateway ip.
 
 Then edit _group_vars/all/config.yml_ and set your `domain_public` to the subdomain name that you delegated (eg. `float.example.com`), the `domain` can be set to `infra.example.com` as this is the internally managed domain. 
 
