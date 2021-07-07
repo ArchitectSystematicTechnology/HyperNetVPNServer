@@ -1,28 +1,35 @@
-# Allow incoming connections to port 1194 for both udp and tcp
-allow_port tcp 1194
-allow_port udp 1194
-# there is nothing special with regard to networking here, openvpn is just a process
-# iptables by default in float prevents us from forwarding packets (DROP policy on FORWARD)
-# so we need something in the FORWARD table that says "allow packets to / from this vpn"
-#
-# let ipv4 vpn hosts reach the internet
-add_rule4 -A FORWARD -s {{ openvpn_network | ipaddr('network') }}/{{ openvpn_network | ipaddr('netmask') }} -o {{ ansible_default_ipv4.interface }} -j ACCEPT
-# allow re/established *inbound* to vpn hosts
-add_rule4 -A FORWARD -d {{ openvpn_network | ipaddr('network') }}/{{ openvpn_network | ipaddr('netmask') }} -m state --state RELATED,ESTABLISHED -j ACCEPT
-{% if openvpn_network6 is defined and openvpn_network6|length -%}
-# let ipv6 vpn hosts reach the internet
-add_rule6 -A FORWARD -s {{ openvpn_network6 }} -o tun0 -j ACCEPT
-# allow re/established *inbound* to vpn gateways
-add_rule6 -A FORWARD -d {{ openvpn_network6 }} -m state --state RELATED,ESTABLISHED -j ACCEPT
-{%- endif %}
-# deny client-to-client communication
-add_rule4 -A FORWARD -i tun0 -o tun0 -j DROP
+# Allow incoming connections to ipv4 port 1194 for both udp and tcp
+add_rule4 -A user-input -p tcp -m tcp -d {{ ip }} --dport 1194 -j ACCEPT
+add_rule4 -A user-input -p udp -m udp -d  {{ ip }} --dport 1194 -j ACCEPT
 
 {% if openvpn_network6 is defined and openvpn_network6|length -%}
-# deny client-to-client communication
+# Allow incoming connections to ipv6 port 1194 for both udp and tcp
+add_rule6 -A user-input -p tcp -m tcp -d  {{ ip6 }} --dport 1194 -j ACCEPT
+add_rule6 -A user-input -p udp -m udp -d  {{ ip6 }} --dport 1194 -j ACCEPT
+{% endif %}
+
+# let ipv4 vpn hosts reach the internet
+add_rule4 -A FORWARD -s {{ openvpn_network | ipaddr('network/prefix') }} -o {{ ansible_default_ipv4.interface }} -j ACCEPT
+# allow re/established *inbound* to vpn hosts
+add_rule4 -A FORWARD -d {{ openvpn_network | ipaddr('network/prefix') }} -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+{% if openvpn_network6 is defined and openvpn_network6|length -%}
+# let ipv6 vpn hosts reach the internet
+add_rule6 -A FORWARD -i tun0 -o {{ ansible_default_ipv4.interface }} -s {{ openvpn_network6 }} -m state --state NEW -j ACCEPT
+# allow re/established *inbound* to vpn gateways
+add_rule6 -A FORWARD -i {{ ansible_default_ipv4.interface }} -m state --state RELATED,ESTABLISHED -j ACCEPT
+# deny any unrelated traffic
+add_rule6 -A FORWARD -i {{ ansible_default_ipv4.interface }} -o tun0 -d {{ openvpn_network6 }} -j DROP
+{% endif %}
+
+# deny v4 client-to-client communication
+add_rule4 -A FORWARD -i tun0 -o tun0 -j DROP
+{% if openvpn_network6 is defined and openvpn_network6|length -%}
+# deny v6 client-to-client communication
 add_rule6 -A FORWARD -i tun0 -o tun0 -j DROP
-{%- endif %}
+{% endif %}
 
 # allow vpn clients to resolve DNS (i.e. query knot-resolver)
 add_rule -A user-input -i tun0 -p udp --dport 53 -j ACCEPT
 add_rule -A user-input -i tun0 -p tcp --dport 53 -j ACCEPT
+

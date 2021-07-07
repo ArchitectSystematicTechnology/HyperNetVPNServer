@@ -1,9 +1,0 @@
-#!/bin/sh
-
-/bin/ip addr show dev {{ ansible_default_ipv4.interface }} | grep -q 'inet {{ gateway_address }}/' ||
-  /bin/ip addr add {{ gateway_address }} dev {{ ansible_default_ipv4.interface }}
-
-EXITCODE=$?
-if [ $EXITCODE != 0 ]; then
-  exit $EXITCODE
-fi

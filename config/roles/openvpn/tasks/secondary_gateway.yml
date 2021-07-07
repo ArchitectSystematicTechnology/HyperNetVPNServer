@@ -1,15 +1,15 @@
 ---
-- name: Setup secondary gateway address
+- name: Setup secondary egress address
   template:
-    src: 'add_gateway_ips.j2'
-    dest: '/usr/local/sbin/add_gateway_ips.sh'
+    src: 'add_egress_ip.j2'
+    dest: '/usr/local/sbin/add_egress_ip.sh'
     mode: '0744'
   notify: add gateway address
-  when: gateway_address is defined
+  when: egress_ip is defined
 
-- name: Ensure gateway address is added on reboot
+- name: Ensure egress address is added on reboot
   cron:
     name: "add gateway address"
     special_time: reboot
-    job: '/usr/local/sbin/add_gateway_ips.sh'
-  when: gateway_address is defined
+    job: '/usr/local/sbin/add_egress_ip.sh'
+  when: egress_ip is defined
