@@ -47,8 +47,8 @@ openvpn:
         # Shapeshifter specific environment variables
         LHOST: "{{ ip }}"
         RHOST: "{{ ip }}"
-        RPORT: '1194'
-        OBFSPORT: '23042'
+        RPORT: '80'
+        OBFSPORT: '443'
         EXTORPORT: '3334'
         _CHAP_OPTIONS: --no-syslog
         LOGLEVEL: DEBUG

@@ -1,11 +1,11 @@
-# Allow incoming connections to ipv4 port 1194 for both udp and tcp
-add_rule4 -A user-input -p tcp -m tcp -d {{ ip }} --dport 1194 -j ACCEPT
-add_rule4 -A user-input -p udp -m udp -d  {{ ip }} --dport 1194 -j ACCEPT
+# Allow incoming connections to ipv4 port 80 for both udp and tcp
+add_rule4 -A user-input -p tcp -m tcp -d {{ ip }} --dport 80 -j ACCEPT
+add_rule4 -A user-input -p udp -m udp -d  {{ ip }} --dport 80 -j ACCEPT
 
 {% if openvpn_network6 is defined and openvpn_network6|length -%}
-# Allow incoming connections to ipv6 port 1194 for both udp and tcp
-add_rule6 -A user-input -p tcp -m tcp -d  {{ ip6 }} --dport 1194 -j ACCEPT
-add_rule6 -A user-input -p udp -m udp -d  {{ ip6 }} --dport 1194 -j ACCEPT
+# Allow incoming connections to ipv6 port 80 for both udp and tcp
+add_rule6 -A user-input -p tcp -m tcp -d  {{ ip6 }} --dport 80 -j ACCEPT
+add_rule6 -A user-input -p udp -m udp -d  {{ ip6 }} --dport 80 -j ACCEPT
 {% endif %}
 
 # let ipv4 vpn hosts reach the internet

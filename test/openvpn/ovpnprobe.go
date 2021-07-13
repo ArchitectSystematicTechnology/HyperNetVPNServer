@@ -22,7 +22,7 @@ import (
 
 var (
 	targetHost     = flag.String("host", "", "openvpn server host")
-	targetPort     = flag.Int("port", 1194, "openvpn server port")
+	targetPort     = flag.Int("port", 80, "openvpn server port")
 	certPath       = flag.String("cert", "", "path to client certificate and key (PEM)")
 	caPath         = flag.String("ca", "", "path to server CA")
 	connectTimeout = flag.Duration("timeout", 60*time.Second, "openvpn connection timeout")
