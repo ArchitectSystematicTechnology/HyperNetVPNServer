@@ -15,4 +15,4 @@
     daemon_reload: yes
 
 - listen: add gateway address
-  shell: '/usr/local/sbin/add_gateway_ips.sh'
+  shell: '/usr/local/sbin/add_egress_ip.sh'
