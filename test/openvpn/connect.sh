@@ -4,7 +4,7 @@ PATH=$PATH:/usr/sbin
 api_server=${API_SERVER:-api.float.bitmask.net}
 
 ip=${1}
-port=${2:-1194}
+port=${2:-80}
 api_ip=${3:-${ip}}
 
 # Create a temporary directory with certificates.

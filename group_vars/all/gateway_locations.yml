@@ -1,10 +1,12 @@
 ---
 locations:
   'Seattle':
+    'name': 'Seattle'
     'country_code': 'US'
     'hemisphere': 'N'
     'timezone': '-7'
   'Amsterdam':
+    'name': 'Amsterdam'
     'country_code': 'NL'
     'hemisphere': 'N'
     'timezone': '+2'

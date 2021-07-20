@@ -142,7 +142,7 @@ sign cert against CA
 make sure the x509 v3 extensions exist: x509.ExtKeyUsageClientAuth x509.KeyUsageDigitalSignature
 
 ```shell
-/usr/sbin/openvpn --client --remote-cert-tls server --tls-client --remote 37.218.241.84 1194 --proto tcp --verb 3 --auth SHA1 --keepalive 10 30 --tls-version-min 1.2 --dev tun --tun-ipv6 --ca ./ca.pem --cert ./testopenvpn.crt --key ./testopenvpn.key
+/usr/sbin/openvpn --client --remote-cert-tls server --tls-client --remote 37.218.241.84 80 --proto tcp --verb 3 --auth SHA1 --keepalive 10 30 --tls-version-min 1.2 --dev tun --tun-ipv6 --ca ./ca.pem --cert ./testopenvpn.crt --key ./testopenvpn.key
 ```
 
 Reference: https://0xacab.org/leap/vpnweb/blob/master/certs.go#L37

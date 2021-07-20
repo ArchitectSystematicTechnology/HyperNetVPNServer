@@ -128,8 +128,8 @@ class ActionModule(ActionBase):
         public_domain = self._task.args['domain']
         provider_description = self._task.args['provider_description']
         transports = self._task.args.get('transports', [
-            dict(type="openvpn", protocols=["tcp"], ports=["1194"]),
-            dict(type="obfs4", protocols=["tcp"], ports=["23042"]),
+            dict(type="openvpn", protocols=["tcp"], ports=["53","80","1194"]),
+            dict(type="obfs4", protocols=["tcp"], ports=["443"]),
         ])
         gateways = self._task.args['gateways']
         openvpn = self._task.args['openvpn']
