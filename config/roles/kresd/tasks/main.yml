@@ -25,4 +25,5 @@
     dest: "/etc/knot-resolver/kresd.conf"
     group: docker-openvpn
     mode: 0770
+    notify: "restart docker-openvpn-openvpn"
 

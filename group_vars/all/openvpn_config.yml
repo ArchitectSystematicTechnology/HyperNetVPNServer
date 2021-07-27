@@ -15,7 +15,8 @@ openvpn_config:
   'verb': '3'
 
 # You can leave this rfc1918 ip block as it is
-openvpn_network: "10.41.0.0/21"
+openvpn_tcp_network: "10.41.0.0/21"
+openvpn_udp_network: "10.42.0.0/21"
 
 
 
