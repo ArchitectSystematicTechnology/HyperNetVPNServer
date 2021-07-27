@@ -9,9 +9,9 @@ add_rule4 -A PREROUTING -p udp -d {{ ip }} --dport 53 -j DNAT --to-destination {
 
 {% if openvpn_network6 is defined and openvpn_network6|length -%}
 # Accept connections on ipv6 port 1194, redirecting them to openvpn
-add_rule6 -A PREROUTING -p tcp -d 2620:13:4000:4000:8080::252 --dport 1194 -j DNAT --to-destination [2620:13:4000:4000:8080::252:]80
-add_rule6 -A PREROUTING -p udp -d 2620:13:4000:4000:8080::252 --dport 1194 -j DNAT --to-destination [2620:13:4000:4000:8080::252:]80
+add_rule6 -A PREROUTING -p tcp -d {{ ip6 }} --dport 1194 -j DNAT --to-destination [{{ ip6 }}]:80
+add_rule6 -A PREROUTING -p udp -d {{ ip6 }} --dport 1194 -j DNAT --to-destination [{{ ip6 }}]:80
 # Accept connections on ipv6 port 53, redirecting them to openvpn
-add_rule6 -A PREROUTING -p tcp -d 2620:13:4000:4000:8080::252 --dport 53 -j DNAT --to-destination [2620:13:4000:4000:8080::252]:80
-add_rule6 -A PREROUTING -p udp -d 2620:13:4000:4000:8080::252 --dport 53 -j DNAT --to-destination [2620:13:4000:4000:8080::252]:80
+add_rule6 -A PREROUTING -p tcp -d {{ ip6 }} --dport 53 -j DNAT --to-destination [{{ ip6 }}]:80
+add_rule6 -A PREROUTING -p udp -d {{ ip6 }} --dport 53 -j DNAT --to-destination [{{ ip6 }}]:80
 {% endif %}
