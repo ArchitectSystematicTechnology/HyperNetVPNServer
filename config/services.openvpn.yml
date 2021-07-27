@@ -45,7 +45,7 @@ openvpn:
         - /var/lib/GeoIP: /var/lib/GeoIP/
       env:
         # Shapeshifter specific environment variables
-        LHOST: "::1"
+        LHOST: "::"
         RHOST: "{{ ip }}"
         RPORT: '80'
         OBFSPORT: '443'
