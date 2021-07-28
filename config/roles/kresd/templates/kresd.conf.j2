@@ -1,4 +1,5 @@
 net.listen('10.41.0.1', 53, { kind = 'dns' })
+net.listen('10.42.0.1', 53, { kind = 'dns' })
 net.listen('{{ansible_vpn0.ipv4.address}}', 8453, { kind = 'webmgmt' })
 
 -- Load Useful modules

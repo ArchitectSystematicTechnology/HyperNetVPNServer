@@ -2,3 +2,8 @@
   systemd:
     name: "docker-kresd-kresd.service"
     state: restarted
+
+- listen: "restart docker-openvpn-openvpn"
+  systemd:
+    name: "docker-openvpn-openvpn.service"
+    state: restarted

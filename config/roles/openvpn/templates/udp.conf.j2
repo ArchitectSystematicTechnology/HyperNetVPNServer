@@ -13,19 +13,19 @@ keepalive 10 30
 mute-replay-warnings
 mute 5
 push "redirect-gateway def1 ipv6"
-push "dhcp-option DNS {{ openvpn_network | ipaddr('1') | ipaddr('address') }}"
-{% if openvpn_network6 is defined and openvpn_network6|length %}
+push "dhcp-option DNS {{ openvpn_udp_network | ipv4('1') | ipv4('address') }}"
+{% if openvpn_udp_network6 is defined and openvpn_udp_network6|length %}
 proto udp6
-server-ipv6 {{ openvpn_network6 }}
+server-ipv6 {{ openvpn_udp_network6 }}
 push "route-ipv6 2000::/3"
-push "dhcp-option DNS {{ openvpn_network6 }}"
+push "dhcp-option DNS {{ openvpn_udp_network6 | ipv6('1') | ipv6('address') }}"
 {% else %}
 proto udp
 push "ifconfig-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1"
 block-ipv6
 {% endif %}
 push "block-outside-dns"
-server {{ openvpn_network | ipaddr('network') }} {{ openvpn_network | ipaddr('netmask') }}
+server {{ openvpn_udp_network | ipv4('network') }} {{ openvpn_udp_network | ipv4('netmask') }}
 status /tmp/openvpn-status-udp 10
 status-version 3
 tcp-nodelay
