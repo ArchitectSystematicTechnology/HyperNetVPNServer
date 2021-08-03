@@ -118,6 +118,7 @@ exec /usr/bin/podman run \
   --rm --name {{ item.service }}-{{ item.container.name }} \
   --no-healthcheck \
   --replace \
+  --log-driver=none \
   $opts \
 {% for opt in g.options %}
   {{ opt }} \

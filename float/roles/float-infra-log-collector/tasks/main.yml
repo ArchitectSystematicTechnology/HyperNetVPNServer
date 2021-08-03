@@ -10,30 +10,44 @@
     state: directory
     owner: "docker-log-collector"
     mode: 0700
+
 - name: Create the rsyslog-collector spool dir
   file:
     path: "/var/spool/rsyslog-collector"
     state: directory
     owner: docker-log-collector
     mode: 0700
+
 - name: Install logrotate script for local files
   template:
     src: "log-collector.logrotate.j2"
     dest: "/etc/logrotate.d/log-collector"
-- name: Install rsyslog-collector.conf
-  template:
-    src: "rsyslog-collector.conf.j2"
-    dest: "/etc/rsyslog-collector.conf"
-  notify: "restart rsyslog-collector"
+
+- name: Create rsyslog-collector include dirs
+  file:
+    path: "/etc/rsyslog-collector/{{ item }}"
+    state: directory
+  loop:
+    - templates.d
+    - rules-structured.d
+    - rules-unstructured.d
+
 - name: Create the rsyslog-collector normalization rules dir
   file:
     path: /etc/rsyslog-collector-lognorm
     state: directory
+
 - name: Install rsyslog-collector normalization rules
   copy:
     src: "{{ item }}"
     dest: "/etc/rsyslog-collector-lognorm/{{ item | regex_replace('^.*/', '') }}"
   with_fileglob:
     - files/lognorm/*
+  notify: "restart rsyslog-collector"
+
+- name: Configure rsyslog-collector
+  template:
+    src: "rsyslog-collector.conf.j2"
+    dest: "/etc/rsyslog-collector.conf"
   notify: "restart rsyslog-collector"
 

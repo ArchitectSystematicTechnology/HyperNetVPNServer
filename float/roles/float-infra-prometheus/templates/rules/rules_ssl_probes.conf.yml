@@ -2,5 +2,5 @@ groups:
   - name: roles/float-infra-prometheus/templates/rules/rules_ssl_probes.conf
     rules:
       - record: target:probe_ssl_cert_expiry:days
-        expr: ((min(probe_ssl_earliest_cert_expiry) by (probe,target)) - time()) / 86400
+        expr: ((min(probe_ssl_earliest_cert_expiry) by (probe,host)) - time()) / 86400
 

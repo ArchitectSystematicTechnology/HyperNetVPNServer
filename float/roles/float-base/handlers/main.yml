@@ -55,18 +55,6 @@
     name: firewall.service
     state: restarted
 
-- name: reload backup agent
-  systemd:
-    name: tabacco-agent.service
-    state: reloaded
-  when: enable_backup
-
-- name: restart backup agent
-  systemd:
-    name: tabacco-agent.service
-    state: restarted
-  when: enable_backup
-
 - name: restart journald
   systemd:
     name: systemd-journald.service

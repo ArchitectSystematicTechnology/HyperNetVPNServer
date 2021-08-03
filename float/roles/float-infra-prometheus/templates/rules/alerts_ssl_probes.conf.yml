@@ -8,7 +8,7 @@ groups:
       scope: global
       severity: page 
     annotations:
-      summary: 'SSL certificate about to expire for {{ $labels.probe }}@{{ $labels.target }}'
-      description: 'The "{{ $labels.probe }}" prober reports that {{ $labels.target }} is serving a SSL certificate that will expire in {{ $value }} days.'
+      summary: 'SSL certificate about to expire for {{ $labels.probe }}@{{ $labels.host }}'
+      description: 'The "{{ $labels.probe }}" prober reports that {{ $labels.host }} is serving a SSL certificate that will expire in {{ $value }} days.'
       runbook: '[[ alert_runbook_fmt | format("SSLCertificateAboutToExpire") ]]'
 

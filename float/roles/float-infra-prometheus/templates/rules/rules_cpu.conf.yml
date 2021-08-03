@@ -9,5 +9,7 @@ groups:
     expr: sum(rate(node_cpu_seconds_total{mode!="idle"}[5m])) by (host, instance)
   - record: instance_utilization:rate5m
     expr: instance_utilization:node_cpu:rate5m / instance:node_cpus:count
-  - record: host:kernel_cpu_throttled:max
-    expr: max(kernel_cpu_throttled) by (host)
+  - record: host:node_cpu_core_throttles_total:rate5m
+    expr: sum(rate(node_cpu_core_throttles_total[5m])) by (host)
+  - record: host:node_cpu_package_throttles_total:rate5m
+    expr: sum(rate(node_cpu_package_throttles_total[5m])) by (host)

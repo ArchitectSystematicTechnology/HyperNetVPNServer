@@ -2,7 +2,7 @@
 
 "@ns":
   _:
-{% for h in groups['frontend']|sort %}
+{% for h in services['frontend'].hosts|sort %}
     - NS ns{{ loop.index }}.{{ mx_ns_domain }}.
 {% if 'ip6' in hostvars[h] %}
     - NS ns{{ loop.index }}-v6.{{ mx_ns_domain }}.
@@ -27,10 +27,10 @@
   www: CNAME www.l.{{ d }}.
   # The explicit NS delegation for 'l' is necessary for dnssec-sign to work properly.
   l:
-{% for h in groups['frontend']|sort %}
+{% for h in services['frontend'].hosts|sort %}
     - NS ns{{ loop.index }}.{{ mx_ns_domain }}.
 {% endfor %}
-{% for h in groups['frontend']|sort %}
+{% for h in services['frontend'].hosts|sort %}
   ns{{ loop.index }}: {{ hostvars[h]['public_ip'] | default(hostvars[h]['ip']) }}
 {% if 'ip6' in hostvars[h] or 'public_ip6' in hostvars[h] %}
   ns{{ loop.index }}-v6: AAAA {{ hostvars[h]['public_ip6'] | default(hostvars[h]['ip6']) }}
@@ -48,7 +48,7 @@
 {% for pe in s.get('public_endpoints', []) if pe.get('name') and not pe.get('skip_dns', False) %}
   {{ pe.name }}: CNAME www.l.{{ d }}.
 {% if pe.get('sharded') %}
-{% for h in groups[service_name]|sort %}
+{% for h in services[service_name].hosts|sort %}
   {{ hostvars[h]['shard_id'] }}.{{ pe.name }}: CNAME www.l.{{ d }}.
 {% endfor %}
 {% endif %}

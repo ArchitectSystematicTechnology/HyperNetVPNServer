@@ -65,7 +65,7 @@ server {
     disable generation of the entire virtual host.
 #}
 {% set root_upstream = float_http_upstreams[endpoint.float_path_map['/'].float_upstream_name] %}
-{% for h in groups[root_upstream.service_name]|sort %}
+{% for h in services[root_upstream.service_name].hosts|sort %}
 {{ config_vhost(endpoint, hostvars[h]['shard_id']) }}
 {% endfor %}
 {% else %}

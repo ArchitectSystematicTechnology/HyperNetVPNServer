@@ -8,3 +8,7 @@
     - apt:
         autoclean: yes
         autoremove: yes
+  serial:
+    - 1
+    - 2
+    - "100%"

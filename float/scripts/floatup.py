@@ -111,6 +111,9 @@ def main():
         '--ram', type=int,
         help='memory reservation for the VMs')
     parser.add_argument(
+        '--cpu', type=int, default=1,
+        help='CPU reservation for the VMs')
+    parser.add_argument(
         '--ttl', metavar='DURATION', default='1h',
         help='TTL for the virtual machines')
     parser.add_argument(
@@ -122,6 +125,8 @@ def main():
         host_attrs = {}
         if args.ram:
             host_attrs['ram'] = args.ram
+        if args.cpu:
+            host_attrs['cpu'] = args.cpu
         if args.image:
             host_attrs['image'] = args.image
         req = parse_inventory(args.inventory, host_attrs)

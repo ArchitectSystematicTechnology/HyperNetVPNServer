@@ -1,1 +1,1 @@
-ARGS="--collector.systemd.unit-blacklist=.+(\.device|\.swap|\.mount|\.scope|\.slice|\.target)"
+ARGS="--collector.ntp --collector.ntp.server-is-local --collector.systemd.unit-blacklist=.+(\.device|\.swap|\.mount|\.scope|\.slice|\.target)"

@@ -10,7 +10,7 @@ options {
 {% if float_limit_bind_to_known_interfaces | default(False) %}
   listen-on {
     127.0.0.1;
-{% for h in groups['frontend'] | sort %}
+{% for h in services['frontend'].hosts | sort %}
     {{ hostvars[h]['ip'] }};
 {% for n in net_overlays | sort if ('ip_' + n.name) in hostvars[h] %}
     {{ hostvars[h]['ip_' + n.name] }};
@@ -19,7 +19,7 @@ options {
   };
   listen-on-v6 {
     ::1;
-{% for h in groups['frontend'] | sort if 'ip6' in hostvars[h] %}
+{% for h in services['frontend'].hosts | sort if 'ip6' in hostvars[h] %}
     {{ hostvars[h]['ip6'] }};
 {% endfor %}
   };

@@ -11,7 +11,7 @@
 {% for d in domain_public %}
     - "{{ pe.name }}.{{ d }}"
 {% if pe.get('sharded', False) %}
-{% for h in groups[service_name]|sort if hostvars[h].get('shard_id') %}
+{% for h in services[service_name].hosts|sort if hostvars[h].get('shard_id') %}
     - "{{ hostvars[h].shard_id }}.{{ pe.name }}.{{ d }}"
 {% endfor %}
 {% endif %}

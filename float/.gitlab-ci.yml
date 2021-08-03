@@ -24,7 +24,7 @@ variables:
       ${APT_PROXY:+-e config.apt_proxy=${APT_PROXY}}
       $CREATE_ENV_VARS $BUILD_DIR
 
-    - with-ssh-key ./scripts/floatup.py ${LIBVIRT:+--ssh $LIBVIRT} --inventory $BUILD_DIR/hosts.yml --ram 2048 --image ${VM_IMAGE:-buster} up
+    - with-ssh-key ./scripts/floatup.py ${LIBVIRT:+--ssh $LIBVIRT} --inventory $BUILD_DIR/hosts.yml --ram 2048 --cpu 2 --image ${VM_IMAGE:-buster} up
     - with-ssh-key ./test-driver init --no-vagrant $BUILD_DIR
     - with-ssh-key ./test-driver run $BUILD_DIR
   after_script:

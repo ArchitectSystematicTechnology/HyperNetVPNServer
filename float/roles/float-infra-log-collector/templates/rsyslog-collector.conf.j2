@@ -132,6 +132,13 @@ module(
   load="mmanon"
 )
 
+# Extension point for top-level directives and definitions (templates,
+# module loading, etc).
+include(
+  file="/etc/rsyslog-collector/templates.d/*.conf"
+  mode="optional"
+)
+
 # For incoming logs:
 # - dump everything to file for debugging purposes
 # - autodetect Lumberjack structured logs and parse them
@@ -179,6 +186,12 @@ ruleset(name="incoming"){
              queue.spoolDirectory="/var/spool/rsyslog"
              action.resumeretrycount="-1")
     } else {
+      # Extension point for rules applying to structured logs.
+      include(
+        file="/etc/rsyslog-collector/rules-structured.d/*.conf"
+        mode="optional"
+      )
+
       # Normal structured log present in the default syslog flow. Send
       # straight to Elasticsearch, skipping the log normalization step.
       action(type="omelasticsearch"
@@ -238,6 +251,12 @@ ruleset(name="incoming"){
       stop
     }
 {% endfor %}
+
+    # Extension point for rules applying to unstructured logs.
+    include(
+      file="/etc/rsyslog-collector/rules-unstructured.d/*.conf"
+      mode="optional"
+    )
 
     action(type="mmnormalize"
            rulebase="/etc/rsyslog-collector-lognorm/audit.rb")

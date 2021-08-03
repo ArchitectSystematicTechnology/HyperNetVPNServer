@@ -1,35 +1,11 @@
-{# Generate static targets for hosts in an Ansible group #}
-{% macro targets_for_group(group, port) %}
-      - targets:
-{% for host in groups[group]|sort %}
-          - "{{ host }}:{{ port }}"
-{% endfor %}
-{% endmacro %}
-
 {# Generate static targets for hosts in a float service #}
-{% macro targets_for_service(group, service_name, port) %}
+{% macro targets_for_service(service_name, port) %}
       - targets:
-{% for host in groups[group]|sort %}
+{% for host in services[service_name].hosts|sort %}
           - "{{ host }}.{{ service_name }}.{{ domain }}:{{ port }}"
 {% endfor %}
 {% endmacro %}
 
-{# Generate a static_configs entry for a scrape config #}
-{% macro static_configs_for_group(group, port, service_name='') %}
-    static_configs:
-{% if service_name %}
-{{ targets_for_service(group, service_name, port) }}
-        labels:
-          service: "{{ service_name }}"
-{% else %}
-{{ targets_for_group(group, port) }}
-{% endif %}
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: host
-        regex: "([^.]*).*:[0-9]+"
-        replacement: "${1}"
-{% endmacro %}
 
 global:
   scrape_interval: "{{ prometheus_lts_scrape_interval }}"
@@ -46,7 +22,7 @@ alerting:
       action: labeldrop
   alertmanagers:
     - static_configs:
-{{ targets_for_service('prometheus', 'prometheus', 9093) }}
+{{ targets_for_service('prometheus', 9093) }}
 
 scrape_configs:
   - job_name: "prometheus-federation"

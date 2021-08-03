@@ -7,14 +7,11 @@ mail_relay: {}
 auditd_action_mail_acct: root
 enable_fail2ban: true
 
-# These should be set externally to activate backups. NOTE that
-# backup_repository_restic_password is a third-party credential, and
-# should *not* be automatically managed through passwords.yml!
-backup_repository_uri: ""
-backup_repository_restic_password: ""
-
 # A fallback SSH key that can be used in an emergency to login as root.
 emergency_ssh_key: ""
+
+# Port that SSH should listen on (best to keep it at the default).
+ssh_port: 22
 
 # The Debian distribution that we are using as the basis.
 float_debian_dist: "buster"

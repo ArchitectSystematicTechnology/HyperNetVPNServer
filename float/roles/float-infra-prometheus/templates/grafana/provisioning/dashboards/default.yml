@@ -3,8 +3,10 @@ apiVersion: 1
 providers:
 - name: 'default'
   orgId: 1
-  folder: ''
   type: file
-  editable: false
+  disableDeletion: false
+  allowUiUpdates: false
   options:
-    folder: '/etc/grafana/dashboards'
+    path: '/etc/grafana/dashboards'
+    foldersFromFilesStructure: true
+

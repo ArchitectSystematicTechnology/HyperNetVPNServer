@@ -93,3 +93,18 @@ To add a new dashboard, or update an existing one, use Kibana's
 dashboard API to download the dashboard and its related
 visualizations. The API is available at
 `/api/kibana/dashboards/export?dashboard=DASHBOARD_ID`.
+
+## Customization of collection rules
+
+The log-collector rsyslog configuration provides a number of extension
+points to support drop-in customization of the rulesets. This is
+achieved by placing RainerScript files (with a `.conf` extension) in
+the following directories on the log-collector hosts:
+
+* /etc/rsyslog-collector/templates.d/ - for directives and code
+  snippets to be included at the configuration top-level. Useful to
+  define templates, load modules, etc.
+* /etc/rsyslog-collector/rules-structured.d/,
+  /etc/rsyslog-collector/rules-unstructured.d/ - modify the *incoming*
+  ruleset for structured and unstructured log types respectively. The
+  code snippets should include action() directives and conditionals.

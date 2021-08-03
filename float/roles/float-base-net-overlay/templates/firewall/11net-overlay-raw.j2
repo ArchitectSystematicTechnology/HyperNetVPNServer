@@ -1,6 +1,6 @@
 # Allow peer nodes to communicate with our tinc daemon.
 create_chain allow-vpn-{{ tinc_net }}
-{% for h in groups['overlay-' + tinc_net]|sort %}
+{% for h in groups['overlay_' + tinc_net]|sort %}
 {% if h != inventory_hostname %}
 add_rule4 -A allow-vpn-{{ tinc_net }} -s {{ hostvars[h]['ip'] }} -j CT --notrack
 {% if hostvars[h].get('ip6') %}

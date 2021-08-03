@@ -45,6 +45,12 @@ class ConfigError(Exception):
     pass
 
 
+# Convert a string into Python-compatible identifier (suitable for
+# Ansible group names).
+def _make_identifier(s):
+    return s.replace('-', '_')
+
+
 # Returns the absolute path to a file. If the given path is relative,
 # it will be evaluated based on the given path_reference.
 def _abspath(path, relative_to='/'):
@@ -156,10 +162,10 @@ def _host_groups(name, inventory, assignments=None):
     groups = ['all']
     groups.extend(inventory['hosts'][name].get('groups', []))
     groups.extend(
-        ('overlay-' + n) for n in _host_net_overlays(name, inventory))
+        ('overlay_' + n) for n in _host_net_overlays(name, inventory))
     if assignments:
         groups.extend(
-            s for s in assignments.get_by_host(name))
+            _make_identifier(s) for s in assignments.get_by_host(name))
     return groups
 
 
@@ -245,11 +251,23 @@ def _service_dns(src_host, service_name, service, inventory, assignments):
     return dns
 
 
+# Build a fake 'host' service used to point at the common-overlay
+# address for each host.
+def _hosts_dns(src_host, inventory, assignments):
+    dns = {}
+    for hostname in inventory['hosts']:
+        overlay = _common_net_overlay(src_host, hostname, inventory)
+        addrs = _host_net_overlay_addrs(hostname, inventory, overlay)
+        dns[hostname + '.host'] = addrs
+    return dns
+
+
 # Build the full service discovery DNS map for host 'name'.
 def _host_service_dns_map(name, inventory, services, assignments):
     dns = {}
     for s in assignments.all_services():
         dns.update(_service_dns(name, s, services[s], inventory, assignments))
+    dns.update(_hosts_dns(name, inventory, assignments))
     return dns
 
 
@@ -543,6 +561,7 @@ def run_scheduler(config):
     # schedule-related information before feeding them to Ansible.
     for service_name, service in services.items():
         service['name'] = service_name
+        service['group_name'] = _make_identifier(service_name)
         service['user'] = f'docker-{service_name}'
         service['hosts'] = assignments.get_by_service(service_name)
         if service.get('master_election'):
@@ -582,7 +601,7 @@ def run_scheduler(config):
     # Create the group->hosts map that Ansible needs. Create a dynamic
     # net-overlay group with hosts that use network overlays.
     groups = _build_group_map(inventory, assignments)
-    groups['net-overlay'] = [
+    groups['net_overlay'] = [
         h for h in inventory['hosts']
         if _host_net_overlays(h, inventory)]
 

@@ -1,8 +1,5 @@
 ---
 
-- set_fact:
-    enable_backup: "{{ backup_repository_restic_password != '' }}"
-
 - name: Create a group to allow reading tabacco configs
   group:
     name: tabacco
@@ -27,6 +24,7 @@
     src: agent.yml.j2
     dest: /etc/tabacco/agent.yml
     mode: 0600
+  when: backup_repository_uri is defined
   notify:
     - reload backup agent
 
@@ -35,8 +33,7 @@
     name: tabacco-agent.service
     masked: no
     enabled: yes
-    daemon_reload: yes
-  when: enable_backup
+  when: backup_repository_uri is defined
 
 - file:
     path: /usr/lib/float/datasets

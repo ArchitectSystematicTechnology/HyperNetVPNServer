@@ -1,1 +1,1 @@
-ARGS=""
+ARGS="--collector.ntp --collector.ntp.server-is-local"

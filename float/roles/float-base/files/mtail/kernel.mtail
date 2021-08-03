@@ -1,6 +1,5 @@
 counter kernel_traps_total by failed_program
 counter kernel_ooms_total
-gauge kernel_cpu_throttled by cpu
 
 def syslog {
   /^(?P<date>(?P<legacy_date>\w+\s+\d+\s+\d+:\d+:\d+)|(?P<rfc3339_date>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+[-+]\d{2}:\d{2}))/ + /\s+(?:\w+@)?(?P<hostname>[-\w\.]+)\s+/ {
@@ -21,14 +20,6 @@ def syslog {
 
   /oom_reaper: reaped process \d+/ {
     kernel_ooms_total++
-  }
-
-  /CPU(?P<cpu>\d+): \w+ temperature above threshold, cpu clock throttled/ {
-    kernel_cpu_throttled[$cpu] = 1
-  }
-
-  /CPU(?P<cpu>\d+): \w+ temperature\/speed normal/ {
-    kernel_cpu_throttled[$cpu] = 0
   }
 }
 

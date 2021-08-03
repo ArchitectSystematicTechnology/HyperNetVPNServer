@@ -11,9 +11,9 @@ groups:
       # Sum prober metrics over the probers (hosts), producing
       # an aggregation by target.
       - record: target:probe_success:count
-        expr: count(probe_success) by (probe,probeset,zone,target)
+        expr: count(probe_success) by (probe,probeset,zone,host)
       - record: target:probe_success:sum
-        expr: sum(probe_success) by (probe,probeset,zone,target)
+        expr: sum(probe_success) by (probe,probeset,zone,host)
       - record: target:probe_success:ratio
         expr: target:probe_success:sum / target:probe_success:count
 
@@ -25,9 +25,7 @@ groups:
       - record: probe:probe_success:ratio
         expr: probe:probe_success:sum / probe:probe_success:count
 
-      # Special metric for the ping probe. The label_replace() sets
-      # the host to the value of the target label (instead of the host
-      # running the prober). The 'bool' qualifier makes the greater-than
-      # operation not act as a filter.
+      # Special metric for the ping probe.
+      # The 'bool' qualifier makes the greater-than operation not act as a filter.
       - record: host_reachable
-        expr: label_replace(target:probe_success:ratio{probe="ping"} > bool 0.6, "host", "$1", "target", "(.*)")
+        expr: target:probe_success:ratio{probe="ping"} > bool 0.6

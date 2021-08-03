@@ -54,12 +54,11 @@ inhibit_rules:
       severity: 'page'
     equal: ['host']
   # Inhibit probe failures when the target host is unreachable.
-  # HostUnreachable has a 'target' label because it's a prober-derived metric.
   - source_match:
       alertname: 'ProbeFailure'
     target_match:
       alertname: 'HostUnreachable'
-    equal: ['target']
+    equal: ['host']
 
 receivers:
   - name: default

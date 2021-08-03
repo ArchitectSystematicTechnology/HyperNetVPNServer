@@ -21,7 +21,7 @@ Map tying together float services (float_service=) and systemd services
 #}
 {% for service_name, service in services | dictsort %}
 {% for systemd_service in service.get('systemd_services', []) %}
-{% for h in groups[service_name] %}
+{% for h in services[service_name].hosts | sort %}
 svcmap{float_service="{{ service_name }}",service="{{ systemd_service }}",target_host="{{ h }}"} 1
 {% endfor %}
 {% endfor %}

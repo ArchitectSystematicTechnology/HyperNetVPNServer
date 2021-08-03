@@ -8,6 +8,13 @@
 -a never,user -F msgtype=CRED_REFR -F auid=-1
 -a never,exit -F exe=/usr/sbin/cron -F auid=-1
 
+# No crons from system users either.
+-a never,exit -F exe=/usr/sbin/cron -F auid<1000
+
+# Drop messages about the prometheus-node-exporter, which is
+# incredibly noisy unfortunately.
+-a never,exit -F exe=/usr/bin/prometheus-node-exporter -F auid=-1
+
 # Note: the following section has been disabled because
 # we use audisp-json that does event aggregation, and
 # actually makes use of EOE, CWD, PATH and the rest of

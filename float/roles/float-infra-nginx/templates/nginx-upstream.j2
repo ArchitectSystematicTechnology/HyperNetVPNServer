@@ -13,13 +13,19 @@ upstream {{ upstream.name }}{% if shard %}_{{ shard }}{% endif %} {
 #}
         server {% if shard %}{{ shard }}.{% endif %}{{ upstream.service_name }}.{{ domain }}:{{ upstream.port }};
 {% endif %}
+
+	keepalive 8;
+{% if float_debian_dist != 'buster' %}
+        keepalive_timeout 300s;
+        keepalive_requests 1000;
+{% endif %}
 }
 {% endmacro %}
 
 
 {% for upstream in float_http_upstreams.values() | sort(attribute='service_name') %}
 {% if upstream.sharded %}
-{% for h in groups[upstream.service_name]|sort %}
+{% for h in services[upstream.service_name].hosts|sort %}
 {{ config_upstream(upstream, hostvars[h]['shard_id']) }}
 {% endfor %}
 {% else %}

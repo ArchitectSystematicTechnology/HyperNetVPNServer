@@ -5,7 +5,7 @@ Requires=mtail.socket
 [Service]
 Type=simple
 # Systemd will pass mtail.socket as FD 3.
-ExecStart=/usr/bin/mtail --progs /etc/mtail --logtostderr --port 3903 --logs /dev/fd/3
+ExecStart=/usr/bin/mtail --progs /etc/mtail --logtostderr --port 3903 --poll_interval 0 --logs /dev/fd/3
 Restart=on-failure
 User=mtail
 

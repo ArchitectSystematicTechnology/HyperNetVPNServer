@@ -95,6 +95,6 @@ gateway.expected_nodes: 1
 #
 
 cluster.initial_master_nodes:
-{% for s in groups['log-collector']|sort %}
+{% for s in services['log-collector'].hosts|sort %}
   - "{{ s }}"
 {% endfor %}

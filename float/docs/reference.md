@@ -483,11 +483,11 @@ float can't automatically generate this association itself):
 ```
 
 This takes advantage of the fact that float defines an Ansible group
-for each service (with the same name as the service itself), which
-includes the hosts that the service instances have been scheduled
-on. **Note** that since Ansible 2.9, the group names will be
-"normalized" according to the rules for Python identifiers,
-i.e. dashes will be turned into underscores.
+for each service with the same name as the service itself, normalized
+to satisfy Ansible group naming expectations (replacing dashes `-`
+with underscores `_`, e.g. *my-service* would become
+*my_service*). This group includes the hosts that the service
+instances have been scheduled on.
 
 ### On the Ansible requirement
 
@@ -1495,10 +1495,11 @@ modules:
     prober: http
 ```
 
-*playbook.yml*
+*playbook.yml* (note that the Ansible group name is normalized to
+*my_prober*)
 
 ```yaml
-- hosts: my-prober
+- hosts: my_prober
   roles:
     - my-prober
 ```
@@ -1530,7 +1531,10 @@ provided:
     *target_service* and a *target_regex*: float takes the list of
     hosts assigned to the *target_service* and applies the regex to
     obtain the final targets (the target hostname can be referred to
-    as `\\1`).
+    as `\\1`). The attribute *target_label_regex* can be used to
+    specify a regex (with a capture group) to extract back the host
+    name from the target; the default regex will extract the short
+    host name from URLs and host:port targets.
 
 So, in the context of the previous example, if we wanted to probe
 another float service called *myservice*, which hypothetically serves
@@ -1638,7 +1642,7 @@ Additional rules should be dropped in the
 *playbook.yml*
 
 ```yaml
-- hosts: log-collector
+- hosts: log_collector
   roles:
     - my-lognorm
 ```
@@ -1791,7 +1795,8 @@ float:
 `public_ip` (optional) is the IPv4 address that will be advertised in
 the public-facing DNS zones, if unset it defaults to `ip`
 
-`public_ip6` (optional) is the IPv6 version of the above
+`public_ip6` (optional) is the IPv6 version of the above (if unset,
+it will default to `ip6`)
 
 `ip_<name>` (optional) defines the IPv4 address for this host on the
 overlay network called *name*
@@ -2419,7 +2424,8 @@ Prometheus instances should scrape the primary ones (default 1m).
 beyond those that are described by the service metadata. It is a list of entries
 with *name*, *targets* attributes. Optionally, you may specify a *scheme*
 (eg. 'https') if the default 'http' is insufficient; as well as *basic_auth*
-details; or *tls_config* options, if necessary. For example:
+details; JSON Web Token (JWT) as a *bearer_token*; or *tls_config* options, if
+necessary. For example:
 
 ```yaml
 - { name: 'node-external',
@@ -2427,8 +2433,14 @@ details; or *tls_config* options, if necessary. For example:
 - { name: 'restic', 
     targets: [ 'baz.example.com:8000' ], 
     scheme: 'https',
-    basic_auth: { username: foo, password: bar }
+    basic_auth: { username: foo, password: bar },
     tls_config: { insecure_skip_verify: true }
+  }
+- { name: 'minio,
+    targets: [ 'objects.example.com:9000' ],
+    scheme: 'https',
+    bearer_token: 'xxxxxxx',
+    metrics_path: '/minio/v2/metrics/cluster'
   }
 ```
 
@@ -2704,30 +2716,36 @@ The scheduler also defines dynamic Ansible groups based on service
 assignments:
 
 * For each service, it will define a host group named after the
-  service, whose members are the hosts assigned to the service;
-* for each network overlay defined in the inventory, it will define a
-  host group named `overlay-<name>` whose members are the hosts
+  service, whose members are the hosts assigned to the service. Note
+  that the group name will be normalized replacing dashes with
+  underscores, to satisfy Ansible group naming expectations.
+* For each network overlay defined in the inventory, it will define a
+  host group named `overlay_<name>` whose members are the hosts
   included in that overlay.
 
 These groups can then be used to assign service-specific roles to the
-scheduled hosts in the playbook:
+scheduled hosts in the playbook, e.g. assuming the Ansible role is
+named after the service:
 
 ```yaml
-- hosts: myservice
+- hosts: my_service
   roles:
-    - myservice
+    - my-service
 ```
 
-Or, for instance, to enumerate the hostnames of the service instances
-in a template:
+On the other hand, if you need to access the list of assignments for a
+specific service, it is best to do it using the *services* global
+variable (so you do not have to think about service group name
+normalization), using a service's *hosts* attribute:
 
 ```
-{% for h in groups['myservice'] | sort %}
-  {{ h }}.myservice.{{ domain }}
+{% for h in services['my-service'].hosts | sort %}
+  {{ h }}.my-service.{{ domain }}
 {% endfor %}
 ```
 
-Float depends on the *frontend* group being defined by the user.
+Float depends on the *frontend* group being defined by the user in the
+inventory.
 
 ## The *float* command-line tool
 

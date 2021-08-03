@@ -24,8 +24,10 @@ groups:
       description: 'Load average on host {{$labels.host}} is very high ({{$value}}), the host is likely unresponsive.'
       runbook: '[[ alert_runbook_fmt | format("HostThrashing") ]]'
 
+  # The threshold here is set to 1 instead of 0 on purpose, to allow
+  # low frequency throttling events, which shouldn't be problematic.
   - alert: ThermalEnvelopeThrottling
-    expr: host:kernel_cpu_throttled:max > 0
+    expr: (host:node_cpu_core_throttles_total:rate5m > 1) or (host:node_cpu_package_throttles_total:rate5m > 1)
     for: 2h
     labels:
       scope: host

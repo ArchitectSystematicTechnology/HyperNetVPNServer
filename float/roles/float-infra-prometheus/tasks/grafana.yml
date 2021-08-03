@@ -20,7 +20,7 @@
     variable_start_string: "[["
     variable_end_string: "]]"
   with_filetree: templates/grafana/
-  when: item.state == 'file'
+  when: "item.state == 'file' and (enable_elasticsearch or not item.src.endswith('elasticsearch.yml'))"
   notify: restart grafana
 
 - name: Create Grafana database directory

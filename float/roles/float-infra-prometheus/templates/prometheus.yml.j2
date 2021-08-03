@@ -2,14 +2,14 @@
 {% macro targets_for_group(group, port) %}
       - targets:
 {% for host in groups[group]|sort %}
-          - "{{ host }}:{{ port }}"
+          - "{{ host }}.host.{{ domain }}:{{ port }}"
 {% endfor %}
 {% endmacro %}
 
 {# Generate static targets for hosts in an float service #}
-{% macro targets_for_service(group, service_name, port) %}
+{% macro targets_for_service(service_name, port) %}
       - targets:
-{% for host in groups[group]|sort %}
+{% for host in services[service_name].hosts|sort %}
           - "{{ host }}.{{ service_name }}.{{ domain }}:{{ port }}"
 {% endfor %}
 {% endmacro %}
@@ -18,7 +18,7 @@
 {% macro static_configs_for_group(group, port, service_name='') %}
     static_configs:
 {% if service_name %}
-{{ targets_for_service(group, service_name, port) }}
+{{ targets_for_service(service_name, port) }}
         labels:
           service: "{{ service_name }}"
 {% else %}
@@ -50,7 +50,7 @@
       cert_file: /etc/credentials/x509/prometheus/client/cert.pem
       key_file: /etc/credentials/x509/prometheus/client/private_key.pem
 {% endif %}
-{{ static_configs_for_group(target_config.get('group', service_name), target_config.port, service_name) }}
+{{ static_configs_for_group(target_config.get('group', services[service_name].group_name), target_config.port, service_name) }}
 {% endmacro %}
 
 global:
@@ -68,7 +68,7 @@ alerting:
       action: labeldrop
   alertmanagers:
     - static_configs:
-{{ targets_for_service('prometheus', 'prometheus', 9093) }}
+{{ targets_for_service('prometheus', 9093) }}
 
 scrape_configs:
 {{ job_static_config('cgroups-exporter', 'all', 3909) }}
@@ -98,7 +98,7 @@ scrape_configs:
 
 
 {# Blackbox probes #}
-{% for prober_host in groups['prometheus']|sort %}
+{% for prober_host in services['prometheus'].hosts|sort %}
 {% set prober_idx = loop.index %}
 
   - job_name: "prober_ping_{{ loop.index }}"
@@ -108,7 +108,7 @@ scrape_configs:
         - ping
     relabel_configs:
       - source_labels: [__address__]
-        target_label: target
+        target_label: host
         regex: "([^.]*).*"
         replacement: "${1}"
       - source_labels: [__address__]
@@ -117,7 +117,7 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: {{ prober_host }}.prometheus.{{ domain }}:9115
-      - target_label: host
+      - target_label: prober_host
         replacement: {{ prober_host }}
     static_configs:
       - targets:
@@ -137,7 +137,7 @@ scrape_configs:
         - http_base
     relabel_configs:
       - source_labels: [__address__]
-        target_label: target
+        target_label: host
         regex: "https?://([^.:/]*).*"
         replacement: "${1}"
       - source_labels: [__address__]
@@ -146,11 +146,11 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: {{ prober_host }}.prometheus.{{ domain }}:9115
-      - target_label: host
+      - target_label: prober_host
         replacement: {{ prober_host }}
     static_configs:
       - targets:
-{% for host in groups['frontend']|sort %}
+{% for host in services['frontend'].hosts|sort %}
         - "https://{{ host }}/"
 {% endfor %}
         labels:
@@ -165,7 +165,7 @@ scrape_configs:
       module: [dns_toplevel]
     relabel_configs:
       - source_labels: [__address__]
-        target_label: target
+        target_label: host
         regex: "([^.]*).*"
         replacement: "${1}"
       - source_labels: [__address__]
@@ -174,11 +174,11 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: {{ prober_host }}.prometheus.{{ domain }}:9115
-      - target_label: host
+      - target_label: prober_host
         replacement: {{ prober_host }}
     static_configs:
       - targets:
-{% for host in groups['frontend']|sort %}
+{% for host in services['frontend'].hosts|sort %}
         - "{{ host }}"
 {% endfor %}
         labels:
@@ -191,7 +191,7 @@ scrape_configs:
 
 {# Additional blackbox probers #}
 {% for p in prometheus_additional_blackbox_probers | default([]) | sort(attribute='name') %}
-{% for host in groups[p.service] | sort %}
+{% for prober_host in services[p.service].hosts | sort %}
   - job_name: "prober_{{ p.name }}_{{ loop.index }}"
     metrics_path: "/probe"
     params:
@@ -199,17 +199,17 @@ scrape_configs:
         - {{ p.module | default(p.name) }}
     relabel_configs:
       - source_labels: [__address__]
-        target_label: target
-        regex: "(?:https?://)?([^.:/]*).*"
+        target_label: host
+        regex: "{{ p.target_label_regex | default('(?:https?://)?([^.:/]*).*') }}"
         replacement: "${1}"
       - source_labels: [__address__]
         target_label: __param_target
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: {{ host }}.{{ p.service }}.{{ domain }}:{{ p.port }}
-      - target_label: host
-        replacement: {{ host }}
+        replacement: {{ prober_host }}.{{ p.service }}.{{ domain }}:{{ p.port }}
+      - target_label: prober_host
+        replacement: {{ prober_host }}
     static_configs:
       - targets:
 {#
@@ -219,7 +219,7 @@ scrape_configs:
  # - caller provides a list of hosts, or a float service
  # - caller provides a regexp to turn the hosts into targets
  #}
-{% set custom_blackbox_targets = p.targets if p.targets is defined else groups[p.get('target_service', 'frontend')] %}
+{% set custom_blackbox_targets = p.targets if p.targets is defined else services[p.get('target_service', 'frontend')].hosts %}
 {% for target in custom_blackbox_targets %}
           - "{{ target | regex_replace('^(.*)$', p.target_regex | default('\\1')) }}"
 {% endfor %}
@@ -242,6 +242,9 @@ scrape_configs:
           zone: external
 {% if target.basic_auth|default([]) %}
     basic_auth: {{ target.basic_auth | to_json }}
+{% endif %}
+{% if target.bearer_token|default([]) %}
+    bearer_token: {{ target.bearer_token | to_json }}
 {% endif %}
 {% if target.tls_config|default([]) %}
     tls_config: {{ target.tls_config | to_json }}

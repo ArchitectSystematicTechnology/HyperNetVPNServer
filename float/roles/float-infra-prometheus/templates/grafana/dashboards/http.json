@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
-  "iteration": 1577011457110,
+  "iteration": 1623715637242,
   "links": [],
   "panels": [
     {
@@ -24,14 +24,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "localhost",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 11,
         "w": 12,
         "x": 0,
         "y": 0
       },
+      "hiddenSeries": false,
       "id": 2,
       "legend": {
         "avg": false,
@@ -47,9 +54,10 @@
       "links": [],
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "8.0.1",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -113,14 +121,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "localhost",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 11,
         "w": 12,
         "x": 12,
         "y": 0
       },
+      "hiddenSeries": false,
       "id": 4,
       "legend": {
         "avg": false,
@@ -136,9 +151,10 @@
       "links": [],
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "8.0.1",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -203,14 +219,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "localhost",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 11,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 11
       },
+      "hiddenSeries": false,
       "id": 6,
       "legend": {
         "avg": false,
@@ -226,9 +249,10 @@
       "links": [],
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "8.0.1",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -292,14 +316,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "localhost",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 11,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 11
       },
+      "hiddenSeries": false,
       "id": 9,
       "legend": {
         "avg": false,
@@ -315,9 +346,10 @@
       "links": [],
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "8.0.1",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -382,14 +414,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "localhost",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 0,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 14,
         "w": 12,
         "x": 0,
-        "y": 12
+        "y": 22
       },
+      "hiddenSeries": false,
       "id": 8,
       "legend": {
         "avg": false,
@@ -405,9 +444,10 @@
       "links": [],
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "8.0.1",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -417,7 +457,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.5, sum(rate(nginx_http_requests_ms{vhost=~\"^$vhost$\"}[$__rate_interval])) by (vhost,le))",
+          "expr": "vhost:nginx_http_requests_ms:50p5m{vhost=~\"^$vhost$\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -425,14 +465,14 @@
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.9, sum(rate(nginx_http_requests_ms{vhost=~\"^$vhost$\"}[$__rate_interval])) by (vhost,le))",
+          "expr": "vhost:nginx_http_requests_ms:90p5m{vhost=~\"^$vhost$\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{vhost}}/90pct",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(rate(nginx_http_requests_ms{vhost=~\"^$vhost$\"}[$__rate_interval])) by (vhost,le))",
+          "expr": "vhost:nginx_http_requests_ms:99p5m{vhost=~\"^$vhost$\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{vhost}}/99pct",
@@ -459,6 +499,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:80",
           "format": "ms",
           "label": null,
           "logBase": 1,
@@ -467,6 +508,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:81",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -486,14 +528,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "localhost",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 14,
         "w": 12,
         "x": 12,
-        "y": 12
+        "y": 22
       },
+      "hiddenSeries": false,
       "id": 11,
       "legend": {
         "avg": false,
@@ -508,9 +557,10 @@
       "linewidth": 1,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "8.0.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -520,8 +570,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "exemplar": true,
           "expr": "global:nginx_http_cached_requests:ratio{vhost=~\"^$vhost\"}",
-          "legendFormat": "{{cache_status}}",
+          "interval": "",
+          "legendFormat": "{{ vhost }}: {{cache_status}}",
           "refId": "A"
         }
       ],
@@ -545,6 +597,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:163",
           "decimals": null,
           "format": "percentunit",
           "label": null,
@@ -554,6 +607,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:164",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -569,7 +623,7 @@
     }
   ],
   "refresh": "10s",
-  "schemaVersion": 20,
+  "schemaVersion": 30,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -577,25 +631,29 @@
       {
         "allValue": ".*",
         "current": {
-          "tags": [],
-          "text": "autistici.org:443",
-          "value": "autistici.org:443"
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": "localhost",
         "definition": "",
+        "description": null,
+        "error": null,
         "hide": 0,
         "includeAll": true,
         "label": "Host",
         "multi": false,
         "name": "vhost",
         "options": [],
-        "query": "label_values(global:nginx_http_requests_total:rate5m, vhost)",
+        "query": {
+          "query": "label_values(global:nginx_http_requests_total:rate5m, vhost)",
+          "refId": "localhost-vhost-Variable-Query"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,
         "tagValuesQuery": "",
-        "tags": [],
         "tagsQuery": "",
         "type": "query",
         "useTags": false
@@ -634,5 +692,5 @@
   "timezone": "",
   "title": "HTTP",
   "uid": "xCSUMFnmz",
-  "version": 5
+  "version": 38
 }

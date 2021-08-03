@@ -9,7 +9,7 @@
     - float-infra-dns
     - float-infra-haproxy
 
-- hosts: admin-dashboard
+- hosts: admin_dashboard
   gather_facts: no
   roles:
     - float-infra-admin-dashboard
@@ -19,7 +19,7 @@
   roles:
     - float-infra-acme
 
-- hosts: reports-collector
+- hosts: reports_collector
   gather_facts: no
   roles:
     - float-infra-reports-collector

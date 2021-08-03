@@ -1,4 +1,4 @@
-- hosts: prometheus-lts
+- hosts: prometheus_lts
   gather_facts: no
   roles:
     - float-infra-prometheus-lts

@@ -74,6 +74,7 @@ log-collector:
         - 9105
       volumes:
         - /etc/rsyslog-collector.conf: /etc/rsyslog.conf
+        - /etc/rsyslog-collector: /etc/rsyslog-collector
         - /etc/rsyslog-collector-lognorm: /etc/rsyslog-collector-lognorm
         - /var/spool/rsyslog-collector: /var/spool/rsyslog
         - /var/log/remote: /var/log/remote
@@ -131,7 +132,7 @@ prometheus:
       volumes:
         - /etc/prometheus: /etc/prometheus
         - /var/lib/prometheus/metrics2: /var/lib/prometheus/metrics2
-      args: "--storage.tsdb.retention.time={{ prometheus_tsdb_retention | default('90d') }} --web.external-url=https://monitor.{{ domain_public[0] }} --web.enable-lifecycle"
+      args: "--storage.tsdb.retention.time={{ prometheus_tsdb_retention | default('90d') }} --web.external-url=https://monitor.{{ domain_public[0] }} --web.enable-lifecycle --query.max-samples={{ prometheus_max_samples | default('5000000') }}"
     - name: alertmanager
       image: registry.git.autistici.org/ai3/docker/prometheus-alertmanager:master
       ports:

@@ -1,0 +1,6 @@
+- name: reload backup agent
+  systemd:
+    name: tabacco-agent.service
+    state: reloaded
+  when: backup_repository_uri is defined
+

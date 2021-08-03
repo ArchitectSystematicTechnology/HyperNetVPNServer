@@ -1,5 +1,8 @@
 ---
 
+# Run 'apt upgrade' before anything else, to ensure that already
+# installed packages are up to date.
+- import_playbook: apt-upgrade.yml
 
 - hosts: all
   roles:
@@ -9,7 +12,7 @@
     - float-base-auth-server
     - float-util-vagrant-compat
 
-- hosts: net-overlay
+- hosts: net_overlay
   roles:
     - float-base-net-overlay
 
@@ -22,21 +25,21 @@
 
 - import_playbook: prometheus.yml
 
-- hosts: log-collector
+- hosts: log_collector
   gather_facts: no
   roles:
     - float-infra-log-collector
 
-- hosts: backup-metadata
+- hosts: backup_metadata
   gather_facts: no
   roles:
     - float-base-backup-metadata
 
-- hosts: sso-server
+- hosts: sso_server
   roles:
     - float-infra-sso-server
 
-- hosts: user-meta-server
+- hosts: user_meta_server
   roles:
     - float-infra-sso-server
 

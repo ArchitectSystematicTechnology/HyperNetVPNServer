@@ -19,9 +19,18 @@ create_chain {{ chain }}
 
 # Chain that allows traffic from all hosts in the inventory.
 {{ create_chain_from_host_group('allow-cluster', 'all') }}
+{% for port in float_enabled_services | map('extract', services) | selectattr('ports', 'defined') | map(attribute='ports') | flatten | sort %}
+allow_port tcp {{ port }} -j allow-cluster
+{% endfor %}
 
 # Chain to allow traffic from hosts running monitoring probers.
-{{ create_chain_from_host_group('allow-monitoring', 'prometheus') }}
+{% if 'prometheus' in services %}
+{{ create_chain_from_host_group('allow-monitoring', services['prometheus'].group_name) }}
+{% for network_name in net_overlays | map(attribute='name') if hostvars[inventory_hostname].get('ip_' + network_name) %}
+{% for host in services['prometheus'].hosts | sort if hostvars[host].get('ip_' + network_name) %}
+add_rule4 -A allow-monitoring -s {{ hostvars[host]['ip_' + network_name] }} -j ACCEPT
+{% endfor %}
+{% endfor %}
 
 # Allow traffic from monitoring probers to local services (on the
 # public IP).
@@ -32,11 +41,11 @@ allow_port tcp 9100 -j allow-monitoring # node-exporter
 allow_port tcp 9106 -j allow-monitoring # rsyslog-exporter
 allow_port tcp 9323 -j allow-monitoring # docker
 allow_port tcp 5331 -j allow-monitoring # backup-agent (tabacco)
-{% for s in float_enabled_services|sort %}
-{% for port in services[s].get('ports', []) %}
-allow_port tcp {{ port }} -j allow-cluster
+{% for port in float_enabled_services | map('extract', services) | selectattr('monitoring_endpoints', 'defined') | map(attribute='monitoring_endpoints') | flatten | map(attribute='port') | sort %}
+allow_port tcp {{ port }} -j allow-monitoring
 {% endfor %}
-{% for ep in services[s].get('monitoring_endpoints', []) %}
-allow_port tcp {{ ep.port }} -j allow-monitoring
-{% endfor %}
-{% endfor %}
+{% endif %}
+
+{% if ssh_port != 22 %}
+allow_port tcp {{ ssh_port }}
+{% endif %}

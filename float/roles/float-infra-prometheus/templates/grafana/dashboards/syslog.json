@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1621339208069,
+  "iteration": 1621410894042,
   "links": [],
   "panels": [
     {
@@ -691,7 +691,7 @@
       },
       "id": 21,
       "panels": [],
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 12,
       "scopedVars": {
         "queue": {
@@ -746,7 +746,7 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 5,
       "repeatedByRow": true,
       "scopedVars": {
@@ -854,7 +854,7 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 4,
       "repeatedByRow": true,
       "scopedVars": {
@@ -962,7 +962,7 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 8,
       "repeatedByRow": true,
       "scopedVars": {
@@ -988,7 +988,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Queue full",
+      "title": "Discards",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1038,7 +1038,7 @@
       },
       "id": 25,
       "panels": [],
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 12,
       "scopedVars": {
         "queue": {
@@ -1093,7 +1093,7 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 5,
       "repeatedByRow": true,
       "scopedVars": {
@@ -1201,7 +1201,7 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 4,
       "repeatedByRow": true,
       "scopedVars": {
@@ -1309,7 +1309,7 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 8,
       "repeatedByRow": true,
       "scopedVars": {
@@ -1335,7 +1335,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Queue full",
+      "title": "Discards",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1385,7 +1385,7 @@
       },
       "id": 29,
       "panels": [],
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 12,
       "scopedVars": {
         "queue": {
@@ -1440,7 +1440,7 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 5,
       "repeatedByRow": true,
       "scopedVars": {
@@ -1548,7 +1548,7 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 4,
       "repeatedByRow": true,
       "scopedVars": {
@@ -1656,7 +1656,7 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "repeatIteration": 1621339208069,
+      "repeatIteration": 1621410894042,
       "repeatPanelId": 8,
       "repeatedByRow": true,
       "scopedVars": {
@@ -1682,7 +1682,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Queue full",
+      "title": "Discards",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1730,353 +1730,6 @@
         "x": 0,
         "y": 52
       },
-      "id": 33,
-      "panels": [],
-      "repeatIteration": 1621339208069,
-      "repeatPanelId": 12,
-      "scopedVars": {
-        "queue": {
-          "selected": false,
-          "text": "to_exporter queue",
-          "value": "to_exporter queue"
-        }
-      },
-      "title": "Queue $queue",
-      "type": "row"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "localhost",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 53
-      },
-      "hiddenSeries": false,
-      "id": 34,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.4.0",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "repeatIteration": 1621339208069,
-      "repeatPanelId": 5,
-      "repeatedByRow": true,
-      "scopedVars": {
-        "queue": {
-          "selected": false,
-          "text": "to_exporter queue",
-          "value": "to_exporter queue"
-        }
-      },
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "rate(rsyslog_queue_enqueued{job=\"$job\",queue=\"$queue\",host=~\"$host\"}[5m])",
-          "interval": "",
-          "legendFormat": "{{host}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Logs/s",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:316",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:317",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "localhost",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 53
-      },
-      "hiddenSeries": false,
-      "id": 35,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.4.0",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "repeatIteration": 1621339208069,
-      "repeatPanelId": 4,
-      "repeatedByRow": true,
-      "scopedVars": {
-        "queue": {
-          "selected": false,
-          "text": "to_exporter queue",
-          "value": "to_exporter queue"
-        }
-      },
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "rsyslog_queue_size{job=\"$job\",queue=\"$queue\",host=~\"$host\"}",
-          "interval": "",
-          "legendFormat": "{{host}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Queue size",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:68",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:69",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "localhost",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 53
-      },
-      "hiddenSeries": false,
-      "id": 36,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.4.0",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "repeatIteration": 1621339208069,
-      "repeatPanelId": 8,
-      "repeatedByRow": true,
-      "scopedVars": {
-        "queue": {
-          "selected": false,
-          "text": "to_exporter queue",
-          "value": "to_exporter queue"
-        }
-      },
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "rate(rsyslog_queue_full{job=\"$job\",queue=\"$queue\",host=~\"$host\"}[$__rate_interval])",
-          "interval": "",
-          "legendFormat": "{{host}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Queue full",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:345",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:346",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "collapsed": false,
-      "datasource": null,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 61
-      },
       "id": 7,
       "panels": [],
       "title": "Trouble",
@@ -2115,7 +1768,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 62
+        "y": 53
       },
       "id": 10,
       "options": {
@@ -2216,15 +1869,15 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "action-1-builtin:ompipe queue",
-          "value": "action-1-builtin:ompipe queue"
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": "localhost",
         "definition": "label_values(rsyslog_queue_size{job=\"$job\",queue!~\"to_exporter.*\"}, queue)",
         "description": null,
         "error": null,
         "hide": 2,
-        "includeAll": false,
+        "includeAll": true,
         "label": null,
         "multi": false,
         "name": "queue",
@@ -2233,7 +1886,7 @@
           "query": "label_values(rsyslog_queue_size{job=\"$job\",queue!~\"to_exporter.*\"}, queue)",
           "refId": "StandardVariableQuery"
         },
-        "refresh": 2,
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -2246,7 +1899,7 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -2266,5 +1919,5 @@
   "timezone": "",
   "title": "Syslog",
   "uid": "vpP0KpSMz",
-  "version": 5
+  "version": 6
 }

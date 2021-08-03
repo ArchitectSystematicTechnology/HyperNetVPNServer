@@ -52,7 +52,7 @@ device_manager:
   trusted_forwarders:
     - 127.0.0.1
     - ::1
-{% for h in groups['frontend']|sort %}
+{% for h in services['frontend'].hosts|sort %}
     - {{ hostvars[h]['ip'] }}
 {% for n in net_overlays %}{% if hostvars[h].get('ip_' + n.name) %}
     - {{ hostvars[h]['ip_' + n.name] }}

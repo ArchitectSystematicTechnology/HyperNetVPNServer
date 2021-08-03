@@ -29,7 +29,7 @@
   copy:
     dest: "{{ tinc_dir}}/hosts/{{ h | regex_replace('-', '_') }}"
     content: "{{ hostvars[h]['tinc_host_config'] }}"
-  loop: "{{ groups['overlay-' + tinc_net] | list }}"
+  loop: "{{ groups['overlay_' + tinc_net] | list }}"
   loop_control:
     loop_var: h
   when: "'tinc_host_config' in hostvars[h]"

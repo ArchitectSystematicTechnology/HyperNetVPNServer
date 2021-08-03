@@ -14,7 +14,7 @@ Broadcast = no
 ReplayWindow = 32
 
 # Connect to all other known nodes (full mesh).
-{% for host in groups['overlay-' + tinc_net]|sort %}
+{% for host in groups['overlay_' + tinc_net]|sort %}
 ConnectTo = {{ host | regex_replace('-', '_') }}
 {% endfor %}
 

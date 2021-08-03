@@ -87,19 +87,27 @@
     mode: 0444
   when: dataset_should_restore
 
-- name: Cleanup restore service unit
-  file:
-    path: "/etc/systemd/system/restore-{{ dataset_filename }}.service"
-    state: absent
-  when: "not dataset_should_restore"
-  notify: reload systemd
-
 - name: Enable restore service unit
   systemd:
     name: "restore-{{ dataset_filename }}.service"
     enabled: yes
     daemon_reload: yes
   when: dataset_should_restore
+
+# systemd disable is not idempotent, hence the ignore_errors.
+- name: Disable restore service unit
+  systemd:
+    name: "restore-{{ dataset_filename }}.service"
+    enabled: no
+  ignore_errors: true
+  when: not dataset_should_restore
+
+- name: Cleanup restore service unit
+  file:
+    path: "/etc/systemd/system/restore-{{ dataset_filename }}.service"
+    state: absent
+  when: not dataset_should_restore
+  notify: reload systemd
 
 - name: Wipe dataset restore guard file
   file:

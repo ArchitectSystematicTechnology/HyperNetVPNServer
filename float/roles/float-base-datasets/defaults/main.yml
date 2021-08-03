@@ -1,0 +1,6 @@
+# These should be set externally to activate backups. NOTE that
+# backup_repository_restic_password is a third-party credential, and
+# should *not* be automatically managed through passwords.yml!
+#backup_repository_uri: ""
+#backup_repository_restic_password: ""
+

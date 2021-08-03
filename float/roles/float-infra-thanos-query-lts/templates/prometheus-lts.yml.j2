@@ -1,9 +1,9 @@
 {# Generate static targets for hosts in a float service #}
-{% macro targets_for_service(group, service_name, port) %}
+{% macro targets_for_service(service_name, port) %}
       - targets:
-{% for host in groups[group]|sort %}
+{% for host in services[service_name].hosts|sort %}
           - "{{ host }}.{{ service_name }}.{{ domain }}:{{ port }}"
 {% endfor %}
 {% endmacro %}
 
-{{ targets_for_service('prometheus-lts', 'prometheus-lts', 10911) }}
+{{ targets_for_service('prometheus-lts', 10911) }}
