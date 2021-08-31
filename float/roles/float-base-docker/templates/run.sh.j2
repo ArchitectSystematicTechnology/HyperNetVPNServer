@@ -75,6 +75,7 @@
   {{ opt('mount', 'type=tmpfs,destination=/tmp,tmpfs-mode=01777,tmpfs-size=64M,notmpcopyup') }}
 {% endif %}
 {{ opt('mount', 'type=bind,source=/dev/log,destination=/dev/log') }}
+{{ opt('mount', 'type=bind,source=/etc/credentials/system,destination=/etc/ssl/certs') }}
 
 {# Mount the service credentials inside the container. #}
 {% for creds in services[item.service].get('service_credentials', []) %}

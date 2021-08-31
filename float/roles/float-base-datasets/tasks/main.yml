@@ -39,5 +39,11 @@
     path: /usr/lib/float/datasets
     state: directory
 
+- name: Obtain list of restore service units
+  shell: "systemctl list-units --no-legend --no-pager --full --type service restore-\\* | awk '{print $1}'"
+  check_mode: no
+  changed_when: false
+  register: loaded_restore_systemd_units
+
 - include_tasks: dataset.yml
   loop: "{{ services | subelements('datasets', skip_missing=True) }}"

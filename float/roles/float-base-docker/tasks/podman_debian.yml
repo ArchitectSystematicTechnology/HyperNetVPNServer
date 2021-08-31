@@ -18,7 +18,7 @@
     state: absent
   loop:
     - "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /"
-    - "deb http://deb.autistici.org/urepo buster-podman/"
+    - "deb [signed-by=/usr/share/keyrings/deb.autistici.org.gpg] http://deb.autistici.org/urepo buster-podman/"
 
 - name: Remove podman package pins
   file:

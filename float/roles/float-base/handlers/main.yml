@@ -67,3 +67,6 @@
   systemd:
     daemon_reload: yes
 
+- name: update-ca-certificates
+  command: "/usr/sbin/update-ca-certificates"
+

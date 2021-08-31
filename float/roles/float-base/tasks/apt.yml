@@ -28,10 +28,22 @@
 
 - name: Setup apt trusted keyring
   copy:
-    src: "apt/{{ item }}"
-    dest: "/etc/apt/trusted.gpg.d/{{ item }}"
-  with_items:
-    - deb_autistici_org.gpg
+    src: "apt/deb_autistici_org.gpg"
+    dest: "/usr/share/keyrings/deb.autistici.org.gpg"
+
+- name: Remove legacy apt keyring
+  file:
+    path: "/etc/apt/trusted.gpg.d/deb_autistici_org.gpg"
+    state: absent
+
+- name: Remove legacy repositories
+  apt_repository:
+    repo: "{{ item }}"
+    state: absent
+    update_cache: no
+  loop:
+    - "deb http://deb.autistici.org/urepo ai3/"
+    - "deb http://deb.autistici.org/urepo buster-podman/"
 
 - name: Install our standard sources.list
   template:
@@ -40,7 +52,7 @@
 
 - name: Install package repositories
   apt_repository:
-    repo: "deb http://deb.autistici.org/urepo ai3/"
+    repo: "deb [signed-by=/usr/share/keyrings/deb.autistici.org.gpg] http://deb.autistici.org/urepo float/{{ float_debian_dist }}/"
     state: present
 
 - name: Run apt-get update
