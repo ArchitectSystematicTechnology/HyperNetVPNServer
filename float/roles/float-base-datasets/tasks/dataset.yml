@@ -18,6 +18,7 @@
 
 - set_fact:
     dataset_should_restore: "{{ dataset_should_backup and not item.1.get('sharded', False) }}"
+    dataset_restore_unit: "restore-{{ dataset_filename }}.service"
 
 - name: "Create path for dataset {{ dataset_name }}"
   file:
@@ -83,13 +84,13 @@
 - name: Create restore service unit
   template:
     src: "restore-service.j2"
-    dest: "/etc/systemd/system/restore-{{ dataset_filename }}.service"
+    dest: "/etc/systemd/system/{{ dataset_restore_unit }}"
     mode: 0444
   when: dataset_should_restore
 
 - name: Enable restore service unit
   systemd:
-    name: "restore-{{ dataset_filename }}.service"
+    name: "{{ dataset_restore_unit }}"
     enabled: yes
     daemon_reload: yes
   when: dataset_should_restore
@@ -97,14 +98,13 @@
 # systemd disable is not idempotent, hence the ignore_errors.
 - name: Disable restore service unit
   systemd:
-    name: "restore-{{ dataset_filename }}.service"
+    name: "{{ dataset_restore_unit }}"
     enabled: no
-  ignore_errors: true
-  when: not dataset_should_restore
+  when: "(not dataset_should_restore) and (dataset_restore_unit in loaded_restore_systemd_units.stdout_lines)"
 
 - name: Cleanup restore service unit
   file:
-    path: "/etc/systemd/system/restore-{{ dataset_filename }}.service"
+    path: "/etc/systemd/system/{{ dataset_restore_unit }}"
     state: absent
   when: not dataset_should_restore
   notify: reload systemd

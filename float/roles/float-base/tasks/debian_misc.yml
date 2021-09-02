@@ -44,3 +44,12 @@
     dest: "/etc/systemd/system.conf"
   notify: reload systemd
 
+- name: Install ca-certificates hook
+  copy:
+    src: "update-ca-certificates-hook"
+    dest: "/etc/ca-certificates/update.d/float"
+    mode: "0755"
+    owner: root
+    group: root
+  notify: update-ca-certificates
+

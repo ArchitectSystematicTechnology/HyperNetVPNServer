@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# Float hook for ca-certificates. It makes a copy of /etc/ssl/certs
+# that is suitable to be mounted in the running containers, resolving
+# all symbolic links so we can mount a single directory.
+#
+# The host dir /etc/credentials/system becomes /etc/ssl/certs inside
+# the running containers.
+
+
+cert_dir=/etc/ssl/certs
+float_cert_dir=/etc/credentials/system
+
+set -e
+umask 022
+mkdir -p ${float_cert_dir}
+
+echo "Updating float system keystore" >&2
+rsync --delete --copy-links --recursive --include '*.pem' --exclude '*' ${cert_dir}/ ${float_cert_dir}/
+cp -f ${cert_dir}/ca-certificates.crt ${float_cert_dir}/ca-certificates.crt
+openssl rehash ${float_cert_dir}
+
+exit 0
+

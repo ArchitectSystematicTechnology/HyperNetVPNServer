@@ -17,7 +17,7 @@
 
 - name: Add A/I podman repository
   apt_repository:
-    repo: "deb http://deb.autistici.org/urepo buster-podman/"
+    repo: "deb [signed-by=/usr/share/keyrings/deb.autistici.org.gpg] http://deb.autistici.org/urepo buster-podman/"
     state: present
 
 - name: Pin podman packages to our repository
