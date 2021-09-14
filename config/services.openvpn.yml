@@ -30,7 +30,7 @@ openvpn:
       scheme: http
   containers:
     - name: openvpn
-      image: registry.0xacab.org/leap/container-platform/openvpn:latest
+      image: registry.0xacab.org/leap/container-platform/openvpn:1-0
       ports: [80, 443, 53]
       drop_capabilities: false
       docker_options: '--cap-add=NET_ADMIN --cap-add=CAP_NET_BIND_SERVICE'
@@ -62,7 +62,7 @@ vpnweb:
       scheme: http
   containers:
     - name: vpnweb
-      image: registry.0xacab.org/leap/vpnweb:latest
+      image: registry.0xacab.org/leap/vpnweb:1-0
       port: 8000
       volumes:
         - /etc/leap: /etc/leap

@@ -14,7 +14,7 @@ prometheus-pushgateway:
       scheme: http
   containers:
     - name: prometheus-pushgateway
-      image: registry.0xacab.org/leap/container-platform/prometheus-pushgateway
+      image: registry.0xacab.org/leap/container-platform/prometheus-pushgateway:1-0
       port: 9091
 
 ooni-exporter:
@@ -22,7 +22,7 @@ ooni-exporter:
   num_instances: 1
   containers:
     - name: ooni-exporter
-      image: registry.0xacab.org/leap/ooni-exporter
+      image: registry.0xacab.org/leap/ooni-exporter:1.0
       env:
         OONI_PUSH_PORT: 9091
         OONI_PUSH_HOST: "prometheus-pushgateway"
