@@ -24,7 +24,6 @@ variables:
       --num-hosts=3
       --additional-host-group=openvpn=host3
       -e ansible_cfg.defaults.strategy=mitogen_linear
-      -e ansible_cfg.defaults.strategy_plugins=${CI_PROJECT_DIR}/mitogen/ansible_mitogen/plugins/strategy
       -e libvirt.remote_host=${VMINE_SSH#*@}
       -e libvirt.remote_user=${VMINE_SSH%@*}
       ${APT_PROXY:+-e config.apt_proxy=${APT_PROXY}}
