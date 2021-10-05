@@ -1,6 +1,7 @@
 import json
 import time
 import unittest
+from dns.resolver import Resolver
 from float_integration_test import TestBase, ANSIBLE_VARS
 
 
@@ -32,6 +33,26 @@ class TestHTTPRouter(URLTestBase):
         self.assertFalse(result.get('error'))
         self.assertEqual(200, result['status'])
         self.assertTrue(UNKNOWN_DOMAIN_MSG in result['body'])
+
+
+class TestDNS(TestBase):
+
+    def setUp(self):
+        self.resolver = Resolver(configure=False)
+        self.resolver.nameservers = self.all_frontend_ips()
+
+    def test_public_dns_entries_for_services(self):
+        frontend_ips = set(self.all_frontend_ips())
+        for service in ANSIBLE_VARS['services'].values():
+            for pe in service.get('public_endpoints', []):
+                if pe.get('skip_dns', False):
+                    continue
+                name = '%s.%s' % (pe['name'],
+                                  ANSIBLE_VARS['domain_public'][0])
+                print(f'querying {name}')
+                resp = self.resolver.query(name, 'A')
+                for record in resp:
+                    self.assertTrue(str(record) in frontend_ips)
 
 
 class TestBuiltinServiceURLs(URLTestBase):

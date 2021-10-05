@@ -11,7 +11,7 @@ setup(
     url="https://git.autistici.org/ai3/float",
     install_requires=["Jinja2",
                       "PyYAML",
-                      ],
+                      "dnspython"],
     setup_requires=[],
     zip_safe=True,
     packages=find_packages(),

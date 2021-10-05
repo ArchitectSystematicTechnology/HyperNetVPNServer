@@ -18,6 +18,7 @@
   apt_repository:
     repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /"
     state: present
+  register: podman_sources_list
 
 - name: Remove podman package pins
   file:

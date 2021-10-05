@@ -15,12 +15,15 @@
 {% endmacro %}
 
 {# Generate a static_configs entry for a scrape config #}
-{% macro static_configs_for_group(group, port, service_name='') %}
+{% macro static_configs_for_group(group, port, service_name='', extra_labels=None) %}
     static_configs:
 {% if service_name %}
 {{ targets_for_service(service_name, port) }}
         labels:
           service: "{{ service_name }}"
+{% if extra_labels %}{% for k, v in extra_labels | dictsort %}
+          {{ k }}: "{{ v }}"
+{% endfor %}{% endif %}
 {% else %}
 {{ targets_for_group(group, port) }}
 {% endif %}
@@ -50,7 +53,7 @@
       cert_file: /etc/credentials/x509/prometheus/client/cert.pem
       key_file: /etc/credentials/x509/prometheus/client/private_key.pem
 {% endif %}
-{{ static_configs_for_group(target_config.get('group', services[service_name].group_name), target_config.port, service_name) }}
+{{ static_configs_for_group(target_config.get('group', services[service_name].group_name), target_config.port, service_name, target_config.get('labels')) }}
 {% endmacro %}
 
 global:

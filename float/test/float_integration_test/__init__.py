@@ -52,6 +52,11 @@ class TestBase(unittest.TestCase):
         host = random.choice(hosts_in_group('frontend'))
         return ANSIBLE_VARS['hostvars'][host]['ip']
 
+    def all_frontend_ips(self):
+        """Return all IPs in the 'frontend' group."""
+        return [ANSIBLE_VARS['hostvars'][x]['ip']
+                for x in hosts_in_group('frontend')]
+
     def sso_conversation(self, sso_username=None, sso_password=None):
         url = _ansible_eval(
             '{{ sso_server_url | default("https://login." + domain_public[0]) }}')

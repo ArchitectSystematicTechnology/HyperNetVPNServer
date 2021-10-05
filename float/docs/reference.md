@@ -1970,6 +1970,9 @@ Prometheus to find the service endpoints. This can only have the value
 
 `metrics_path`: Path for metrics if different from the default of `/metrics`.
 
+`labels`: An optional dictionary of key/value labels to set for this
+target (they will be added to all metrics scraped from it).
+
 ### Traffic routing
 
 Services can define *public* HTTP and TCP endpoints, that will be

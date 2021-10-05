@@ -48,9 +48,8 @@ probably follow this pattern:
 
 ```
 server {
-    listen [::]:443 http2;
+    listen [::]:443 http2 ssl;
     server_name <name>;
-    ssl on;
     ssl_certificate /etc/credentials/public/<name>/fullchain.pem;
     ssl_certificate_key /etc/credentials/public/<name>/privkey.pem;
     include /etc/nginx/snippets/site-common.conf;

@@ -30,3 +30,10 @@ disable_restricted_sysctl: false
 
 # Conntrack table size.
 nf_conntrack_max: 524288
+
+# Customize /etc/motd.
+motd: |2
+                      ┏━╸╻  ┏━┓┏━┓╺┳╸
+              **      ┣╸ ┃  ┃ ┃┣━┫ ┃ 
+                      ╹  ┗━╸┗━┛╹ ╹ ╹     {{ inventory_hostname }}
+

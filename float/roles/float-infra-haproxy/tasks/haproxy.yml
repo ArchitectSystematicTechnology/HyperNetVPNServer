@@ -2,8 +2,12 @@
 
 - name: Install haproxy
   apt:
-    name: haproxy
+    name: "{{ packages }}"
     state: present
+  vars:
+    packages:
+      - haproxy
+      - hatop
 
 - name: Configure haproxy
   template:

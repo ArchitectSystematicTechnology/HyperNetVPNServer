@@ -1,7 +1,7 @@
 FROM debian:stable
 
 RUN apt-get -q update && env DEBIAN_FRONTEND=noninteractive \
-    apt-get install --no-install-recommends -y python3 python3-pip python3-setuptools python3-yaml python3-jinja2 python3-nose
+    apt-get install --no-install-recommends -y python3 python3-pip python3-setuptools python3-yaml python3-jinja2 python3-nose python3-dnspython
 
 ADD . /src
 WORKDIR /src

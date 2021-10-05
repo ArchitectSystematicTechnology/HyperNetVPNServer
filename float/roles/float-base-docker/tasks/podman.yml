@@ -2,6 +2,13 @@
 
 - include_tasks: "podman_{{ podman_package_source }}.yml"
 
+# If we've changed sources.list for podman, it is important
+# that we run apt upgrade now.
+- name: Apt upgrade
+  apt:
+    upgrade: 'yes'
+  when: "podman_sources_list.changed"
+
 - name: Symlink podman to docker
   file:
     src: /usr/bin/podman
@@ -13,6 +20,11 @@
   copy:
     src: containers.conf
     dest: "/etc/containers/containers.conf"
+
+- name: Install storage.conf
+  copy:
+    src: storage.conf
+    dest: "/etc/containers/storage.conf"
 
 - file:
     path: "/etc/containers/certs.d"

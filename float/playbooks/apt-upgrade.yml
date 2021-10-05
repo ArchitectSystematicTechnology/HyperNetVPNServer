@@ -4,9 +4,8 @@
   tasks:
     - apt:
         update_cache: yes
-        upgrade: yes
+        upgrade: "yes"
     - apt:
-        autoclean: yes
         autoremove: yes
   serial:
     - 1

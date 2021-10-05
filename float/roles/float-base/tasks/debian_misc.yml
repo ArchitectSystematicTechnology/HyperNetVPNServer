@@ -2,7 +2,7 @@
 
 - name: Install motd
   copy:
-    src: motd
+    content: "\n{{ motd }}\n\n"
     dest: /etc/motd
 
 - name: Set locale to C

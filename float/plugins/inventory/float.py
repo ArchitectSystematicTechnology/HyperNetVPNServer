@@ -358,7 +358,7 @@ def _build_horizontal_upstreams_map(services):
     upstreams = {}
     for service_name, svc in services.items():
         for ep in svc.get('horizontal_endpoints', []):
-            upstream_name = 'be_%s_%s_%s' % (name, ep['port'], service_name)
+            upstream_name = 'be_%s_%s_%s' % (ep['name'], ep['port'], service_name)
             upstreams[upstream_name] = {
                 'name': upstream_name,
                 'service_name': service_name,

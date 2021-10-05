@@ -1,6 +1,7 @@
 ---
 
 db_uri: "/var/lib/user-meta-server/usermeta.db"
+ignored_users: {{ user_meta_server_ignored_users | default([]) | to_json }}
 http_server:
   tls:
     cert: "/etc/credentials/x509/user-meta-server/server/cert.pem"

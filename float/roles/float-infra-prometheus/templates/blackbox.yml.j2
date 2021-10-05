@@ -9,7 +9,7 @@ modules:
       method: GET
       fail_if_ssl: false
       fail_if_not_ssl: false
-      fail_if_not_matches_regexp:
+      fail_if_body_not_matches_regexp:
         - "OK"
       preferred_ip_protocol: ip4
       tls_config:

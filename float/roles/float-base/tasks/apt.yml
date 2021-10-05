@@ -49,17 +49,32 @@
   template:
     src: "sources.list.j2"
     dest: "/etc/apt/sources.list"
+  register: sources_list
 
 - name: Install package repositories
   apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/deb.autistici.org.gpg] http://deb.autistici.org/urepo float/{{ float_debian_dist }}/"
-    state: present
+    repo: "deb [signed-by=/usr/share/keyrings/deb.autistici.org.gpg] http://deb.autistici.org/urepo float/{{ item }}/"
+    state: "{{ 'present' if item == float_debian_dist else 'absent' }}"
+  loop:
+    - stretch
+    - buster
+    - bullseye
 
-- name: Run apt-get update
+- name: Run apt update
   apt:
     update_cache: yes
     cache_valid_time: '{{ 1800 if ansible_distribution_release == float_debian_dist else 1 }}'
   changed_when: false
+
+# If we're updating the distro, the first round of 'apt upgrade'
+# (staggered, to handle normal software upgrades) did not do anything,
+# but now we have to run 'apt full-upgrade' because we've just
+# switched sources.list, and we're expecting the rest of the playbook
+# to execute with the new float_debian_dist.
+- name: Run apt full-upgrade
+  apt:
+    upgrade: "full"
+  when: "sources_list.changed"
 
 # When testing, try to make dpkg faster by disabling fsync.
 - name: Speed up dpkg

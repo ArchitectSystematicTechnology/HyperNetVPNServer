@@ -23,14 +23,13 @@
 
 {% macro config_vhost(endpoint, shard=None) %}
 server {
-        listen [::]:{{ nginx_https_port }} http2;
+        listen [::]:{{ nginx_https_port }} http2 ssl;
 {% if endpoint.domains %}
         server_name {{ endpoint.domains | join(' ') }};
 {% else %}
         server_name {% for d in domain_public %}{% if shard %}{{ shard }}.{% endif %}{{ endpoint.name }}.{{ d }} {% endfor %};
 {% endif %}
 
-        ssl on;
 {% if endpoint.get('domains') %}
         ssl_certificate /etc/credentials/public/{{ endpoint.domains[0] }}/fullchain.pem;
         ssl_certificate_key /etc/credentials/public/{{ endpoint.domains[0] }}/privkey.pem;

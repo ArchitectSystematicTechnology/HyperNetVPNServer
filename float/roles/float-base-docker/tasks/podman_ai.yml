@@ -19,6 +19,7 @@
   apt_repository:
     repo: "deb [signed-by=/usr/share/keyrings/deb.autistici.org.gpg] http://deb.autistici.org/urepo buster-podman/"
     state: present
+  register: podman_sources_list
 
 - name: Pin podman packages to our repository
   copy:

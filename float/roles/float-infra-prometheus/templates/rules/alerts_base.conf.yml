@@ -73,8 +73,11 @@ groups:
       scope: host
     annotations:
       summary: 'Probe {{ $labels.probe }}@{{ $labels.host }} is failing'
-      description: 'Probe {{ $labels.probe }} ({{ $labels.host }}) is failing
-        for target {{ $labels.host }} (success ratio {{ $value }}).'
+      description: >-
+        Probe {{ $labels.probe }} ({{ $labels.host }}) is failing for target {{ $labels.host }}
+        (success ratio {{ $value }}).
+
+        Failed probe logs: https://{{ $labels.prober_float_service }}.[[ domain_public[0] ]]/
       runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
 
   - alert: ProbeFailure
@@ -85,8 +88,11 @@ groups:
       scope: global
     annotations:
       summary: 'Probe {{ $labels.probe }} is failing globally'
-      description: 'Probe {{ $labels.probe }} ({{ $labels.zone }}) is failing
-        globally (success ratio {{ $value }}).'
+      description: >-
+        Probe {{ $labels.probe }} ({{ $labels.zone }}) is failing globally
+        (success ratio {{ $value }}).
+
+        Failed probe logs: https://{{ $labels.prober_float_service }}.[[ domain_public[0] ]]/
       runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
 
   - alert: CronJobFailure

@@ -4,7 +4,10 @@
 #
 # We store the git commit of HEAD from the source repository being
 # pushed on the remote servers, and we check if the remote commit is
-# older than the local one.
+# older than the local one. There are many ways in which this check is
+# incomplete: it won't detect changes in submodules, it won't detect
+# any sort of local unpushed change, etc. But it will at least prevent
+# foot-shooting if you're implementing proper operations.
 #
 # To skip the checks in an emergency, set the
 # 'skip_rollback_protection' variable to 'true' in the Ansible
@@ -12,11 +15,11 @@
 
 # Detect remote commit (if present).
 - stat:
-    path: /etc/ai3-ansible-commit
+    path: /etc/.float-ansible-commit
   register: commit_guard_stat
 
 - slurp:
-    src: /etc/ai3-ansible-commit
+    src: /etc/.float-ansible-commit
   register: commit_guard_content
   when: commit_guard_stat.stat.exists
 - set_fact:
@@ -28,7 +31,7 @@
 # custom message.
 - local_action:
     module: shell
-    _raw_params: git merge-base --is-ancestor {{ remote_git_revision }} {{ git_revision }}
+    _raw_params: git merge-base --is-ancestor {{ remote_git_revision | trim }} {{ git_revision }}
     chdir: "{{ inventory_dir }}"
   when: commit_guard_stat.stat.exists
   become: false
@@ -38,9 +41,15 @@
   check_mode: no
 
 - fail:
-    msg: "You are pushing an older version of the sources. Run 'git pull' and try again?"
+    msg: |
+      You seem to be pushing an older version of the sources.
+
+      This could be because your local repository is out of date (run
+      "git pull" and try again?). If the rollback is intended, or if
+      you really think the check is wrong for some reason, re-run
+      float with "-e rollback=true".
   when: "commit_guard_stat.stat.exists and commit_compare.rc != 0 and not skip_rollback_protection"
 
 - copy:
-    dest: /etc/ai3-ansible-commit
-    content: "{{ git_revision }}"
+    dest: /etc/.float-ansible-commit
+    content: "{{ git_revision }}\n"

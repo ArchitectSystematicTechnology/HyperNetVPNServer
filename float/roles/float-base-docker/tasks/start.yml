@@ -13,6 +13,13 @@
   register: docker_systemd_run_script
   loop: "{{ float_enabled_containers }}"
 
+# TODO temporary only, to be removed once all symlinks are gone
+- name: Cleanup Alias symlink
+  file:
+    dest: "/etc/systemd/system/{{ item.tag }}"
+    state: absent
+  loop: "{{ float_enabled_containers }}"
+
 - name: Set up the systemd units
   template:
     src: systemd.j2

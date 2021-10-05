@@ -8,7 +8,7 @@ Requires=docker.service
 [Service]
 ExecStart=/usr/lib/float/docker/run-{{ item.service }}-{{ item.container.name }}.sh
 ExecStop=/usr/bin/{{ container_runtime }} stop --time 20 {{ item.service }}-{{ item.container.name }}
-ExecStopPost=-/usr/bin/{{ container_runtime }} kill {{ item.service }}-{{ item.container.name }}
+ExecStopPost=-/usr/bin/{{ container_runtime }} kill {{ item.service }}-{{ item.container.name }} 2>/dev/null
 TimeoutStopSec=60
 KillMode=control-group
 Restart=always
@@ -33,4 +33,3 @@ LimitNOFILE=65535
 
 [Install]
 WantedBy=multi-user.target {{ 'docker.service' if container_runtime == 'docker' else '' }}
-Alias={{ item.service }}-{{ item.container.name }}

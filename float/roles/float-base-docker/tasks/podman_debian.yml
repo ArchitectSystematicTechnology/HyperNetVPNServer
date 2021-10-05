@@ -24,6 +24,7 @@
   file:
     path: "/etc/apt/preferences.d/99podman"
     state: absent
+  register: podman_sources_list
 
 - name: Install Podman packages
   apt:

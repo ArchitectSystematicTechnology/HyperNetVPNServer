@@ -9,7 +9,7 @@ variables:
 
 .base_test_template: &base_test
   stage: test
-  image: registry.git.autistici.org/ai3/docker/float-runner:bullseye
+  image: registry.git.autistici.org/ai3/docker/float-runner:master
   before_script:
     - mkdir -p $BUILD_DIR
   script:
@@ -45,6 +45,7 @@ variables:
 base_test:
   <<: *base_test
   variables:
+    CREATE_ENV_VARS: "-e config.float_debian_dist=buster"
     TEST_DIR: "test/base.ref"
 
 base_bullseye_test:
@@ -57,6 +58,7 @@ base_bullseye_test:
 full_test:
   <<: *base_test
   variables:
+    CREATE_ENV_VARS: "-e config.float_debian_dist=buster"
     TEST_DIR: "test/full.ref"
 
 full_bullseye_test:
