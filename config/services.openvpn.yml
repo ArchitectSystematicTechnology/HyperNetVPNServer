@@ -13,6 +13,8 @@ menshen:
       port: 9001
       volumes:
         - /var/lib/GeoIP: /var/lib/GeoIP/
+      env:
+        MENSHEN_API: "api.{{ domain_public[0] }}"
   public_endpoints:
     - name: menshen
       port: 9001
