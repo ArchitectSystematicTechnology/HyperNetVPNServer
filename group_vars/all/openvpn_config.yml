@@ -5,7 +5,6 @@ openvpn_config:
   'cipher': 'AES-256-GCM'
   'keepalive': '10 30'
   'tls-cipher': 'TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384'
-  'tun-ipv6': true
   'dev': 'tun'
   'sndbuf': '0'
   'rcvbuf': '0'
