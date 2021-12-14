@@ -1,5 +1,8 @@
 net.listen('10.41.0.1', 53, { kind = 'dns' })
 net.listen('10.42.0.1', 53, { kind = 'dns' })
+{% if openvpn_udp_network6 is defined and openvpn_udp_network6|length %}
+net.listen('::1', 53, { kind = 'dns' })
+{% endif %}
 net.listen('{{ansible_vpn0.ipv4.address}}', 8453, { kind = 'webmgmt' })
 
 -- Load Useful modules
