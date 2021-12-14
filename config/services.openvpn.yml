@@ -54,6 +54,8 @@ openvpn:
         EXTORPORT: '3334'
         _CHAP_OPTIONS: --no-syslog
         LOGLEVEL: DEBUG
+        # to try and get stability of socket name
+        SYSTEMD_INSTANCE: 1
 
 vpnweb:
   scheduling_group: backend
