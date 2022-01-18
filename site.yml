@@ -4,8 +4,8 @@
 
 - hosts: openvpn
   roles:
-    - openvpn
     - kresd
+    - openvpn
 
 - hosts: vpnweb
   roles:
