@@ -2,17 +2,17 @@
 add_rule4 -A POSTROUTING -s {{ openvpn_tcp_network | ipaddr('network/prefix') }} -o {{ ansible_default_ipv4.interface }} -j SNAT --to-source {{ egress_ip }}
 add_rule4 -A POSTROUTING -s {{ openvpn_udp_network | ipaddr('network/prefix') }} -o {{ ansible_default_ipv4.interface }} -j SNAT --to-source {{ egress_ip }}
 # Accept connections on ipv4 port 1194, redirecting them to openvpn
-add_rule4 -A PREROUTING -p tcp -d {{ ip }} --dport 1194 -j DNAT --to-destination {{ ip }}:80
-add_rule4 -A PREROUTING -p udp -d {{ ip }} --dport 1194 -j DNAT --to-destination {{ ip }}:80
+add_rule4 -A PREROUTING -p tcp -d {{ ips | ansible.netcommon.ipv4 | first }} --dport 1194 -j DNAT --to-destination {{ ips | ansible.netcommon.ipv4 | first }}:80
+add_rule4 -A PREROUTING -p udp -d {{ ips | ansible.netcommon.ipv4 | first }} --dport 1194 -j DNAT --to-destination {{ ips | ansible.netcommon.ipv4 | first }}:80
 # Accept connections on ipv4 port 53, redirecting them to openvpn
-add_rule4 -A PREROUTING -p tcp -d {{ ip }} --dport 53 -j DNAT --to-destination {{ ip }}:80
-add_rule4 -A PREROUTING -p udp -d {{ ip }} --dport 53 -j DNAT --to-destination {{ ip }}:80
+add_rule4 -A PREROUTING -p tcp -d {{ ips | ansible.netcommon.ipv4 | first }} --dport 53 -j DNAT --to-destination {{ ips | ansible.netcommon.ipv4 | first }}:80
+add_rule4 -A PREROUTING -p udp -d {{ ips | ansible.netcommon.ipv4 | first }} --dport 53 -j DNAT --to-destination {{ ips | ansible.netcommon.ipv4 | first }}:80
 
 {% if openvpn_tcp_network6 is defined and openvpn_tcp_network6|length -%}
 # Accept connections on ipv6 port 1194, redirecting them to openvpn
-add_rule6 -A PREROUTING -p tcp -d {{ ip6 }} --dport 1194 -j DNAT --to-destination [{{ ip6 }}]:80
-add_rule6 -A PREROUTING -p udp -d {{ ip6 }} --dport 1194 -j DNAT --to-destination [{{ ip6 }}]:80
+add_rule6 -A PREROUTING -p tcp -d {{ ips | ansible.netcommon.ipv6 | first }} --dport 1194 -j DNAT --to-destination [{{ ips | ansible.netcommon.ipv6 | first }}]:80
+add_rule6 -A PREROUTING -p udp -d {{ ips | ansible.netcommon.ipv6 | first }} --dport 1194 -j DNAT --to-destination [{{ ips | ansible.netcommon.ipv6 | first }}]:80
 # Accept connections on ipv6 port 53, redirecting them to openvpn
-add_rule6 -A PREROUTING -p tcp -d {{ ip6 }} --dport 53 -j DNAT --to-destination [{{ ip6 }}]:80
-add_rule6 -A PREROUTING -p udp -d {{ ip6 }} --dport 53 -j DNAT --to-destination [{{ ip6 }}]:80
+add_rule6 -A PREROUTING -p tcp -d {{ ips | ansible.netcommon.ipv6 | first }} --dport 53 -j DNAT --to-destination [{{ ips | ansible.netcommon.ipv6 | first }}]:80
+add_rule6 -A PREROUTING -p udp -d {{ ips | ansible.netcommon.ipv6 | first }} --dport 53 -j DNAT --to-destination [{{ ips | ansible.netcommon.ipv6 | first }}]:80
 {% endif %}

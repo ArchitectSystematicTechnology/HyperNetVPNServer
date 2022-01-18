@@ -48,7 +48,7 @@ openvpn:
       env:
         # Shapeshifter specific environment variables
         LHOST: "::"
-        RHOST: "{{ ip }}"
+        RHOST: "{{ ips | ansible.netcommon.ipv4 | first }}"
         RPORT: '80'
         OBFSPORT: '443'
         EXTORPORT: '3334'
