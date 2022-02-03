@@ -1,13 +1,7 @@
 groups:
   - name: roles/float-infra-prometheus/templates/rules/rules_services.conf
     rules:
-      - record: job:total:count
-        expr: count(up) by (job)
-      - record: job:up:count
-        expr: sum(up) by (job)
-      - record: job:up:fraction
-        expr: job:up:count / job:total:count
-
+      # Service health is determined based on systemd unit state.
       - record: node_systemd_unit_ok
         expr: sum(node_systemd_unit_state{state="active"}) by (host,name)
 
@@ -18,7 +12,8 @@ groups:
 
       # By joining the node_systemd_unit_state with svcmap we can find
       # float_services that have at least one failing systemd unit.
-      # The result metric has both float_service and service labels.
+      # The result metric has both float_service and service (systemd
+      # unit) labels.
       - record: service:presence_by_host
         expr: label_replace(max(node_systemd_unit_state) by (host,name),"service","$1","name","(.*)") * on (service,host) group_right global:svcmap
 

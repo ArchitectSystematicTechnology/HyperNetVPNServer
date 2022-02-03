@@ -1,0 +1,6 @@
+---
+
+- listen: reload assetmon
+  systemd:
+    name: docker-assets-http.service
+    state: restarted

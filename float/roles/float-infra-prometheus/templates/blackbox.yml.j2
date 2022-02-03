@@ -1,16 +1,56 @@
 modules:
 
-  # Healthcheck probe to use on internal targets.
-  http_health:
+  # Healthcheck probe to use on internal Prometheus targets. Only use
+  # when the target does not support HTTP methods that do not transfer
+  # data (HEAD / OPTIONS).
+  http_health_get:
     prober: http
     timeout: 5s
     http:
-      valid_status_codes: []
+      valid_status_codes: [200]
       method: GET
       fail_if_ssl: false
       fail_if_not_ssl: false
-      fail_if_body_not_matches_regexp:
-        - "OK"
+      preferred_ip_protocol: ip4
+      tls_config:
+        ca_file: /etc/credentials/x509/prometheus/ca.pem
+        cert_file: /etc/credentials/x509/prometheus/client/cert.pem
+        key_file: /etc/credentials/x509/prometheus/client/private_key.pem
+        insecure_skip_verify: false
+
+  # Healthcheck probe to use on internal Prometheus targets, makes
+  # a simple HEAD request to /metrics to avoid transferring the entire
+  # metrics dump (which might be huge). This probe also accepts a 405
+  # status (unsupported method), as that also indicates that the server
+  # is up and running and the chances it will serve metrics on a GET are
+  # extremely high.
+  http_health_head:
+    prober: http
+    timeout: 5s
+    http:
+      valid_status_codes: [200, 405]
+      method: HEAD
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+      preferred_ip_protocol: ip4
+      tls_config:
+        ca_file: /etc/credentials/x509/prometheus/ca.pem
+        cert_file: /etc/credentials/x509/prometheus/client/cert.pem
+        key_file: /etc/credentials/x509/prometheus/client/private_key.pem
+        insecure_skip_verify: false
+
+  # Healthcheck probe to use on internal Prometheus targets, makes
+  # a simple OPTIONS request to /metrics to avoid transferring the entire
+  # metrics dump (which might be huge). In particular, Prometheus jobs
+  # themselves do not support the HEAD method, but do understand OPTIONS.
+  http_health_options:
+    prober: http
+    timeout: 5s
+    http:
+      valid_status_codes: [200]
+      method: OPTIONS
+      fail_if_ssl: false
+      fail_if_not_ssl: false
       preferred_ip_protocol: ip4
       tls_config:
         ca_file: /etc/credentials/x509/prometheus/ca.pem

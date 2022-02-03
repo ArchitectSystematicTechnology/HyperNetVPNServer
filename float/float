@@ -177,6 +177,7 @@ DEFAULT_VARS = {
             'callback_plugins': '{{ srcdir | relpath(targetdir) }}/plugins/callback',
             'force_handlers': True,
             'log_path': 'ansible.log',
+            'retry_files_enabled': False,
 
             'nocows': 1,
             'display_skipped_hosts': False,
@@ -296,7 +297,7 @@ def _random_hosts(num_hosts, extra_memberships):
         hostvars = {
             'name': hostname,
             'ansible_host': f'{net}.{i+10}',
-            'ip': f'{net}.{i+10}',
+            'ips': [f'{net}.{i+10}'],
             'ip_vpn0': f'192.168.13.{i+10}',
         }
         hostgroups = ['vagrant']

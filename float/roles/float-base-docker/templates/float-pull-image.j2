@@ -17,8 +17,12 @@ get_main_auth_token() {
 
 get_auth_token() {
     local url="$1"
-    local auth_hdr="$(curl -s -I -H "Accept: application/vnd.docker.distribution.manifest.v2+json" "$url" \
+    local auth_hdr="$(curl -fs -I -H "Accept: application/vnd.docker.distribution.manifest.v2+json" "$url" \
                          | awk 'BEGIN{IGNORECASE=1} /^www-authenticate:/ {print $3}')"
+    if [ -z "$auth_hdr" ]; then
+        echo "Could not obtain authentication token from $url" >&2
+        exit 1
+    fi
     local scope=$(printf "%s" "${auth_hdr}" | sed -e 's/^.*scope="\([^"]*\)".*$/\1/')
     local service=$(printf "%s" "${auth_hdr}" | sed -e 's/^.*service="\([^"]*\)".*$/\1/')
     local realm=$(printf "%s" "${auth_hdr}" | sed -e 's/^.*realm="\([^"]*\)".*$/\1/')
@@ -27,13 +31,13 @@ get_auth_token() {
     if [ -n "${main_auth_token}" ]; then
         curl_opts="-H \"Authorization: Bearer ${main_auth_token}\""
     fi
-    curl ${curl_opts} -s "${realm}?service=${service}&scope=${scope}" | jq -r .token
+    curl ${curl_opts} -sf "${realm}?service=${service}&scope=${scope}" | jq -r .token
 }
 
 get_remote_image_version() {
     local url="https://${registry_hostname}/v2/${image_path}/manifests/${image_tag}"
     local token="$(get_auth_token "$url")"
-    curl -s -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+    curl -sf -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
          -H "Authorization: Bearer ${token}" \
          "$url" \
          | jq -r .config.digest

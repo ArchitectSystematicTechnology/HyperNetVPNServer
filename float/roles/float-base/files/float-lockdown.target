@@ -1,0 +1,7 @@
+[Unit]
+Description=float has been locked down
+Requires=multi-user.target
+After=multi-user.target
+
+[Install]
+WantedBy=multi-user.target

@@ -32,11 +32,10 @@ prometheus-lts:
       scheme: http
       enable_sso_proxy: true
   monitoring_endpoints:
-    - job_name: prometheus-lts
-      port: 9099
+    - port: 9099
       scheme: http
-    - job_name: thanos-sidecar-lts
-      port: 10912
+      healthcheck_http_method: OPTIONS
+    - port: 10912
       scheme: http
   ports:
     - 10911

@@ -83,6 +83,12 @@
     state: present
   when: "testing|default(True)"
 
+# Remove legacy stretch/buster mtail package pin.
+- name: Cleanup mtail package pin
+  file:
+    path: "/etc/apt/preferences.d/99float-syslog"
+    state: absent
+
 - name: Install base packages
   apt:
     name: "{{ packages }}"
@@ -90,6 +96,7 @@
   vars:
     packages:
       - unattended-upgrades
+      - systemd-coredump
       - rsync
       - git
       - ntp
@@ -97,16 +104,26 @@
       - curl
       - lsof
       - cgroups-exporter
-      - rsyslog-exporter
       - logcat
       - tabacco
       - restic
+      - litestream
       - runcron
       - acpid
-      - lz4
+      - zstd
       - man-db
       - jq
       - gpg
+      - firewall
+      - rsyslog
+      - rsyslog-relp
+      - rsyslog-exporter
+      - mtail
+      - auditd
+      - audisp-json
+      - prometheus-node-exporter
+      - prometheus-node-exporter-collectors
+      - assetmon
 
 - name: Install extra packages
   apt:

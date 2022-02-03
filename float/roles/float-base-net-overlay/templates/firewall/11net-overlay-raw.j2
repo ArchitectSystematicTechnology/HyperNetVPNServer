@@ -1,11 +1,17 @@
+{% macro allow_host_ips(h, chain) %}
+{% for ip in hostvars[h]['ips'] | ansible.netcommon.ipv4 | sort %}
+add_rule4 -A {{ chain }} -s {{ ip }} -j CT --notrack
+{% endfor %}
+{% for ip in hostvars[h]['ips'] | ansible.netcommon.ipv6 | sort %}
+add_rule6 -A {{ chain }} -s {{ ip }} -j CT --notrack
+{% endfor %}
+{% endmacro %}
+
 # Allow peer nodes to communicate with our tinc daemon.
 create_chain allow-vpn-{{ tinc_net }}
 {% for h in groups['overlay_' + tinc_net]|sort %}
 {% if h != inventory_hostname %}
-add_rule4 -A allow-vpn-{{ tinc_net }} -s {{ hostvars[h]['ip'] }} -j CT --notrack
-{% if hostvars[h].get('ip6') %}
-add_rule6 -A allow-vpn-{{ tinc_net }} -s {{ hostvars[h]['ip6'] }} -j CT --notrack
-{% endif %}
+{{ allow_host_ips(h, 'allow-vpn-' + tinc_net) }}
 {% endif %}
 {% endfor %}
 

@@ -1,16 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 
 # Initialize ES index templates, after having waited for ES to be ready.
 
-from __future__ import print_function
-
+import argparse
 import glob
 import json
-import optparse
 import os
-import urllib2
 import sys
 import time
+import urllib.request
 
 
 # Default index settings that are applied to indices that already
@@ -33,8 +31,8 @@ def wait_for_es(url, timeout):
     while time.time() < deadline:
         try:
             resp = json.load(
-                urllib2.urlopen('%s/_cluster/health?wait_for_status=yellow&timeout=%ds' % (
-                    url, timeout)))
+                urllib.request.urlopen(
+                    f'{url}/_cluster/health?wait_for_status=yellow&timeout={timeout}s'))
             if resp['status'] in ('yellow', 'green'):
                 return True
         except Exception as e:
@@ -50,37 +48,38 @@ def load_index_template(url, tplfile):
     with open(tplfile, 'r') as fd:
         tpldata = fd.read()
     name = os.path.splitext(os.path.basename(tplfile))[0]
-    req = urllib2.Request(
+    req = urllib.request.Request(
         '%s/_template/%s' % (url, name),
         headers={'Content-Type': 'application/json'},
         data=tpldata)
     req.get_method = lambda: 'PUT'
     try:
-        urllib2.urlopen(req)
+        urllib.request.urlopen(req)
         return True
-    except urllib2.HTTPError as e:
+    except urllib.request.HTTPError as e:
         print(e.read())
         return False
 
 
 def update_index_settings(url, index_name):
-    req = urllib2.Request(
+    req = urllib.request.Request(
         '%s/%s/_settings' % (url, index_name),
         headers={'Content-Type': 'application/json'},
         data=INDEX_SETTINGS)
     req.get_method = lambda: 'PUT'
     try:
-        urllib2.urlopen(req)
+        urllib.request.urlopen(req)
         return True
-    except urllib2.HTTPError as e:
+    except urllib.request.HTTPError as e:
         print(e.read())
         return False
 
 
 def update_existing_indices(url):
     try:
-        index_data = json.load(urllib2.urlopen('%s/_all' % url))
-    except urllib2.HTTPError as e:
+        index_data = json.load(
+            urllib.request.urlopen(f'{url}/_all'))
+    except urllib.request.HTTPError as e:
         print(e.read())
         return False
     for index_name in index_data.keys():
@@ -93,27 +92,25 @@ def update_existing_indices(url):
 
 
 def main():
-    parser = optparse.OptionParser()
-    parser.add_option('--url', default='http://localhost:9200',
-                      help='Elasticsearch URL')
-    parser.add_option('--dir', default='/etc/elasticsearch/templates',
-                      help='Directory containing JSON index templates')
-    parser.add_option('--wait-timeout', dest='wait_timeout', type='int',
-                      default=1800)
-    opts, args = parser.parse_args()
-    if len(args) > 0:
-        parser.error('too many arguments')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--url', default='http://localhost:9200',
+                        help='Elasticsearch URL')
+    parser.add_argument('--dir', default='/etc/elasticsearch/templates',
+                        help='Directory containing JSON index templates')
+    parser.add_argument('--wait-timeout', dest='wait_timeout', type='int',
+                        default=1800)
+    args = parser.parse_args()
 
-    if not wait_for_es(opts.url, opts.wait_timeout):
+    if not wait_for_es(args.url, args.wait_timeout):
         return 1
 
     ret = 0
-    for tplfile in glob.glob(os.path.join(opts.dir, '*.json')):
+    for tplfile in glob.glob(os.path.join(args.dir, '*.json')):
         print('Loading index template %s' % (tplfile,))
-        if not load_index_template(opts.url, tplfile):
+        if not load_index_template(args.url, tplfile):
             ret = 1
 
-    if not update_existing_indices(opts.url):
+    if not update_existing_indices(args.url):
         ret = 1
 
     return ret
@@ -121,4 +118,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-

@@ -1,0 +1,18 @@
+---
+
+- name: Create /etc/assetmon
+  file:
+    path: "/etc/assetmon"
+    state: directory
+    owner: root
+    group: docker-assets
+    mode: 0750
+
+- name: Configure asset tracking server
+  template:
+    src: "server.yml.j2"
+    dest: "/etc/assetmon/server.yml"
+    owner: root
+    group: docker-assets
+    mode: 0640
+  notify: reload assetmon

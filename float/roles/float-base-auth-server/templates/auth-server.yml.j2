@@ -1,8 +1,15 @@
 ---
 
+{% set all_ips = hostvars.values() | rejectattr('ips', 'undefined') | map(attribute='ips') | flatten | sort %}
+
 backends_dir: /etc/auth-server/backends.d
 services_dir: /etc/auth-server/services.d
 services: {}
+
+webauthn:
+  rp_id: "{{ webauthn_rp_id }}"
+  rp_origin: "https://{{ webauthn_rp_id }}"
+  rp_display_name: "{{ webauthn_rp_display_name | default(webauthn_rp_id) }}"
 
 {% if 'user-meta-server' in services %}
 user_meta_server:
@@ -25,9 +32,9 @@ rate_limits:
         value: "127.0.0.1"
       - key: ip
         value: "::1"
-{% for h in groups['all'] | sort %}
+{% for ip in all_ips %}
       - key: ip
-        value: "{{ hostvars[h]['ip'] }}"
+        value: "{{ ip }}"
 {% endfor %}
 
   # Per-IP rate limiter specific to account recovery, with stricter limits.
@@ -40,9 +47,9 @@ rate_limits:
         value: "127.0.0.1"
       - key: ip
         value: "::1"
-{% for h in groups['all'] | sort %}
+{% for ip in all_ips %}
       - key: ip
-        value: "{{ hostvars[h]['ip'] }}"
+        value: "{{ ip }}"
 {% endfor %}
 
   # Blacklist users with too many failed account recovery attempts.
@@ -73,9 +80,9 @@ rate_limits:
         value: "127.0.0.1"
       - key: ip
         value: "::1"
-{% for h in groups['all'] | sort %}
+{% for ip in all_ips %}
       - key: ip
-        value: "{{ hostvars[h]['ip'] }}"
+        value: "{{ ip }}"
 {% endfor %}
 
 {% if 'auth-cache' in services %}

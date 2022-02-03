@@ -3,7 +3,7 @@ nameserver 127.0.0.1
 options edns0
 {% elif resolver_mode.startswith('internal:') %}
 {% set dns_overlay_net = resolver_mode[9:] %}
-{% for h in groups['frontend'] | sort %}
+{% for h in services['dns'].hosts | sort %}
 nameserver {{ hostvars[h]['ip_' + dns_overlay_net] }}
 {% endfor %}
 options edns0 rotate

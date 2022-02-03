@@ -1,0 +1,30 @@
+#!/bin/sh
+#
+# Restore a dataset (tag passed as command-line argument).
+#
+# Uses a guard file to ensure the restore runs only once
+# on a specific machine (or actually, once every time the
+# service is newly scheduled there).
+
+dataset_tag="$1"
+[ -z "${dataset_tag}" ] && exit 2
+
+umask 027
+
+guard_dir=/var/lib/float/datasets
+mkdir -p ${guard_dir}
+
+guard_file="${guard_dir}/${dataset_tag}.restore_guard"
+restore_script="/usr/lib/float/datasets/restore-${dataset_tag}"
+
+if [ -e "${guard_file}" ]; then
+    echo "restore already ran for this dataset, skipping..." >&2
+    exit 0
+fi
+
+${restore_script} && {
+    echo "restore was successful" >&2
+    touch "${guard_file}"
+}
+
+exit $?

@@ -42,7 +42,7 @@
 
 {# Job scrape config for a float service. #}
 {% macro job_service_config(service_name, target_config) %}
-  - job_name: "{{ target_config.get('job_name', service_name) }}"
+  - job_name: "{{ service_name }}_{{ target_config.port }}"
     scheme: "{{ target_config.get('scheme', 'https') }}"
 {% if target_config.get('metrics_path') %}
     metrics_path: "{{ target_config['metrics_path'] }}"
@@ -103,6 +103,42 @@ scrape_configs:
 {# Blackbox probes #}
 {% for prober_host in services['prometheus'].hosts|sort %}
 {% set prober_idx = loop.index %}
+
+{# Create all the health probes for all the monitored services #}
+{% for service_name, service in services | dictsort %}
+{% for target_config in service.get('monitoring_endpoints', []) %}
+  - job_name: "prober_health_{{ service_name | replace('-', '_') }}_{{ prober_idx }}_{{ loop.index }}"
+    metrics_path: "/probe"
+    params:
+      module:
+        - http_health_{{ target_config.healthcheck_http_method | default('HEAD') | lower }}
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: host
+        regex: "https?://([^.:/]*).*"
+        replacement: "${1}"
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: {{ prober_host }}.prometheus.{{ domain }}:9115
+      - target_label: prober_host
+        replacement: {{ prober_host }}
+    static_configs:
+      - targets:
+{% for host in service.hosts | sort %}
+        - "{{ target_config.get('scheme', 'http') }}://{{ host }}.{{ service_name }}.{{ domain }}:{{ target_config.port }}{{ target_config.metrics_path | default('/metrics') }}"
+{% endfor %}
+        labels:
+          zone: internal
+          probe: health
+          probeset: health
+          prober_float_service: prometheus
+          float_service: "{{ service_name }}"
+          float_job: "{{ service_name }}_{{ target_config.port }}"
+{% endfor %}
+{% endfor %}
 
   - job_name: "prober_ping_{{ loop.index }}"
     metrics_path: "/probe"
@@ -181,7 +217,7 @@ scrape_configs:
         replacement: {{ prober_host }}
     static_configs:
       - targets:
-{% for host in services['frontend'].hosts|sort %}
+{% for host in services['dns'].hosts|sort %}
         - "{{ host }}"
 {% endfor %}
         labels:

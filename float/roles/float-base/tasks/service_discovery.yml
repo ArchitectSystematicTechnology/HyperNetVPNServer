@@ -8,5 +8,5 @@
 - name: Create /etc/host.conf
   copy:
     dest: /etc/host.conf
-    content: "multi on"
+    content: "multi on\n"
 

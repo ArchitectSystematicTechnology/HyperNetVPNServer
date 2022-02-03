@@ -1,0 +1,43 @@
+---
+
+include:
+  - "../../services.yml.no-elasticsearch"
+
+ok:
+  scheduling_group: backend
+  containers:
+    - name: http
+      image: registry.git.autistici.org/ai3/docker/okserver:latest
+      port: 3100
+      env:
+        PORT: 3100
+      resources:
+        ram: 1g
+        cpu: 0.5
+  public_endpoints:
+    - name: ok
+      port: 3100
+      scheme: http
+
+backup:
+  scheduling_group: backend
+  num_instances: 1
+  containers:
+    - name: s3
+      image: quay.io/minio/minio
+      port: 9000
+      env:
+        HOME: /data
+        MINIO_ROOT_USER: minio
+        MINIO_ROOT_PASSWORD: miniopassword
+      args: "server /data --console-address :9001"
+      volumes:
+        - /var/lib/backup: /data
+  ports:
+    - 9000
+  volumes:
+    - name: backup
+      path: /var/lib/backup
+      owner: docker-backup
+      size: 2g
+

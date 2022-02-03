@@ -39,18 +39,6 @@
 - name: Restrict core dumps (PAM)
   lineinfile: dest=/etc/security/limits.conf line="* hard core 0" state=present
 
-# Audit configuration on Debian stretch uses augenrules by default, so
-# we copy our rules in /etc/audit/rules.d.
-# TODO: evaluate whether we still need this.
-- name: Auditd installed
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - auditd
-      - audisp-json
-
 - name: Auditd default config removed
   file:
     path: /etc/audit/rules.d/audit.rules
@@ -75,7 +63,7 @@
 - name: Audispd plugins configured
   copy:
     src: "audit/plugins.d/{{ item }}"
-    dest: "/etc/{{ 'audisp' if float_debian_dist in ('stretch', 'buster') else 'audit' }}/plugins.d/{{ item }}"
+    dest: "/etc/audit/plugins.d/{{ item }}"
   with_items:
     - syslog.conf
     - json.conf
@@ -87,9 +75,31 @@
     name: auditd.service
     enabled: yes
 
-- name: Disable journald-auditd link
+- name: Mask unwanted systemd units
   systemd:
-    name: systemd-journald-audit.socket
+    name: "{{ item }}"
     state: stopped
     enabled: no
     masked: yes
+  loop:
+    - "sys-fs-fuse-connections.mount"
+    - "systemd-journald-audit.socket"
+
+- name: Install lockdown systemd units
+  copy:
+    src: "{{ item }}"
+    dest: "/lib/systemd/system/{{ item }}"
+  loop:
+    - 'float-lockdown.target'
+    - 'disable-kmod-load.service'
+
+- name: Enable lockdown systemd units
+  systemd:
+    name: "{{ item }}"
+    enabled: "{{ kernel_lockdown_enabled }}"
+    daemon_reload: yes
+  loop:
+    - 'float-lockdown.target'
+    - 'disable-kmod-load.service'
+  ignore_errors: "{{ ansible_check_mode }}"
+

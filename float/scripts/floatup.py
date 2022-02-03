@@ -132,7 +132,7 @@ def main():
         req = parse_inventory(args.inventory, host_attrs)
         req['ttl'] = args.ttl
 
-        print('creating VM group with attrs %r ...', host_attrs)
+        print('creating VM group with attrs %s ...' % host_attrs)
         resp = do_request(args.url + '/api/create-group', args.ssh, req)
         group_id = resp['group_id']
         with open(args.state_file, 'w') as fd:

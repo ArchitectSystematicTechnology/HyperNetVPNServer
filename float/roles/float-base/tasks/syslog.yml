@@ -1,23 +1,5 @@
 ---
 
-# mtail 3.0.0~rc19-2 on Buster is broken when reading from named pipes
-# Pin mtail to ai3 repo that ships mtail 3.0.0~rc5-1~bpo9+1
-- name: Force mtail version on buster
-  copy:
-    src: "mtail.apt-preferences"
-    dest: "/etc/apt/preferences.d/99float-syslog"
-  when: float_debian_dist == 'buster'
-
-- name: Install rsyslog packages
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - rsyslog
-      - rsyslog-gnutls
-      - mtail
-
 - name: Install mtail systemd socket unit
   copy:
     src: "mtail.socket"
@@ -26,7 +8,7 @@
 
 - name: Install mtail systemd unit
   copy:
-    src: "mtail.service.{{ float_debian_dist }}"
+    src: "mtail.service"
     dest: "/etc/systemd/system/mtail.service"
   notify: restart mtail
 

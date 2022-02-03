@@ -1,27 +1,33 @@
 groups:
   - name: roles/float-infra-prometheus/templates/rules/rules_base.conf
     rules:
+      # Look at prober metrics to assess target state, rather than
+      # using Prometheus' "up" metric. This allows us to take
+      # advantage of a redundant blackbox prober setup and remove
+      # noise caused by prober failures.
       - record: job:up:count
-        expr: count(up) by (job)
+        expr: label_replace(count(probe_success{probe="health"}) by (float_job),"job","$1","float_job","(.*)")
       - record: job:up:sum
-        expr: sum(up) by (job)
+        expr: label_replace(sum(probe_success{probe="health"}) by (float_job),"job","$1","float_job","(.*)")
       - record: job:up:ratio
         expr: job:up:sum / job:up:count
 
-      # Sum prober metrics over the probers (hosts), producing
-      # an aggregation by target.
+      # Sum prober metrics over the probers (hosts), producing an
+      # aggregation by target. The following rules use 'without' in
+      # order to preserve additional probe_success labels that might
+      # be present.
       - record: target:probe_success:count
-        expr: count(probe_success) by (probe,probeset,zone,host,prober_float_service)
+        expr: count(probe_success) without (job,instance,prober_host)
       - record: target:probe_success:sum
-        expr: sum(probe_success) by (probe,probeset,zone,host,prober_float_service)
+        expr: sum(probe_success) without (job,instance,prober_host)
       - record: target:probe_success:ratio
         expr: target:probe_success:sum / target:probe_success:count
 
       # Sum prober metrics over targets, aggregating by probe.
       - record: probe:probe_success:count
-        expr: count(probe_success) by (probe,probeset,prober_float_service,zone)
+        expr: count(probe_success) without (job,instance,prober_host,host)
       - record: probe:probe_success:sum
-        expr: sum(probe_success) by (probe,probeset,prober_float_service,zone)
+        expr: sum(probe_success) without (job,instance,prober_host,host)
       - record: probe:probe_success:ratio
         expr: probe:probe_success:sum / probe:probe_success:count
 

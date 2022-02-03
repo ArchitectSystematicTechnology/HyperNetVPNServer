@@ -28,6 +28,8 @@
   sshca_sign:
     ca: "{{ credentials_dir }}/ssh/key"
     pubkey: "/etc/ssh/ssh_host_{{ item }}_key.pub"
+    principals:
+      - "{{ ssh_host_key_principal }}"
   with_items: "{{ ssh_host_key_types }}"
   notify:
     - reload ssh

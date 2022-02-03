@@ -46,9 +46,6 @@ class SSOHandler(urllib.request.BaseHandler):
             form[name] = value
         return form
 
-    def _extract_error(self, html):
-        return self._error_pattern.search(html)
-
     def https_response(self, req, resp):
         request_url = req.get_full_url()
         if resp.code == 200 and request_url.startswith(self._login_form_url):

@@ -13,6 +13,9 @@
     system: yes
     state: present
 
+# The directory is already created by the dataset, but we need
+# to ensure the permissions are correct or the first ansible run
+# will fail (breaking tests).
 - name: Create backup metadata server database dir
   file:
     path: /var/lib/tabacco-metadb

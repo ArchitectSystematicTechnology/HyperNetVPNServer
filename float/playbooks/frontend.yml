@@ -6,8 +6,12 @@
   gather_facts: no
   roles:
     - float-infra-nginx
-    - float-infra-dns
     - float-infra-haproxy
+
+- hosts: dns
+  gather_facts: no
+  roles:
+    - float-infra-dns
 
 - hosts: admin_dashboard
   gather_facts: no

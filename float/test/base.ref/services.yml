@@ -11,10 +11,18 @@ frontend:
   systemd_services:
     - nginx.service
     - sso-proxy.service
-    - bind9.service
     - replds@acme.service
   ports:
     - 5005
+
+dns:
+  scheduling_group: frontend
+  systemd_services:
+    - bind9.service
+  monitoring_endpoints:
+    - name: bind
+      port: 9119
+      scheme: http
 
 ok:
   scheduling_group: all

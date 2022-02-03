@@ -83,6 +83,9 @@
 - include_tasks: osquery.yml
   when: enable_osquery|bool
 
+- include_tasks: serial.yml
+  when: enable_serial_port|bool
+
 - name: Check ipmi availability
   stat:
     path: "/dev/ipmi0"

@@ -1,0 +1,24 @@
+{% set required_by = service.systemd_services | default([]) %}
+
+[Unit]
+Description=Replicate dataset {{ dataset_name }}
+After={{ required_by | join(' ') }}
+PartOf={{ required_by | join(' ') }}
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=3
+EnvironmentFile=/etc/litestream/{{ dataset_tag }}.env
+ExecStart=/usr/bin/litestream replicate --config=/etc/litestream/{{ dataset_tag }}.yml
+{% if dataset_owner %}
+User={{ dataset_owner }}
+{% endif %}
+Group={{ dataset_group }}
+
+NoNewPrivileges=true
+ReadOnlyDirectories=/
+ReadWriteDirectories={{ dataset_path }}
+
+[Install]
+RequiredBy={{ required_by | join(' ') }}

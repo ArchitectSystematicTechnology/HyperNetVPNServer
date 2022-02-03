@@ -11,18 +11,22 @@ frontend:
   systemd_services:
     - nginx.service
     - sso-proxy.service
-    - bind9.service
     - replds@acme.service
   ports:
     - 5005
-  monitoring_endpoints:
-    - name: bind
-      port: 9119
-      scheme: http
   volumes:
     - name: cache
       path: /var/cache/nginx
       size: 20g
+
+dns:
+  scheduling_group: frontend
+  systemd_services:
+    - bind9.service
+  monitoring_endpoints:
+    - name: bind
+      port: 9119
+      scheme: http
 
 log-collector:
   scheduling_group: backend
@@ -31,8 +35,7 @@ log-collector:
     - name: log-collector
       enable_client: false
   monitoring_endpoints:
-    - job_name: rsyslog-collector
-      port: 9105
+    - port: 9105
       scheme: http
   containers:
     - name: rsyslog
@@ -70,6 +73,7 @@ prometheus:
         - /etc/prometheus: /etc/prometheus
         - /var/lib/prometheus/alertmanager: /var/lib/prometheus/alertmanager
       args: "--web.external-url=https://alertmanager.{{ domain_public[0] }} --cluster.listen-address=:9094 --cluster.advertise-address={{ float_host_dns_map.get(inventory_hostname + '.prometheus', ['']) | list | first }}:9094{% for h in groups['prometheus']|sort if h != inventory_hostname %} --cluster.peer={{ h }}.prometheus.{{ domain }}:9094{% endfor %}"
+      egress_policy: internal
     - name: blackbox
       image: registry.git.autistici.org/ai3/docker/prometheus-blackbox:master
       ports:
@@ -85,6 +89,7 @@ prometheus:
       volumes:
         - /etc/grafana: /etc/grafana
         - /var/lib/grafana: /var/lib/grafana
+      egress_policy: internal
     - name: thanos
       image: registry.git.autistici.org/ai3/docker/thanos:master
       ports:
@@ -102,6 +107,7 @@ prometheus:
         QUERY_FRONTEND_FLAGS: "--query-range.response-cache-config-file=/etc/thanos/query-frontend-cache.yml"
       volumes:
         - /etc/thanos: /etc/thanos
+      egress_policy: internal
     - name: karma
       image: registry.git.autistici.org/ai3/docker/karma:master
       ports:
@@ -112,6 +118,7 @@ prometheus:
         PORT: 9193
       volumes:
         - /etc/karma: /etc/karma
+      egress_policy: internal
   public_endpoints:
     - name: monitor
       port: 9090
@@ -134,26 +141,22 @@ prometheus:
       scheme: http
       enable_sso_proxy: true
   monitoring_endpoints:
-    - job_name: prometheus
-      port: 9090
+    - port: 9090
       scheme: http
-    - job_name: alertmanager
-      port: 9093
+      healthcheck_http_method: OPTIONS
+    - port: 9093
       scheme: http
-    - job_name: karma
-      port: 9193
+      healthcheck_http_method: OPTIONS
+    - port: 9193
       scheme: http
-    - job_name: grafana
-      port: 2929
+      healthcheck_http_method: GET
+    - port: 2929
       scheme: https
-    - job_name: thanos-query
-      port: 10904
+    - port: 10904
       scheme: http
-    - job_name: thanos-sidecar
-      port: 10902
+    - port: 10902
       scheme: http
-    - job_name: thanos-query-frontend
-      port: 10906
+    - port: 10906
       scheme: http
   ports:
     - 9094
@@ -164,6 +167,14 @@ prometheus:
       owner: docker-prometheus
       group: docker-prometheus
       mode: "0755"
+  annotations:
+    dependencies:
+      - client: prometheus
+        server: alertmanager
+      - client: karma
+        server: alertmanager
+      - client: thanos
+        server: prometheus
 
 sso-server:
   num_instances: 1
@@ -176,9 +187,14 @@ sso-server:
       port: 5002
       scheme: http
   monitoring_endpoints:
-    - job_name: sso-server
-      port: 5002
+    - port: 5002
       scheme: http
+  systemd_services:
+    - sso-server.service
+  annotations:
+    dependencies:
+      - client: sso-server
+        server: user-meta-server/user-meta-server
 
 auth-cache:
   scheduling_group: backend
@@ -188,6 +204,7 @@ auth-cache:
       port: 11212
       env:
         PORT: "11212"
+      egress_policy: internal
   ports:
     - 11212
 
@@ -197,8 +214,7 @@ user-meta-server:
   service_credentials:
     - name: user-meta-server
   monitoring_endpoints:
-    - job_name: user-meta-server
-      port: 5505
+    - port: 5505
       scheme: https
   ports:
     - 5505
@@ -206,7 +222,9 @@ user-meta-server:
     - user-meta-server.service
   datasets:
     - name: db
+      type: litestream
       path: /var/lib/user-meta-server
+      filename: usermeta.db
       owner: user-meta-server
 
 admin-dashboard:
@@ -215,13 +233,14 @@ admin-dashboard:
     - name: admin-dashboard
   containers:
     - name: http
-      image: registry.git.autistici.org/ai3/tools/float-dashboard:refactor
+      image: registry.git.autistici.org/ai3/tools/float-dashboard:master
       port: 8011
       volumes:
         - /etc/float: /etc/float
       env:
         ADDR: ":8011"
         DOMAIN: "{{ domain_public[0] }}"
+      egress_policy: internal
   public_endpoints:
     - name: admin
       port: 8011
@@ -235,8 +254,7 @@ backup-metadata:
     - name: backup-metadata
       enable_client: false
   monitoring_endpoints:
-    - job_name: backup-metadata
-      port: 5332
+    - port: 5332
       scheme: https
   public_endpoints:
     - name: backups
@@ -247,6 +265,12 @@ backup-metadata:
     - 5332
   systemd_services:
     - tabacco-metadb.service
+  datasets:
+    - name: db
+      type: litestream
+      path: /var/lib/tabacco-metadb
+      filename: meta.db
+      owner: backup-metadata
 
 acme:
   num_instances: 1
@@ -255,11 +279,36 @@ acme:
     - name: acme
       enable_server: false
   monitoring_endpoints:
-    - job_name: acme
-      port: 5004
+    - port: 5004
       scheme: http
   ports:
     - 5004
   systemd_services:
     - acmeserver.service
 
+assets:
+  num_instances: 1
+  scheduling_group: backend
+  service_credentials:
+    - name: assetmon
+  containers:
+    - name: http
+      image: registry.git.autistici.org/ai3/tools/assetmon:master
+      volumes:
+        - /etc/assetmon/server.yml: /etc/assetmon/server.yml
+        - /var/lib/assetmon: /var/lib/assetmon
+      ports:
+        - 3798
+      egress_policy: internal
+  monitoring_endpoints:
+    - port: 3798
+      scheme: https
+  public_endpoints:
+    - name: assets
+      port: 3798
+      scheme: https
+      enable_sso_proxy: true
+  datasets:
+    - name: db
+      path: /var/lib/assetmon
+      owner: docker-assets

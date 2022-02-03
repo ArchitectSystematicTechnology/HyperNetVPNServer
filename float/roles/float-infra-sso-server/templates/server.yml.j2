@@ -29,9 +29,8 @@ allowed_cors_origins: {{ sso_allowed_cors_origins | to_json }}
 allowed_exchanges: {{ sso_allowed_exchanges | to_json }}
 service_ttls: {{ sso_service_ttls | to_json }}
 auth_session_lifetime: 43200
-session_secrets:
-  - "{{ sso_session_auth_secret }}"
-  - "{{ sso_session_enc_secret }}"
+session_auth_key: "{{ sso_session_auth_secret }}"
+session_enc_key: "{{ sso_session_enc_secret }}"
 csrf_secret: "{{ sso_csrf_secret }}"
 auth_service: sso
 {% if enable_keystore %}
@@ -47,13 +46,16 @@ keystore_enable_groups:
 {% endif %}
 url_path_prefix: "{{ sso_server_url_path_prefix }}"
 account_recovery_url: "{{ sso_server_account_recovery_url | default('') }}"
+default_signed_in_redirect: "{{ sso_server_default_signed_in_redirect | default('') }}"
 device_manager:
   auth_key: "{{ sso_device_manager_auth_secret }}"
   trusted_forwarders:
     - 127.0.0.1
     - ::1
 {% for h in services['frontend'].hosts|sort %}
-    - {{ hostvars[h]['ip'] }}
+{% for ip in hostvars[h]['ips'] %}
+    - {{ ip }}
+{% endfor %}
 {% for n in net_overlays %}{% if hostvars[h].get('ip_' + n.name) %}
     - {{ hostvars[h]['ip_' + n.name] }}
 {% endif %}{% endfor %}

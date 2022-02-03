@@ -1,0 +1,3 @@
+{% for var, value in backup_litestream_credentials | default({}) | dictsort %}
+{{ var }}="{{ value }}"
+{% endfor %}

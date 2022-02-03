@@ -10,17 +10,17 @@ options {
 {% if float_limit_bind_to_known_interfaces | default(False) %}
   listen-on {
     127.0.0.1;
-{% for h in services['frontend'].hosts | sort %}
-    {{ hostvars[h]['ip'] }};
-{% for n in net_overlays | sort if ('ip_' + n.name) in hostvars[h] %}
-    {{ hostvars[h]['ip_' + n.name] }};
+{% for ip in ips | ansible.netcommon.ipv4 | sort %}
+    {{ ip }};
 {% endfor %}
+{% for n in net_overlays | sort if ('ip_' + n.name) in hostvars[inventory_hostname] %}
+    {{ hostvars[inventory_hostname]['ip_' + n.name] }};
 {% endfor %}
   };
   listen-on-v6 {
     ::1;
-{% for h in services['frontend'].hosts | sort if 'ip6' in hostvars[h] %}
-    {{ hostvars[h]['ip6'] }};
+{% for ip in ips | ansible.netcommon.ipv6 | sort %}
+    {{ ip }};
 {% endfor %}
   };
 {% else %}
@@ -28,7 +28,6 @@ options {
   listen-on-v6 { any; };
 {% endif %}
 
-  dnssec-enable yes;
   dnssec-validation auto;
 
   notify no;

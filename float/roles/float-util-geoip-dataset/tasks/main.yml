@@ -14,5 +14,5 @@
 - name: Setup geoipupdate cron job
   copy:
     dest: "/etc/cron.d/geoipupdate_{{ item }}"
-    content: "12 0 * * 5 root /usr/local/bin/splay 3600 && /usr/bin/geoipupdate -f /etc/GeoIP_{{ item }}.conf"
+    content: "12 0 * * 5 root /usr/local/bin/splay 3600 && /usr/bin/geoipupdate -f /etc/GeoIP_{{ item }}.conf\n"
   with_items: "{{ geoip_dataset }}"

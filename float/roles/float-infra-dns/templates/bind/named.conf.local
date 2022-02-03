@@ -8,8 +8,6 @@ view "internal-in" in {
 {% endfor %}
   };
   recursion yes;
-  additional-from-auth yes;
-  additional-from-cache yes;
   zone-statistics no;
 
   // Send minimal responses, to avoid problems with the Spamassassin
@@ -30,11 +28,6 @@ view "external-in" in {
   match-clients { any; };
   recursion no;
   zone-statistics yes;
-
-  // Do not trust the cache when generating additional records
-  // for our authoritative zones.
-  additional-from-auth no;
-  additional-from-cache no;
 
   // Include manually-maintained zones.
   include "/etc/bind/named.conf.external-custom-zones";

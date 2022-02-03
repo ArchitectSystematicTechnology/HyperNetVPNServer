@@ -2,22 +2,10 @@
 
 - name: Install prometheus config files in /etc/default
   copy:
-    src: "node-exporter.default.{{ float_debian_dist }}"
+    src: "node-exporter.default"
     dest: "/etc/default/prometheus-node-exporter"
   notify:
     - reload prometheus-node-exporter
-
-- name: Install prometheus node package
-  apt:
-    name: prometheus-node-exporter
-    state: present
-
-- name: Install prometheus node extra package
-  apt:
-    name:
-      - prometheus-node-exporter-collectors
-    state: present
-  when: "float_debian_dist not in ('stretch', 'buster')"
 
 - name: Add static metrics
   template:

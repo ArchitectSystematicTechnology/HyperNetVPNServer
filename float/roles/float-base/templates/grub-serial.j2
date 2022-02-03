@@ -1,0 +1,4 @@
+GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX console=ttyS{{ serial_port_unit }},{{ serial_port_speed }}n8"
+
+GRUB_TERMINAL="$GRUB_TERMINAL serial"
+GRUB_SERIAL_COMMAND="serial --unit={{ serial_port_unit }} --speed={{ serial_port_speed }}"

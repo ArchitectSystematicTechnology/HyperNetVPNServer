@@ -108,29 +108,25 @@ for gid in $(id -G {{ services[item.service].user }}); do
 done
 {% endif %}
 
+
+# TODO: move to --log-driver=passthrough once it is supported
+# by the Podman version in Debian stable, and then add the -d
+# option to get rid of the useless 'podman' process.
 {% if container_runtime == 'podman' %}
 exec /usr/bin/podman run \
-{% if float_debian_dist in ('stretch', 'buster') %}
-  --cgroup-manager=cgroupfs \
-  --cgroup-parent /system.slice/docker-{{ item.tag }}.service \
-{% else %}
   --cgroups=disabled \
-{% endif %}
-  --rm --name {{ item.service }}-{{ item.container.name }} \
-  --no-healthcheck \
   --replace \
-  --log-driver=none \
-  $opts \
-{% for opt in g.options %}
-  {{ opt }} \
-{% endfor %}
-  {{ item.container.image }} {{ item.container.get('args', '') }}
+  --sdnotify=conmon \
 {% elif container_runtime == 'docker' %}
 exec /usr/bin/systemd-docker --env run \
+{% endif %}
   --rm --name {{ item.service }}-{{ item.container.name }} \
+  --pull=never \
+  --log-driver=none \
+  --no-healthcheck \
   $opts \
 {% for opt in g.options %}
   {{ opt }} \
 {% endfor %}
+  "$@" \
   {{ item.container.image }} {{ item.container.get('args', '') }}
-{% endif %}

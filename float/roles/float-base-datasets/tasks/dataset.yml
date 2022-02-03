@@ -6,19 +6,22 @@
 - set_fact:
     service: "{{ item.0 }}"
     dataset: "{{ item.1 }}"
-    dataset_name: "{{ item.0.name }}/{{ item.1.name }}"
-    dataset_filename: "{{ item.0.name }}_{{ item.1.name }}"
-    dataset_owner: "{{ item.1.get('owner', '') }}"
-    dataset_group: "{{ item.1.get('group', 'root') }}"
-    dataset_mode: "{{ item.1.get('mode', '0700') }}"
-    dataset_path: "{{ item.1.get('path', '') }}"
-    dataset_type: "{% if 'backup_command' in item.1 %}pipe{% else %}file{% endif %}"
-    dataset_is_present: "{{ (item.0.name in float_enabled_services) }}"
-    dataset_should_backup: "{{ (item.0.name in float_enabled_services) and ((not item.1.get('on_master_only', False)) or (item.0.get('master_host') == inventory_hostname)) }}"
 
 - set_fact:
-    dataset_should_restore: "{{ dataset_should_backup and not item.1.get('sharded', False) }}"
-    dataset_restore_unit: "restore-{{ dataset_filename }}.service"
+    dataset_name: "{{ service.name }}/{{ dataset.name }}"
+    dataset_tag: "{{ service.name }}_{{ dataset.name }}"
+    dataset_desired_owner: "{{ dataset.get('owner', '') }}"
+    dataset_owner: "root"
+    dataset_group: "{{ dataset.get('group', 'root') }}"
+    dataset_mode: "{{ dataset.get('mode', '0700') }}"
+    dataset_path: "{{ dataset.get('path', '') }}"
+    dataset_driver: "{{ dataset.get('type', 'tabacco') }}"
+    dataset_is_present: "{{ (service.name in float_enabled_services) }}"
+    dataset_should_backup: "{{ (service.name in float_enabled_services) and ((not dataset.get('on_master_only', False)) or (service.get('master_host') == inventory_hostname)) }}"
+
+- set_fact:
+    dataset_should_restore: "{{ dataset_should_backup and not dataset.get('sharded', False) }}"
+    dataset_restore_unit: "restore-{{ dataset_tag }}.service"
 
 - name: "Create path for dataset {{ dataset_name }}"
   file:
@@ -33,59 +36,46 @@
 - name: Check if the dataset owner exists
   getent:
     database: passwd
-    key: "{{ dataset_owner }}"
+    key: "{{ dataset_desired_owner }}"
     fail_key: false
-  when: "(dataset_is_present) and (dataset_path) and (dataset_owner)"
+  when: "(dataset_is_present) and (dataset_path) and (dataset_desired_owner)"
+
+# Make it so that 'dataset_owner' is always safe to use.
+- set_fact:
+    dataset_owner: "{{ dataset_desired_owner }}"
+  when: "dataset_is_present and dataset_path and dataset_desired_owner and getent_passwd.get(dataset_desired_owner)"
 
 - name: "Set permissions for dataset directory of {{ dataset_name }}"
   file:
     path: "{{ dataset_path }}"
     state: directory
     owner: "{{ dataset_owner }}"
-    group: "{{ dataset_group | default('root') }}"
-  when: "(dataset_is_present) and (dataset_path) and (dataset_owner) and (getent_passwd.get(dataset_owner))"
+    group: "{{ dataset_group }}"
+  when: "dataset_is_present and dataset_path and dataset_desired_owner"
 
-- name: Set up configuration for dataset {{ dataset_name }} (source)
-  template:
-    src: "sources/source.yml.j2"
-    dest: "/etc/tabacco/sources/{{ dataset_filename }}.yml"
-    mode: 0600
-  when: dataset_should_backup
-  notify:
-    - reload backup agent
+- include_tasks: dataset_tabacco.yml
+  when: "dataset_driver == 'tabacco'"
 
-- name: Set up configuration for dataset {{ dataset_name }} (handler)
-  template:
-    src: "handlers/{{ dataset_type }}.yml.j2"
-    dest: "/etc/tabacco/handlers/{{ dataset_filename }}.yml"
-    mode: 0600
-  when: dataset_should_backup and dataset_type == 'pipe'
-  notify:
-    - reload backup agent
+- include_tasks: dataset_litestream.yml
+  when: "dataset_driver == 'litestream'"
 
-- name: Clear configuration for dataset {{ dataset_name }}
-  file:
-    path: "/etc/tabacco/{{ diritem }}/{{ dataset_filename }}.yml"
-    state: absent
-  when: not dataset_should_backup
-  with_items:
-    - sources
-    - handlers
-  loop_control:
-    loop_var: diritem
-
-- name: Create restore script
-  template:
-    src: "restore-script.j2"
-    dest: "/usr/lib/float/datasets/restore-{{ dataset_filename }}"
-    mode: 0755
-  when: dataset_should_restore
-
+# Set up a restore unit that will need to run before the main service
+# units (via a Before= clause) to restore data from backups, if any.
+# These units run a driver-dependent restore script, that is protected
+# by a "guard file", to ensure that the restore script is only run
+# once, whenever the service is newly scheduled on a host.
 - name: Create restore service unit
   template:
     src: "restore-service.j2"
     dest: "/etc/systemd/system/{{ dataset_restore_unit }}"
-    mode: 0444
+    mode: 0644
+  when: dataset_should_restore
+
+- name: Create restore script
+  template:
+    src: "{{ dataset_driver }}-restore-script.j2"
+    dest: "/usr/lib/float/datasets/restore-{{ dataset_tag }}"
+    mode: 0755
   when: dataset_should_restore
 
 - name: Enable restore service unit
@@ -95,12 +85,11 @@
     daemon_reload: yes
   when: dataset_should_restore
 
-# systemd disable is not idempotent, hence the ignore_errors.
 - name: Disable restore service unit
   systemd:
     name: "{{ dataset_restore_unit }}"
     enabled: no
-  when: "(not dataset_should_restore) and (dataset_restore_unit in loaded_restore_systemd_units.stdout_lines)"
+  when: "(not dataset_should_restore) and (dataset_restore_unit in loaded_backup_systemd_units.stdout_lines)"
 
 - name: Cleanup restore service unit
   file:
@@ -111,6 +100,6 @@
 
 - name: Wipe dataset restore guard file
   file:
-    path: "/var/lib/float/datasets/{{ dataset_filename }}.restore_guard"
+    path: "/var/lib/float/datasets/{{ dataset_tag }}.restore_guard"
     state: absent
   when: not dataset_should_backup

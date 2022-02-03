@@ -1,11 +1,11 @@
-{% for service_name, service in services|dictsort %}
+{% for service_name, service in services | dictsort %}
 {% for ep in service.get('public_tcp_endpoints', []) %}
 {% if ep.get('ports', []) %}
 {% for port in ep.ports %}
 allow_port tcp {{ port }}
 {% endfor %}
 {% else %}
-allow_port tcp {{ ep.port }}
+allow_port tcp {{ ep.public_port | default(ep.port) }}
 {% endif %}
 {% endfor %}
 {% endfor %}

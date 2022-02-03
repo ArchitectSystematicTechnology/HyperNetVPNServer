@@ -1,9 +1,5 @@
 global(
   maxMessageSize="64k"
-  defaultNetstreamDriver="gtls"
-  defaultNetstreamDriverCAFile="/etc/credentials/x509/log-client/ca.pem"
-  defaultNetstreamDriverCertFile="/etc/credentials/x509/log-client/client/cert.pem"
-  defaultNetstreamDriverKeyFile="/etc/credentials/x509/log-client/client/private_key.pem"
 )
 
 module(load="imuxsock"
@@ -23,6 +19,11 @@ module(
 
 module(
   load="omprog"
+)
+
+module(
+  load="omrelp"
+  tls.tlslib="openssl"
 )
 
 ruleset(name="process_stats") {
@@ -48,28 +49,32 @@ ruleset(name="incoming") {
          # Protect the main queue from mtail pipe full: discard messages on
          # ompipe action queue full.
          queue.type="FixedArray"
-         queue.size="4096"
+         queue.size="1024"
          queue.timeoutEnqueue="0"
          action.resumeRetryCount="-1"
          action.resumeInterval="2"
          action.resumeIntervalMax="30")
 
   # Send everything to remote peer, do not write anything locally.
-  action(type="omfwd"
-         protocol="tcp"
+  action(type="omrelp"
          target="log-collector.{{ domain }}"
          port="6514"
-         StreamDriver="gtls"
-         StreamDriverMode="1"
-         StreamDriverAuthMode="x509/name"
-         StreamDriverPermittedPeers="log-collector.{{ domain }}"
-         Keepalive="on"
+         tls="on"
+         tls.compression="on"
+         tls.authmode="certvalid"
+         tls.permittedpeer="log-collector.{{ domain }}"
+         tls.cacert="/etc/credentials/x509/log-client/ca.pem"
+         tls.mycert="/etc/credentials/x509/log-client/client/cert.pem"
+         tls.myprivkey="/etc/credentials/x509/log-client/client/private_key.pem"
          action.resumeRetryCount="-1"
          action.resumeInterval="2"
          action.reportSuspension="on"
+         queue.workerthreads="4"
+         queue.size="50000"
          queue.spoolDirectory="/var/spool/rsyslog"
          queue.filename="remote"
-         queue.maxdiskspace="1g"
+         queue.maxfilesize="64m"
+         queue.maxdiskspace="2g"
          queue.type="LinkedList"
          queue.saveonshutdown="on"
   )

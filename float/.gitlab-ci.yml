@@ -24,7 +24,7 @@ variables:
       ${APT_PROXY:+-e config.apt_proxy=${APT_PROXY}}
       $CREATE_ENV_VARS $BUILD_DIR
 
-    - with-ssh-key ./scripts/floatup.py ${LIBVIRT:+--ssh $LIBVIRT} --inventory $BUILD_DIR/hosts.yml --ram 2048 --cpu 2 --image ${VM_IMAGE:-buster} up
+    - with-ssh-key ./scripts/floatup.py ${LIBVIRT:+--ssh $LIBVIRT} --inventory $BUILD_DIR/hosts.yml --ram 2048 --cpu 2 --image ${VM_IMAGE:-bullseye} up
     - with-ssh-key ./test-driver init --no-vagrant $BUILD_DIR
     - with-ssh-key ./test-driver run $BUILD_DIR
   after_script:
@@ -45,12 +45,6 @@ variables:
 base_test:
   <<: *base_test
   variables:
-    CREATE_ENV_VARS: "-e config.float_debian_dist=buster"
-    TEST_DIR: "test/base.ref"
-
-base_bullseye_test:
-  <<: *base_test
-  variables:
     VM_IMAGE: "bullseye"
     CREATE_ENV_VARS: "-e config.float_debian_dist=bullseye -e inventory.group_vars.vagrant.ansible_python_interpreter=/usr/bin/python3"
     TEST_DIR: "test/base.ref"
@@ -58,15 +52,16 @@ base_bullseye_test:
 full_test:
   <<: *base_test
   variables:
-    CREATE_ENV_VARS: "-e config.float_debian_dist=buster"
-    TEST_DIR: "test/full.ref"
-
-full_bullseye_test:
-  <<: *base_test
-  variables:
     VM_IMAGE: "bullseye"
     CREATE_ENV_VARS: "-e config.float_debian_dist=bullseye -e inventory.group_vars.vagrant.ansible_python_interpreter=/usr/bin/python3"
     TEST_DIR: "test/full.ref"
+
+backup_test:
+  <<: *base_test
+  variables:
+    VM_IMAGE: "bullseye"
+    CREATE_ENV_VARS: "--additional-config test/backup.ref/config-backup.yml --playbook test/backup.ref/site.yml"
+    TEST_DIR: "test/backup.ref"
 
 docker_build_and_release_tests:
   stage: docker_build

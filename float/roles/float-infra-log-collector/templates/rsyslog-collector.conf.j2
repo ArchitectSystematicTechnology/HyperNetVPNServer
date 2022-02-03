@@ -1,10 +1,6 @@
 
 global(
   maxMessageSize="64k"
-  defaultNetstreamDriver="gtls"
-  defaultNetstreamDriverCAFile="/etc/credentials/x509/log-collector/ca.pem"
-  defaultNetstreamDriverCertFile="/etc/credentials/x509/log-collector/server/cert.pem"
-  defaultNetstreamDriverKeyFile="/etc/credentials/x509/log-collector/server/private_key.pem"
 )
 
 main_queue(
@@ -293,13 +289,20 @@ ruleset(name="incoming"){
 }
 
 module(
-  load="imtcp"
-  MaxSessions="500"
-  StreamDriver.Name="gtls"
-  StreamDriver.Mode="1"
-  StreamDriver.AuthMode="x509/name"
-  PermittedPeer="*.{{ domain }}"
+  load="imrelp"
+  tls.tlslib="openssl"
 )
 
-input(type="imtcp" port="6514" ruleset="incoming")
-
+input(
+  type="imrelp"
+  port="6514"
+  maxDataSize="64k"
+  ruleset="incoming"
+  tls="on"
+  tls.compression="on"
+  tls.cacert="/etc/credentials/x509/log-collector/ca.pem"
+  tls.mycert="/etc/credentials/x509/log-collector/server/cert.pem"
+  tls.myprivkey="/etc/credentials/x509/log-collector/server/private_key.pem"
+  tls.permittedpeer="*.{{ domain }}" 
+  tls.authmode="certvalid"
+)

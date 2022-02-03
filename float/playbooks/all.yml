@@ -43,3 +43,6 @@
   roles:
     - float-infra-sso-server
 
+- hosts: assets
+  roles:
+    - float-infra-assetmon

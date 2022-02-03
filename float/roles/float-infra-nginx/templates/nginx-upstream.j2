@@ -15,10 +15,8 @@ upstream {{ upstream.name }}{% if shard %}_{{ shard }}{% endif %} {
 {% endif %}
 
 	keepalive 8;
-{% if float_debian_dist != 'buster' %}
         keepalive_timeout 300s;
         keepalive_requests 1000;
-{% endif %}
 }
 {% endmacro %}
 

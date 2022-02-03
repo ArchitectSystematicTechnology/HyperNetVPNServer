@@ -1,6 +1,8 @@
+import json
 import os
 import random
 import unittest
+from urllib.parse import urlencode
 import yaml
 import jinja2
 
@@ -50,11 +52,11 @@ class TestBase(unittest.TestCase):
     def frontend_ip(self):
         """Return a random IP for the 'frontend' group."""
         host = random.choice(hosts_in_group('frontend'))
-        return ANSIBLE_VARS['hostvars'][host]['ip']
+        return ANSIBLE_VARS['hostvars'][host]['ips'][0]
 
     def all_frontend_ips(self):
         """Return all IPs in the 'frontend' group."""
-        return [ANSIBLE_VARS['hostvars'][x]['ip']
+        return [ANSIBLE_VARS['hostvars'][x]['ips'][0]
                 for x in hosts_in_group('frontend')]
 
     def sso_conversation(self, sso_username=None, sso_password=None):
@@ -69,3 +71,44 @@ class TestBase(unittest.TestCase):
             sso_password=sso_password,
             login_server=url,
         )
+
+
+class PrometheusTestBase(TestBase):
+
+    def setUp(self):
+        super().setUp()
+        if 'prometheus' not in ANSIBLE_VARS['services']:
+            self.skipTest('monitoring not enabled')
+        self.prometheus_url = 'https://monitor.%s' % (
+            ANSIBLE_VARS['domain_public'][0],)
+
+    def eval_prometheus_expr(self, expr):
+        c = self.sso_conversation()
+        uri = '%s/api/v1/query?%s' % (
+            self.prometheus_url, urlencode({'query': expr}))
+        resp = c.request(uri, self.frontend_ip())
+        self.assertFalse(
+            'error' in resp,
+            'Request failed with error: %s' % resp.get('error'))
+        self.assertEqual(200, resp['status'])
+        result = json.loads(resp['body'])
+        self.assertEqual('success', result['status'],
+                         'Prometheus error: %s' % json.dumps(result))
+        return result['data']['result']
+
+
+class URLTestBase(TestBase):
+
+    UNKNOWN_DOMAIN_MSG = b'You have reached this page because your request could not be properly identified'
+
+    def assert_endpoint_ok(self, public_endpoint_name, auth=False):
+        c = self.sso_conversation()
+        url = 'https://%s.%s/' % (
+            public_endpoint_name, ANSIBLE_VARS['domain_public'][0])
+        result = c.request(url, self.frontend_ip())
+        self.assertFalse(result.get('error'), f'url={url}')
+        self.assertEqual(200, result['status'], f'url={url}')
+        self.assertFalse(
+            self.UNKNOWN_DOMAIN_MSG in result['body'],
+            f'The server returned the generic "unknown domain" page for {url}')
+        self.assertEqual(auth, c.auth_requested)

@@ -4,8 +4,11 @@ groups:
 
   # HostUnreachable is used as a gate for most other host-based pages
   # (via inhibit rules in the alertmanager configuration).
+  # Thanks to min_over_time() the alert stays active for 10 minutes
+  # once the host becomes reachable again, so as to inhibit alerts that
+  # might fire immediately after the transition.
   - alert: HostUnreachable
-    expr: host_reachable == 0
+    expr: min_over_time(host_reachable[10m]) == 0
     for: 1m
     labels:
       severity: warn
@@ -55,8 +58,8 @@ groups:
         redundancy ({{ $value }}) and may eventually be at risk.'
 
   - alert: JobDown
-    expr: job:up:ratio < 0.5
-    for: 5m
+    expr: job:up:ratio < 0.5 and job:up:count > 1
+    for: 10m
     labels:
       severity: page
       scope: global

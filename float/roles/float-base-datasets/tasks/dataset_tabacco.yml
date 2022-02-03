@@ -1,0 +1,47 @@
+---
+
+- set_fact:
+    dataset_type: "{{ 'pipe' if 'backup_command' in dataset else 'file' }}"
+    dataset_should_backup: "{{ dataset_should_backup and (backup_repository_uri is defined) }}"
+
+- name: Set up configuration for dataset {{ dataset_name }} (source)
+  template:
+    src: "sources/source.yml.j2"
+    dest: "/etc/tabacco/sources/{{ dataset_tag }}.yml"
+    mode: 0600
+  when: dataset_should_backup
+  notify:
+    - reload backup agent
+
+- name: Set up configuration for dataset {{ dataset_name }} (handler)
+  template:
+    src: "handlers/{{ dataset_type }}.yml.j2"
+    dest: "/etc/tabacco/handlers/{{ dataset_tag }}.yml"
+    mode: 0600
+  when: dataset_should_backup and dataset_type == 'pipe'
+  notify:
+    - reload backup agent
+
+- name: Clear configuration for dataset {{ dataset_name }}
+  file:
+    path: "/etc/tabacco/{{ diritem }}/{{ dataset_tag }}.yml"
+    state: absent
+  when: not dataset_should_backup
+  with_items:
+    - sources
+    - handlers
+  loop_control:
+    loop_var: diritem
+
+- name: Create restore script
+  template:
+    src: "tabacco-restore-script.j2"
+    dest: "/usr/lib/float/datasets/restore-{{ dataset_tag }}"
+    mode: 0755
+  when: dataset_should_restore
+
+- name: Delete restore script
+  file:
+    path: "/usr/lib/float/datasets/restore-{{ dataset_tag }}"
+    state: absent
+  when: not dataset_should_restore

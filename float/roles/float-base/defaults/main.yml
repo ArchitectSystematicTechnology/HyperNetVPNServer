@@ -13,8 +13,12 @@ emergency_ssh_key: ""
 # Port that SSH should listen on (best to keep it at the default).
 ssh_port: 22
 
+# Principal for the SSH host key, i.e. name that is used to reach the host
+# over SSH.
+ssh_host_key_principal: "{{ inventory_hostname }}.{{ domain }}"
+
 # The Debian distribution that we are using as the basis.
-float_debian_dist: "buster"
+float_debian_dist: "bullseye"
 
 # How to configure resolv.conf, one of the following options:
 # 'ignore' - do nothing and leave resolv.conf alone
@@ -34,6 +38,17 @@ nf_conntrack_max: 524288
 # Customize /etc/motd.
 motd: |2
                       ┏━╸╻  ┏━┓┏━┓╺┳╸
-              **      ┣╸ ┃  ┃ ┃┣━┫ ┃ 
+              **      ┣╸ ┃  ┃ ┃┣━┫ ┃
                       ╹  ┗━╸┗━┛╹ ╹ ╹     {{ inventory_hostname }}
 
+
+
+# Enable kernel lockdown measures (e.g. disable module loading post-boot)
+# Once enabled this feature can be disabled only with a reboot.
+kernel_lockdown_enabled: false
+
+# When enabled, the kernel GRUB and getty will be using configured to use
+# serial port 0 (by default)
+enable_serial_port: false
+serial_port_unit: 0
+serial_port_speed: 115200

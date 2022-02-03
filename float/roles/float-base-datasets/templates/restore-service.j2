@@ -5,13 +5,9 @@ Description=Restore dataset {{ dataset_name }}
 Before={{ required_by | join(' ') }}
 
 [Service]
-{% if backup_repository_uri is defined %}
-ExecStart=/usr/lib/float/datasets/restore-{{ dataset_filename }}
-{% else %}
-ExecStart=/bin/true
-{% endif %}
 Type=oneshot
 RemainAfterExit=true
+ExecStart=/usr/lib/float/float-dataset-restore {{ dataset_tag }}
 
 [Install]
 RequiredBy={{ required_by | join(' ') }}

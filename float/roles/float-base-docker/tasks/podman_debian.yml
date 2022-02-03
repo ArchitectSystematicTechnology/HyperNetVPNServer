@@ -3,10 +3,6 @@
 # Install Podman using packages from the Debian distribution
 # (available starting with Bullseye).
 
-- fail:
-    msg: "Debian packages for Podman are only present in Bullseye"
-  when: "float_debian_dist in ('stretch', 'buster')"
-
 - name: Remove podman Kubic repository key
   file:
     path: "/etc/apt/trusted.gpg.d/kubic.gpg"

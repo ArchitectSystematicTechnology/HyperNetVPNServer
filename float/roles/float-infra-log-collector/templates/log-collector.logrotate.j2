@@ -3,9 +3,9 @@
 	missingok
 	rotate {{ log_collector_retention_days|default(15) }}
 	compress
-	compresscmd /usr/bin/lz4c
-	compressoptions -z
-	compressext .lz4
+	compresscmd /usr/bin/zstd
+	compressoptions -9
+	compressext .zstd
 	notifempty
 	create 0600 docker-log-collector adm
 	sharedscripts

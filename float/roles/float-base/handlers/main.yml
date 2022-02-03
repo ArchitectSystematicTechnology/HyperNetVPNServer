@@ -70,3 +70,5 @@
 - name: update-ca-certificates
   command: "/usr/sbin/update-ca-certificates"
 
+- name: update-grub
+  command: /usr/sbin/update-grub

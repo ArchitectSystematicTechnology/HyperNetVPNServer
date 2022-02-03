@@ -4,11 +4,9 @@ global
         group haproxy
         chroot /var/lib/haproxy
         daemon
-{% if float_debian_dist != 'buster' %}
         # use journald-compatibile short format, and don't send 'emerg' level out
         # http://cbonte.github.io/haproxy-dconv/2.2/configuration.html#3.1-log
         log stdout format short local4 info alert
-{% endif %}
         stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
 
 defaults
@@ -41,15 +39,16 @@ backend be_{{ service_name }}_{{ ep.name }}_{{ port }}
         option independent-streams
 {% for s in services[service_name].hosts|sort %}
         server task{{ loop.index -1 }} {{ s }}.{{ service_name }}.{{ domain }}:{{ port }} check fall 3 id {{ loop.index + 999 }} inter 5000 rise 3 slowstart 60000 weight 50{% if ep.get('use_proxy_protocol') %} send-proxy-v2{% endif %}
+
 {% endfor %}
 
 {% endfor %} # ep.ports
 
 {% else %}
-frontend fe_{{ service_name }}_{{ ep.name }}_{{ ep.port }}
-        bind :::{{ ep.port }}
+{% set public_port = ep.public_port | default(ep.port) %}
+frontend fe_{{ service_name }}_{{ ep.name }}_{{ public_port }}
+        bind :::{{ public_port }}
         default_backend be_{{ service_name }}_{{ ep.name }}_{{ ep.port }}
-
 
 backend be_{{ service_name }}_{{ ep.name }}_{{ ep.port }}
         log global
@@ -57,6 +56,7 @@ backend be_{{ service_name }}_{{ ep.name }}_{{ ep.port }}
         option independent-streams
 {% for s in services[service_name].hosts|sort %}
         server task{{ loop.index -1 }} {{ s }}.{{ service_name }}.{{ domain }}:{{ ep.port }} check fall 3 id {{ loop.index + 999 }} inter 5000 rise 3 slowstart 60000 weight 50{% if ep.get('use_proxy_protocol') %} send-proxy-v2{% endif %}
+
 {% endfor %}
 
 {% endif %} # ep.get('ports')

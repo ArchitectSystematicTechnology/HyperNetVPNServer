@@ -50,6 +50,7 @@ class ActionModule(ActionBase):
 
         ca_private_key_path = self._task.args['ca']
         pubkey_path = self._task.args['pubkey']
+        principals = self._task.args.get('principals', [fqdn])
         validity = self._task.args.get('validity', '52w')
         renew_days = int(self._task.args.get('renew_days', '60'))
         cert_path = re.sub(r'\.pub$', '-cert.pub', pubkey_path)
@@ -74,7 +75,6 @@ class ActionModule(ActionBase):
                 tmp_cert_path = os.path.join(tmpdir, 'host-cert.pub')
                 self._fetch_pubkey(task_vars, pubkey_path, tmp_pubkey_path)
 
-                principals = [hostname, fqdn]
                 subprocess.check_call(
                     ['ssh-keygen', '-h', '-s', tmp_ca_private_key_path,
                      '-I', 'host-' + hostname, '-n', ','.join(principals),

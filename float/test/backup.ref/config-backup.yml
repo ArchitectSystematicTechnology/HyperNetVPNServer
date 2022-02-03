@@ -1,0 +1,9 @@
+---
+backup_litestream_config:
+  type: s3
+  endpoint: "http://backup:9000/"
+  bucket: "backuptest"
+backup_litestream_credentials:
+  LITESTREAM_ACCESS_KEY_ID: "minio"
+  LITESTREAM_SECRET_ACCESS_KEY: "miniopassword"
+

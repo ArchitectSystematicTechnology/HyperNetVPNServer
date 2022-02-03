@@ -7,8 +7,9 @@ from ansible.module_utils._text import to_text
 
 
 HOST_TEMPLATE = '''
+{% for ip in ips %}
 Address = {{ ip }}
-{% if ip6 is defined %}Address = {{ ip6 }}{% endif %}
+{% endfor %}
 Port = {{ tinc_config.port | default('655') }}
 Cipher = {{ tinc_config.cipher | default('aes-128-cbc') }}
 Digest = {{ tinc_config.digest | default('sha256') }}

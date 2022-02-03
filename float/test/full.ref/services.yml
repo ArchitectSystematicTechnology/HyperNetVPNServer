@@ -19,4 +19,19 @@ ok:
       port: 3100
       scheme: http
 
-
+ok-root:
+  scheduling_group: backend
+  containers:
+    - name: http
+      image: registry.git.autistici.org/ai3/docker/okserver:latest
+      root: true
+      port: 799
+      env:
+        PORT: 799
+      resources:
+        ram: 1g
+        cpu: 0.5
+  public_endpoints:
+    - name: ok-root
+      port: 799
+      scheme: http

@@ -38,4 +38,5 @@ groups:
         annotations:
           summary: Logs are not being indexed
           description: "The end-to-end log testing system has detected that logs are not reaching the Elasticsearch index. Something must be broken either with Elasticsearch itself, or with the log-collector service (rsyslog)."
+          runbook: '[[ alert_runbook_fmt | format("LogCollectionBroken") ]]'
 

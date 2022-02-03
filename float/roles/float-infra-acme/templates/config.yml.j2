@@ -14,8 +14,8 @@ dns:
   tsig_key_algo: "{{ acme_tsig_key.algo }}"
   tsig_key_secret: "{{ acme_tsig_key.private }}"
   nameservers:
-{% for h in groups['frontend']|sort %}
-    - {{ hostvars[h]['ip'] }}
+{% for h in services['dns'].hosts | sort %}
+    - {{ h }}.dns.{{ domain }}
 {% endfor %}
 output:
   path: "/var/lib/replds/acme"

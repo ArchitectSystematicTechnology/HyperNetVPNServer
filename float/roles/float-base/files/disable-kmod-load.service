@@ -1,0 +1,10 @@
+[Unit]
+Description=Disable kernel module loading
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "echo 1 > /proc/sys/kernel/modules_disabled"
+
+[Install]
+WantedBy=float-lockdown.target

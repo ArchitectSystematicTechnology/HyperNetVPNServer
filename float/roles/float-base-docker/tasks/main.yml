@@ -1,5 +1,10 @@
 ---
 
+- name: Configure asset tracking
+  template:
+    src: "assetmon.default.j2"
+    dest: "/etc/default/assetmon"
+
 - include_tasks: docker.yml
   when: "container_runtime == 'docker'"
 
@@ -8,7 +13,8 @@
 
 - name: Login to the Docker registry
   shell: 'echo -n "{{ docker_registry_password }}" | {{ container_runtime }} login -u "{{ docker_registry_username }}" --password-stdin "{{ docker_registry_url }}"'
-  changed_when: False
+  changed_when: false
+  check_mode: no
   when: "docker_registry_url != ''"
 
 - name: Install docker-related scripts
@@ -75,7 +81,7 @@
       register: etc_hosts_stat
 
     - name: Find containers that need a restart
-      shell: "{{ container_runtime }} ps --format={% raw %}'{{.Names}} {{.Created}}'{% endraw %} | awk '$2 < {{ etc_hosts_stat.stat.mtime | int }} {print $1}'"
+      shell: "{{ container_runtime }} ps --format={% raw %}'{{.Names}} {{.Created}}'{% endraw %} | sed -e 's,[-+][0-9]* [A-Z]*$,,' | while read name d t ; do s=$(date --date=\"$d $t\" +%s); echo \"$name $s\"; done | awk '$2 < {{ etc_hosts_stat.stat.mtime | int }} {print $1}'"
       register: containers_to_restart
       changed_when: false
       check_mode: no

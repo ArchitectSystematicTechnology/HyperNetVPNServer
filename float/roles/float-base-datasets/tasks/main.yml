@@ -35,15 +35,31 @@
     enabled: yes
   when: backup_repository_uri is defined
 
-- file:
-    path: /usr/lib/float/datasets
+- name: Create backup-related directories
+  file:
+    path: "{{ item }}"
     state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - "/usr/lib/float/datasets"
+    - "/etc/litestream"
 
-- name: Obtain list of restore service units
-  shell: "systemctl list-units --no-legend --no-pager --full --type service restore-\\* | awk '{print $1}'"
+- name: Create restore wrapper script
+  copy:
+    src: "float-dataset-restore"
+    dest: "/usr/lib/float/float-dataset-restore"
+    mode: 0755
+
+# Ansible systemd unit will fail when trying to disable a unit that
+# does not exist. To avoid such errors, we gather the list of known
+# service units and use it later to check for existance.
+- name: Obtain list of backup-related service units
+  shell: "systemctl list-units --no-legend --no-pager --full --type service restore-\\* replicate-\\* | awk '{print $1}'"
   check_mode: no
   changed_when: false
-  register: loaded_restore_systemd_units
+  register: loaded_backup_systemd_units
 
 - include_tasks: dataset.yml
   loop: "{{ services | subelements('datasets', skip_missing=True) }}"

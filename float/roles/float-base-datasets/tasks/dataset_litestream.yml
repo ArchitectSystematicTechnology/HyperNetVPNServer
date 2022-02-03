@@ -1,0 +1,83 @@
+---
+
+- set_fact:
+    dataset_filename: "{{ dataset.filename }}"
+    dataset_replica_url: "{{ backup_litestream_url | default('') }}/{{ dataset_tag }}"
+    dataset_replication_unit: "replicate-{{ dataset_tag }}.service"
+    # Just don't backup at all if litestream is not configured.
+    dataset_should_backup: "{{ dataset_should_backup and (backup_litestream_config is defined) }}"
+
+# Automatically set the replication path for s3-type configs. Create a
+# copy of backup_litestream_config that is specific to this dataset.
+- set_fact:
+    dataset_litestream_config: "{{ backup_litestream_config }}"
+  when: dataset_should_backup
+
+- set_fact:
+    dataset_litestream_config: "{{ dataset_litestream_config | combine({'path': dataset_tag}) }}"
+  when: "dataset_should_backup and backup_litestream_config.get('type', 's3') == 's3'"
+
+- set_fact:
+    litestream_config:
+      dbs:
+        - path: "{{ dataset_path }}/{{ dataset_filename }}"
+          replicas: ["{{ dataset_litestream_config }}"]
+  when: dataset_should_backup
+
+- name: Create dataset litestream config
+  copy:
+    dest: "/etc/litestream/{{ dataset_tag }}.yml"
+    content: "{{ litestream_config | to_yaml }}\n"
+    owner: "{{ dataset_owner }}"
+    group: "{{ dataset_group }}"
+    mode: "{{ dataset_mode or '750' }}"
+  when: dataset_should_backup
+  register: ls_config
+
+- name: Create dataset litestream credentials config
+  template:
+    src: "litestream-env.j2"
+    dest: "/etc/litestream/{{ dataset_tag }}.env"
+    owner: "{{ dataset_owner }}"
+    group: "{{ dataset_group }}"
+    mode: "{{ dataset_mode or '750' }}"
+  when: dataset_should_backup
+  register: ls_env
+
+- name: Create dataset litestream replication systemd unit
+  template:
+    src: "litestream-replicate-service.j2"
+    dest: "/etc/systemd/system/{{ dataset_replication_unit }}"
+  when: dataset_should_backup
+  register: ls_unit
+
+# Since we can't parameterize handlers, we're forced to detect
+# needs-restart ourselves using the results from the previous tasks.
+- set_fact:
+    litestream_restart: "{{ ls_config.changed or ls_env.changed or ls_unit.changed }}"
+
+- name: Enable the litestream replication systemd unit
+  systemd:
+    name: "{{ dataset_replication_unit }}"
+    enabled: true
+    state: "{{ 'restarted' if litestream_restart else 'started' }}"
+    daemon_reload: true
+  when: dataset_should_backup
+
+- name: Disable the litestream replication systemd unit
+  systemd:
+    name: "{{ dataset_replication_unit}}"
+    enabled: false
+  when: "(not dataset_should_backup) and (dataset_replication_unit in loaded_backup_systemd_units.stdout_lines)"
+
+- name: Delete dataset litestream replication configs
+  file:
+    path: "{{ diritem }}"
+    state: absent
+  when: not dataset_should_backup
+  loop:
+    - "/etc/litestream/{{ dataset_tag }}.yml"
+    - "/etc/systemd/system/{{ dataset_replication_unit }}"
+  loop_control:
+    loop_var: diritem
+  

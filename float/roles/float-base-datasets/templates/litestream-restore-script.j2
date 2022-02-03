@@ -1,0 +1,16 @@
+#!/bin/sh
+
+{% if backup_litestream_url is defined %}
+# Restore the dataset {{ dataset_name }} using litestream.
+
+/usr/bin/litestream restore --config=/etc/litestream/{{ dataset_tag }}.yml --if-replica-exists -v "{{ dataset_path }}/{{ dataset_filename }}"
+
+if [ $? -gt 0 ]; then
+    echo "ERROR: restore failed!" >&2
+    exit 1
+fi
+
+chown -R "{{ dataset_desired_owner }}":"{{ dataset_group }}" "{{ dataset_path }}"
+{% endif %}
+
+exit 0

@@ -1,0 +1,5 @@
+---
+
+# Autodetect the default WebAuthN RP ID by looking at
+# the first public_endpoint of the sso-server service.
+webauthn_rp_id: "{{ services['sso-server'].public_endpoints[0].name if 'sso-server' in services else 'login' }}.{{ domain_public[0] }}"
