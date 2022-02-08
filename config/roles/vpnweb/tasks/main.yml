@@ -47,4 +47,4 @@
     - "restart docker-vpnweb-vpnweb"
 
 - import_tasks: "sip.yml"
-  when: vpnweb_auth == "sip2"
+  when: vpnweb_auth | default('anon') == "sip2"

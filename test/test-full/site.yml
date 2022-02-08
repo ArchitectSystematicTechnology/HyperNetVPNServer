@@ -1,2 +1,15 @@
 ---
-- import_playbook: "../../float/playbooks/all.yml"
+- import_playbook: "../float/playbooks/all.yml"
+
+- hosts: openvpn
+  roles:
+    - kresd
+    - openvpn
+
+- hosts: vpnweb
+  roles:
+    - vpnweb
+    - menshen
+
+- hosts: frontend
+  roles: [vpnweb-frontend]

@@ -23,12 +23,19 @@ variables:
       --roles-path=config/roles
       --num-hosts=3
       --additional-host-group=openvpn=host3
+      --additional-config ${TEST_DIR}/group_vars/all/openvpn_config.yml
+      --additional-config ${TEST_DIR}/group_vars/all/custom_config.yml
+      --additional-config ${TEST_DIR}/group_vars/all/gateway_locations.yml
+      --additional-config ${TEST_DIR}/group_vars/all/provider_config.yml
       -e ansible_cfg.defaults.strategy=mitogen_linear
+      -e ansible_cfg.defaults.action_plugins=../float/plugins/action:../plugins/action
+      -e inventory.hosts.host3.location=Seattle
       -e libvirt.remote_host=${VMINE_SSH#*@}
       -e libvirt.remote_user=${VMINE_SSH%@*}
       ${APT_PROXY:+-e config.apt_proxy=${APT_PROXY}}
       $CREATE_ENV_VARS $BUILD_DIR
-    - cp -v ${TEST_DIR}/group_vars/all/*.yml ${BUILD_DIR}/group_vars/all/
+    - cp -v ${TEST_DIR}/site.yml ${BUILD_DIR}
+    - echo "$(awk '!/- backend/ || ++ctr != 2' ${BUILD_DIR}/hosts.yml)" > ${BUILD_DIR}/hosts.yml
     - with-ssh-key ./float/scripts/floatup.py --url $VMINE_URL --ssh $VMINE_SSH --inventory $BUILD_DIR/hosts.yml --ram 3072 --image ${VM_IMAGE:-bullseye} up
     - (cd ${BUILD_DIR} && with-ssh-key ../float/float run ../playbooks/init-credentials.yml)
     - with-ssh-key ./float/test-driver init --no-vagrant $BUILD_DIR
