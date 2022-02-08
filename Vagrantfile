@@ -1,6 +1,6 @@
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "debian/buster64"
+  config.vm.box = "debian/bullseye64"
 
   # Use the old insecure Vagrant SSH key for access.
   config.ssh.insert_key = false
