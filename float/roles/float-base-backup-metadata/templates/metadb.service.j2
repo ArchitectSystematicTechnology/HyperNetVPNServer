@@ -6,7 +6,8 @@ After=network.target
 Type=simple
 ExecStart=/usr/bin/tabacco metadb
 ExecReload=/bin/kill -HUP $MAINPID
-Restart=on-failure
+Restart=always
+RestartSec=3
 User=backup-metadata
 NoNewPrivileges=true
 

@@ -95,6 +95,7 @@
     state: present
   vars:
     packages:
+      - ca-certificates
       - unattended-upgrades
       - systemd-coredump
       - rsync
