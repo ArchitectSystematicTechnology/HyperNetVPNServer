@@ -14,7 +14,8 @@ menshen:
       volumes:
         - /var/lib/GeoIP: /var/lib/GeoIP/
       env:
-        MENSHEN_API: "api.{{ domain_public[0] }}"
+        MENSHEN_API: "{{ menshen_api | default('api.{{ domain_public[0] }}') }}"
+        INSECURE_API: "{{ testing | lower }}"
   public_endpoints:
     - name: menshen
       port: 9001

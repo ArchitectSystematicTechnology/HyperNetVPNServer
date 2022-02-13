@@ -16,5 +16,4 @@ openvpn_config:
 
 openvpn_tcp_network: "10.41.0.0/21"
 openvpn_udp_network: "10.42.0.0/21"
-openvpn_tcp_network6: "2001:db8:123::/64"
 

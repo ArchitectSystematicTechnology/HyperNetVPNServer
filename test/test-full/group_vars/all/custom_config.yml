@@ -2,4 +2,6 @@
 float_limit_bind_to_known_interfaces: true
 geoip_account_id: "{{ lookup('env', 'GEOIP_ACCOUNT_ID') }}"
 geoip_license_key: "{{ lookup('env', 'GEOIP_LICENSE_KEY') }}"
- 
+# for testing only, because it is using http, it requires INSECURE_API env
+# passed to menshen init
+menshen_api: 'http://host2.vpnweb.float.hexacab.org:8000'

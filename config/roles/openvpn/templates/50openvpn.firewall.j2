@@ -2,7 +2,7 @@
 add_rule4 -A user-input -p tcp -m tcp -d {{ ips | ansible.netcommon.ipv4 | first }} --dport 80 -j ACCEPT
 add_rule4 -A user-input -p udp -m udp -d  {{ ips | ansible.netcommon.ipv4 | first }} --dport 80 -j ACCEPT
 
-{% if openvpn_tcp_network6 is defined and openvpn_tcp_network6|length -%}
+{% if openvpn_tcp_network6 is defined and openvpn_tcp_network6|d('')|length > 0 -%}
 # Allow incoming connections to ipv6 port 80 for both udp and tcp
 add_rule6 -A user-input -p tcp -m tcp -d  {{ ips | ansible.netcommon.ipv6 | first }} --dport 80 -j ACCEPT
 add_rule6 -A user-input -p udp -m udp -d  {{ ips | ansible.netcommon.ipv6 | first }} --dport 80 -j ACCEPT
@@ -17,7 +17,7 @@ add_rule4 -A FORWARD -s {{ openvpn_udp_network | ipaddr('network/prefix') }} -o 
 # allow re/established udp *inbound* to vpn hosts
 add_rule4 -A FORWARD -d {{ openvpn_udp_network | ipaddr('network/prefix') }} -m state --state RELATED,ESTABLISHED -j ACCEPT
 
-{% if openvpn_tcp_network6 is defined and openvpn_tcp_network6|length -%}
+{% if openvpn_tcp_network6 is defined and openvpn_tcp_network6|d('')|length > 0 -%}
 # let ipv6 tcp vpn hosts reach the internet
 add_rule6 -A FORWARD -i tun0 -o {{ ansible_default_ipv4.interface }} -s {{ openvpn_tcp_network6 }} -m state --state NEW -j ACCEPT
 # let ipv6 udp vpn hosts reach the internet
@@ -34,7 +34,7 @@ add_rule6 -A FORWARD -i {{ ansible_default_ipv4.interface }} -o tun1 -d {{ openv
 add_rule4 -A FORWARD -i tun0 -p tcp -o tun0 -j DROP
 # deny v4 udp client-to-client communication
 add_rule4 -A FORWARD -i tun1 -p udp -o tun0 -j DROP
-{% if openvpn_tcp_network6 is defined and openvpn_tcp_network6|length -%}
+{% if openvpn_tcp_network6 is defined and openvpn_tcp_network6|d('')|length > 0 -%}
 # deny v6 tcp client-to-client communication
 add_rule6 -A FORWARD -i tun0 -p tcp -o tun0 -j DROP
 # deny v6 udp client-to-client communication
