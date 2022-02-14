@@ -93,6 +93,8 @@ This _config.yml_ also contains the credentials for an updated geoip database. T
 
 Then edit _group_vars/all/gateway_locations.yml_, _group_vars/all/provider_config.yml_ to match your environment. 
 
+NOTE: The value of `location` for a VPN gateway host, and the location keys in _gateway_locations.yml_, **must** match exactly one of [these city names](https://github.com/tidwall/cities/blob/master/cities.go).
+
 ## 4. Generate credentials 
 
 ... by running the init-credentials playbook. This will ansible-vault-encrypt the resulting secret files under _credentials/_. 
