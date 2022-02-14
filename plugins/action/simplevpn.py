@@ -3,8 +3,32 @@ import os
 import yaml
 import tempfile
 from OpenSSL import crypto
+from ipaddress import ip_address, IPv4Address, IPv6Address
 from ansible.plugins.action import ActionBase
 
+def ipv4(str):
+  try:
+    return type(ip_address(str)) == IPv4Address
+  except ValueError:
+    return False
+
+def ipv6(str):
+  try:
+    return type(ip_address(str)) == IPv6Address
+  except ValueError:
+    return False
+
+def first_ipv4(list):
+  try:
+    return [i for i in list if ipv4(i)][0]
+  except IndexError:
+    return None
+
+def first_ipv6(list):
+  try:
+    return [i for i in list if ipv6(i)][0]
+  except IndexError:
+    return None
 
 def get_fingerprint(cert_data):
     cert_contents = open(cert_data).read()
@@ -18,7 +42,7 @@ class EIPConfig:
         self.locations = locations
         self.gateways = gateways
 
-def patchObfs4Cert(transports, cert):
+def patch_obfs4_cert(transports, cert):
     for t in transports:
         if t['type'] == "obfs4":
             t.setdefault('options', {})
@@ -38,11 +62,11 @@ def no_nulls(d):
         return d
 
 
-def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
+def produce_eip_config(config, obfs4_state_dir, public_domain, transports):
     if obfs4_state_dir:
         obfs4_cert = open(
             obfs4_state_dir + '/obfs4_cert.txt').read().rstrip()
-        transports = patchObfs4Cert(transports, obfs4_cert)
+        transports = patch_obfs4_cert(transports, obfs4_cert)
 
     # Build the JSON data structure that needs to end up in eip-service.json.
     eip_config = {
@@ -51,8 +75,8 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
         "locations": config.locations,
         "gateways": [{
             "host": "%s.%s" % (v["inventory_hostname"], public_domain),
-            "ip_address": v.get("ip"),
-            "ip_address6": v.get("ip6"),
+            "ip_address": first_ipv4(v.get("ips")),
+            "ip_address6": first_ipv6(v.get("ips")),
             "location": v.get("location", "Unknown"),
             "capabilities": {
                 "adblock": False,
@@ -70,7 +94,7 @@ def produceEipConfig(config, obfs4_state_dir, public_domain, transports):
     return no_nulls(eip_config)
 
 
-def produceProviderConfig(public_domain, provider_description, provider_api_uri, ca_cert_uri, ca_public_crt):
+def produce_provider_config(public_domain, provider_description, provider_api_uri, ca_cert_uri, ca_public_crt):
     ca_fp = get_fingerprint(ca_public_crt)
 
     # Build the JSON data structure that needs to end up in provider.json.
@@ -140,8 +164,8 @@ class ActionModule(ActionBase):
         ca_public_crt = self._task.args['ca_public_crt']
 
         config = EIPConfig(openvpn, locations, gateways)
-        eip_config = produceEipConfig(config, obfs4_state_dir, public_domain, transports)
-        provider_config = produceProviderConfig(public_domain, provider_description, provider_api_uri, ca_cert_uri, ca_public_crt)
+        eip_config = produce_eip_config(config, obfs4_state_dir, public_domain, transports)
+        provider_config = produce_provider_config(public_domain, provider_description, provider_api_uri, ca_cert_uri, ca_public_crt)
 
         result = super(ActionModule, self).run(tmp, task_vars)
         result.update({
