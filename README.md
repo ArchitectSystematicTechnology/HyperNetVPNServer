@@ -46,28 +46,12 @@ cd lilypad
 ... by creating a password file:
 
 ```shell
-tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 26 > .ansible_vault_pw
-```
-
-_Optionally_: gpg encrypt this file, so only trusted admins can read it. If you do *not* encrypt this file, then this repository should not be shared anywhere public:
-
-```shell
-(echo '#!/usr/bin/gpg -d'; gpg -a -e .ansible_vault_pw) \
-    > .ansible_vault_pw.gpg
-chmod +x .ansible_vault_pw.gpg
-rm .ansible_vault_pw
+tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 26 | gpg -ea -o .ansible_vault_pw.gpg
 ```
 
 The resulting `.ansible_vault_pw.gpg` will be automatically decrypted by Ansible at runtime (use of an agent, such as `gpg-agent` is advised).
 
 Configure your local environment to know where the ansible vault password is located:
-
-```shell
-export ANSIBLE_VAULT_PASSWORD_FILE=.ansible_vault_pw
-```
-
-_NOTE:_ if you performed the optional encryption step above, you will
-need to add .gpg to the end of the file name below:
 
 ```shell
 export ANSIBLE_VAULT_PASSWORD_FILE=.ansible_vault_pw.gpg
