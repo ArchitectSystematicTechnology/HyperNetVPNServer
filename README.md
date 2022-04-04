@@ -23,9 +23,9 @@ Other Linux distributions might need additional steps to install all requirement
 
 ```shell
 sudo apt-get install golang build-essential bind9utils python3-pysodium python3-jinja2 python3-netaddr python3-openssl python3-yaml python3-six python3-crypto ansible git
-go get -u git.autistici.org/ale/x509ca
-go get -u git.autistici.org/ale/ed25519gen
-go get git.autistici.org/ai3/go-common/cmd/pwtool
+go install git.autistici.org/ale/x509ca@latest
+go install git.autistici.org/ale/ed25519gen@latest
+go install git.autistici.org/ai3/go-common/cmd/pwtool@latest
 export PATH=$PATH:$HOME/go/bin
 ```
 
