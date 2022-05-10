@@ -18,6 +18,8 @@ alertmanager_smtp_auth_password: somepassword
 alertmanager_smtp_hello: float.bitmask.net
 geoip_account_id: 1234
 geoip_license_key: Welcome123
+# optional: 'custom_vpn_web_domains' can be a list of additional domains
+# that vpnweb should respond to, eg. custom_vpn_web_domains: [api.foo.net]
 
 admins:
   - name: admin
