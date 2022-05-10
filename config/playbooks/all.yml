@@ -1,4 +1,0 @@
----
-- import_playbook: openvpn.yml
-- import_playbook: vpnweb.yml
-- import_playbook: menshen.yml
