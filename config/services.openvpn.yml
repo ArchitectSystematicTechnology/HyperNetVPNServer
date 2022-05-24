@@ -89,7 +89,7 @@ vpnweb:
     - name: api
       port: 8000
       scheme: http
-      domains: "{{ custom_vpn_web_domains | default([]) }}"
+      domains: "{{ custom_vpn_web_domains | default(['api.' + domain_public[0]]) }}"
 
 provider:
   scheduling_group: backend
