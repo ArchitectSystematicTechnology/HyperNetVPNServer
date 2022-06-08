@@ -29,6 +29,6 @@ server {{ openvpn_udp_network | ipv4('network') }} {{ openvpn_udp_network | ipv4
 status /tmp/openvpn-status-udp 10
 status-version 3
 tcp-nodelay
-verify-x509-name "CN=UNLIMITED"
+verify-x509-name UNLIMITED name-prefix
 topology subnet
 verb 3
