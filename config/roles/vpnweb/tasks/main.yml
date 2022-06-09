@@ -1,11 +1,5 @@
 - import_tasks: "credentials.yml"
 
-- name: "Create configuration directory for API json files"
-  local_action:
-    module: file
-    path: "{{ playbook_dir }}/config"
-    state: directory
-
 - name: "Generate eip-service.json and provider.json"
   local_action:
     module: simplevpn
