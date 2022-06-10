@@ -1,23 +1,5 @@
 - import_tasks: "credentials.yml"
 
-- name: "Generate eip-service.json and provider.json"
-  local_action:
-    module: simplevpn
-    obfs4_state_dir: "{{ credentials_dir }}/shapeshifter"
-    locations: "{{ locations }}"
-    domain: "{{ domain_public[0] }}"
-    provider_description: "{{ provider_config.description }}"
-    gateways: "{{ groups['openvpn'] | map('extract', hostvars) | list }}"
-    openvpn: "{{ openvpn_config }}"
-    provider_api_uri: "https://{{ api_uri }}:4430"
-    ca_cert_uri: "https://{{ ca_cert_uri }}"
-    ca_public_crt: "{{ credentials_dir }}/common/api_ca.crt"
-  run_once: true
-  register: simplevpn_result
-  notify:
-    - "restart docker-vpnweb-vpnweb"
-
-
 # need to install the api dirs
 - name: "Create API versioned directories"
   file:

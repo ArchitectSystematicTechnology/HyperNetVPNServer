@@ -1,0 +1,10 @@
+# install the provider.json
+- name: "Create directory for provider.json to live"
+  file:
+    path: "/etc/leap/config/vpnweb"
+    state: directory
+
+- name: "Render the provider.json template"
+  template:
+    src: 'provider-config.json.j2'
+    dest: '/etc/leap/config/vpnweb/provider.json'
