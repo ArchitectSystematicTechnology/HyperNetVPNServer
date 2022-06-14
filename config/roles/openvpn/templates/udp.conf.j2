@@ -1,5 +1,6 @@
 mode server
 tls-server
+local {{ ips | ansible.netcommon.ipv4 | first }}
 port 80
 ca /etc/leap/ca/leap_ca_bundle.crt
 cert /etc/credentials/sspki/openvpn/cert.pem
