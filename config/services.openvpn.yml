@@ -20,6 +20,8 @@ menshen:
     - name: menshen
       port: 9001
       scheme: http
+      autoconfig: false
+      skip_acme: true
 
 openvpn:
   scheduling_group: openvpn
