@@ -5,7 +5,7 @@
     name: firewall.service
     state: restarted
 
-- listen: "restart docker-openvpn-openvpn"
+- listen: "restart openvpn"
   systemd:
     name: "docker-openvpn-openvpn.service"
     state: restarted
