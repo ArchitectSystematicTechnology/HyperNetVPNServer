@@ -3,6 +3,7 @@ openvpn_config:
   'tls-version-min': '1.2'
   'auth': 'SHA512'
   'cipher': 'AES-256-GCM'
+  'data-ciphers': 'AES-256-GCM'
   'keepalive': '10 30'
   'tls-cipher': 'TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384'
   'dev': 'tun'
@@ -12,6 +13,7 @@ openvpn_config:
   'persist-key': true
   'key-direction': '1'
   'verb': '3'
+  'float': ''
 
 # You can leave this rfc1918 ip block as it is
 openvpn_tcp_network: "10.41.0.0/21"
