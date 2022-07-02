@@ -1,4 +1,4 @@
 - import_tasks: "secondary_gateway.yml"
-- import_tasks: "credentials.yml"
-- import_tasks: "openvpn.yml"
 - import_tasks: "shapeshifter.yml"
+- import_tasks: "openvpn.yml"
+- import_tasks: "credentials.yml"

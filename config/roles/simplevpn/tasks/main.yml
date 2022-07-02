@@ -12,5 +12,3 @@
     ca_public_crt: "{{ credentials_dir }}/common/api_ca.crt"
   run_once: true
   register: simplevpn_result
-  notify:
-    - "restart docker-vpnweb-vpnweb"

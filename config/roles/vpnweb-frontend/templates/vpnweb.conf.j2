@@ -1,7 +1,5 @@
 upstream be_vpnweb {
-{% for host in groups['vpnweb']|sort %}
-  server {{ host }}.vpnweb.{{ domain }}:{{ services['vpnweb'].public_endpoints[0].port }};
-{% endfor %}
+  server vpnweb.{{ domain }}:{{ services['vpnweb'].public_endpoints[0].port }};
 }
 
 server {
