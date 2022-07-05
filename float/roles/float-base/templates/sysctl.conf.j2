@@ -116,10 +116,12 @@ net.core.bpf_jit_harden=2
 kernel.unprivileged_bpf_disabled=1
 {% endif %}
 
+{% if not disable_restricted_sysctl %}
 # Disable unprivileged user namespaces
 # https://lwn.net/Articles/673597
 # (linux-hardened default)
 kernel.unprivileged_userns_clone=0
+{% endif %}
 
 # Enable yama ptrace restrictions
 # https://www.kernel.org/doc/Documentation/security/Yama.txt
