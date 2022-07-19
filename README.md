@@ -18,19 +18,17 @@ The following commands should be run  ***locally on your computer*** in order to
 
 ## 0. Install the float and LEAP platform pre-requisites
 
-You'll need ansible < 2.10 and python3 for the installation process. This installation guide is tested on Debian buster. 
+This installation guide is tested on Debian Bullseye. 
 Other Linux distributions might need additional steps to install all requirements in the correct version.
 
 ```shell
-sudo apt-get install golang build-essential bind9utils python3-pysodium python3-jinja2 python3-netaddr python3-openssl python3-yaml python3-six python3-crypto ansible git
-go install git.autistici.org/ale/x509ca@latest
-go install git.autistici.org/ale/ed25519gen@latest
-go install git.autistici.org/ai3/go-common/cmd/pwtool@latest
+sudo apt-get install golang build-essential bind9utils python3-pysodium python3-jinja2 python3-netaddr python3-openssl python3-yaml python3-six python3-pycryptodome ansible git ansible-mitogen
+
+go get git.autistici.org/ale/x509ca@latest
+go get git.autistici.org/ale/ed25519gen@latest
+go get git.autistici.org/ai3/go-common/cmd/pwtool@latest
 export PATH=$PATH:$HOME/go/bin
 ```
-
-Make sure `$ ansible --version | grep "ansible 2"` shows a version < 2.10.
-Make sure `$ ansible --version | grep "python version" shows a python 3 version.
 
 ## 1. Clone the float repository
 
@@ -43,7 +41,7 @@ cd lilypad
     
 ## 2. Initialize the ansible vault
 
-... by creating a password file:
+... by creating a password file. Keep the public fingerprint of your OpenPGP keys at hand:
 
 ```shell
 tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 26 | gpg -ea -o .ansible_vault_pw.gpg
@@ -73,7 +71,7 @@ pwtool <type-here-your-password>
 ``` 
 and paste the output into the `password` variable. Have a look at [the common operators playbook](https://git.autistici.org/ai3/float/-/blob/master/docs/playbook.md#adding-an-admin-account) for additional options, such as setting up OTP or U2F tokens.
 
-This _config.yml_ also contains the credentials for an updated geoip database. The `geoip_account_id` and `geoip_license_key` values must be changed, you can register for an account on maxmind.com to obtain these. The geoip service helps clients to choose a gateway near them (usually faster).
+This _config.yml_ also contains the credentials for an updated geoip database. The `geoip_account_id` and `geoip_license_key` values must be changed, you can register for an account on maxmind.com to obtain these. The geoip service helps end users to choose a gateway near them (usually faster).
 
 Then edit _group_vars/all/gateway_locations.yml_, _group_vars/all/provider_config.yml_ to match your environment. 
 
@@ -97,7 +95,10 @@ This will generate service-level credentials, which are automatically managed by
 ... to git, and pushing them to a repository. All auto-generated credentials are stored in the _credentials_dir_ - you will want to ensure that these are properly encrypted, checked into a git repository and kept private. The secret material is encrypted with ansible-vault, so it cannot be read without the access to the _.ansible_vault_pw_. If you commit these files, and push them to a respository, then you can share them with other admins, but be aware that these are secrets that should not be shared with anyone but trusted admins. If you gpg encrypted the _.ansible_vault_pw_, then that file is also encrypted and could also be committed.
 
 ## 6. Ensure SSH access
-Be sure you can ssh to the hosts as root with a public key that will not be prompting you for a password every time; you should have also verified and accepted the correct host key.
+Lilypad uses elliptic curves, ed25519, make sure you can ssh to the hosts as root without being prompted for a password every time. You should have verified and accepted the correct host key:
+```shell
+ssh -i ~/.ssh/id_ed25519 root@float.example.com
+```
 
 ## 7. Deploy the configuration 
 
