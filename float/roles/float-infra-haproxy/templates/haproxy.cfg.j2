@@ -23,26 +23,37 @@ defaults
         timeout client 1440m
         timeout server 1440m
 
+frontend stats
+        bind :::8404
+        mode http
+        option http-use-htx
+        http-request use-service prometheus-exporter if { path /metrics }
+        stats enable
+        stats uri /stats
+        stats refresh 10s
+
 {% for service_name, service in services|dictsort %}
 {% for ep in service.get('public_tcp_endpoints', []) %}
 
 {% if ep.get('ports', []) %}
 
 {% for port in ep.ports %}
-frontend fe_{{ service_name }}_{{ ep.name }}_{{ port }}
-        bind :::{{ port }}
-        default_backend be_{{ service_name }}_{{ ep.name }}_{{ port }}
+{% set internal = port.internal | default(port) %}
+{% set public = port.public | default(port) %}
+frontend fe_{{ service_name }}_{{ ep.name }}_{{ public }}
+        bind :::{{ public }}
+        default_backend be_{{ service_name }}_{{ ep.name }}_{{ internal }}
 
-backend be_{{ service_name }}_{{ ep.name }}_{{ port }}
+backend be_{{ service_name }}_{{ ep.name }}_{{ internal }}
         log global
         balance leastconn
         option independent-streams
 {% for s in services[service_name].hosts|sort %}
-        server task{{ loop.index -1 }} {{ s }}.{{ service_name }}.{{ domain }}:{{ port }} check fall 3 id {{ loop.index + 999 }} inter 5000 rise 3 slowstart 60000 weight 50{% if ep.get('use_proxy_protocol') %} send-proxy-v2{% endif %}
+        server task{{ loop.index -1 }} {{ s }}.{{ service_name }}.{{ domain }}:{{ internal }} check fall 3 id {{ loop.index + 999 }} inter 5000 rise 3 slowstart 60000 weight 50{% if ep.get('use_proxy_protocol') %} send-proxy-v2{% endif %}
 
 {% endfor %}
 
-{% endfor %} # ep.ports
+{% endfor %}
 
 {% else %}
 {% set public_port = ep.public_port | default(ep.port) %}
@@ -59,7 +70,7 @@ backend be_{{ service_name }}_{{ ep.name }}_{{ ep.port }}
 
 {% endfor %}
 
-{% endif %} # ep.get('ports')
+{% endif %}
 
 {% endfor %}
 {% endfor %}

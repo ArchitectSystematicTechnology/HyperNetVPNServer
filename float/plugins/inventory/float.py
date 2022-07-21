@@ -618,8 +618,6 @@ def run_scheduler(config):
     inventory['group_vars'].setdefault('frontend', {}).update({
         'float_enable_http_frontend': _any_attribute_set(
             services, 'public_endpoints'),
-        'float_enable_tcp_frontend': _any_attribute_set(
-            services, 'public_tcp_endpoints'),
         'float_http_upstreams': http_upstreams,
         'float_http_endpoints': http_endpoints,
     })

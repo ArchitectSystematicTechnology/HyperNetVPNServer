@@ -13,12 +13,12 @@ groups:
       runbook: '[[ alert_runbook_fmt | format("DiskWillFillIn") ]]4Hours'
 
   - alert: DiskFull
-    expr: 1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes) > 0.99
+    expr: volume:used_space:ratio > 0.95
     for: 30m
     labels:
       severity: page
       scope: host
     annotations:
       summary: 'Disk {{ $labels.mountpoint }} on {{ $labels.host }} is almost full'
-      description: 'Disk {{ $labels.mountpoint }} on {{ $labels.host }} has very little space available.'
+      description: 'Disk {{ $labels.mountpoint }} on {{ $labels.host }} has very little space available ({{ $value | humanizePercentage }}% full).'
       runbook: '[[ alert_runbook_fmt | format("DiskFull") ]]'

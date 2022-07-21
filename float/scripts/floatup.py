@@ -5,12 +5,14 @@
 #
 
 import argparse
+import base64
 import json
 import os
 import re
 import shlex
 import subprocess
 import yaml
+import zlib
 
 
 # The Vagrant "insecure" SSH key that is used to log onto the VMs.
@@ -76,6 +78,15 @@ def do_request(url, ssh_gw, payload):
         raise
 
 
+def encode_dashboard_request(req):
+    # JSON data, in a raw zlib stream, base64-encoded.
+    hosts = sorted(req['hosts'], key=lambda x: x['name'])
+    data = json.dumps(hosts, separators=(',', ':')).encode('utf-8')
+    comp = zlib.compressobj(level=9, wbits=-9)
+    comp.compress(data)
+    return base64.urlsafe_b64encode(comp.flush()).decode('ascii')
+
+
 def install_ssh_key():
     # Install the SSH key as Vagrant would do, for compatibility.
     key_path = os.path.join(
@@ -117,6 +128,12 @@ def main():
         '--ttl', metavar='DURATION', default='1h',
         help='TTL for the virtual machines')
     parser.add_argument(
+        '--env', metavar='FILE',
+        help='generate a dotenv file (for Gitlab CI)')
+    parser.add_argument(
+        '--dashboard-url', metavar='URL',
+        help='vmine dashboard base URL (for Gitlab CI)')
+    parser.add_argument(
         'cmd',
         choices=['up', 'down'])
     args = parser.parse_args()
@@ -132,7 +149,8 @@ def main():
         req = parse_inventory(args.inventory, host_attrs)
         req['ttl'] = args.ttl
 
-        print('creating VM group with attrs %s ...' % host_attrs)
+        print(f'creating VM group with attrs {host_attrs} ...')
+        print(f'vmine request: {req}')
         resp = do_request(args.url + '/api/create-group', args.ssh, req)
         group_id = resp['group_id']
         with open(args.state_file, 'w') as fd:
@@ -140,6 +158,14 @@ def main():
         print(f'created VM group {group_id}')
 
         install_ssh_key()
+
+        if args.env:
+            with open(args.env, 'w') as fd:
+                fd.write(f'VMINE_ID={group_id}\n')
+                if args.dashboard_url:
+                    base_url = args.dashboard_url.rstrip('/')
+                    payload = encode_dashboard_request(req)
+                    fd.write(f'VMINE_GROUP_URL={base_url}/dash/{payload}\n')
 
     elif args.cmd == 'down':
         try:

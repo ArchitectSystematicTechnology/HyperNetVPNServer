@@ -4,3 +4,8 @@ groups:
       - record: target:probe_ssl_cert_expiry:days
         expr: ((min(probe_ssl_earliest_cert_expiry) by (probe,host)) - time()) / 86400
 
+      - record: service_credentials_expiration_time:days
+        expr: ((min(service_credentials_expiration_time) by (name,float_service)) - time()) / 86400
+
+      - record: min:service_credentials_expiration_time:days
+        expr: (min(service_credentials_expiration_time) - time()) / 86400

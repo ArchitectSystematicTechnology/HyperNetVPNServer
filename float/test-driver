@@ -55,8 +55,8 @@ save_logs() {
     # take too much space in the CI job logs.
     log "Saving logs from VMs (if any)"
     mkdir -p "${out_dir}"
-    ANSIBLE_STDOUT_CALLBACK=default \
-    ${float_dir}/float run -v --extra-vars "out_dir=${out_dir}" \
+    ANSIBLE_STDOUT_CALLBACK=null \
+    ${float_dir}/float run -e "callback_whitelist=" -e "out_dir=${out_dir}" \
         ${float_dir}/test/save-logs.yml
 }
 
@@ -72,10 +72,6 @@ run_init() {
     log Running init-credentials playbook
     ${float_dir}/float run init-credentials.yml \
         || die "failed to run the init-credentials playbook"
-
-    log Running main playbook
-    ${float_dir}/float run site.yml \
-        || die "failed to run the main playbook"
 }
 
 run_cleanup() {
@@ -90,14 +86,15 @@ Usage: test-driver [COMMAND] [DIR]
 Commands:
 
   init       Initialize the test environment (turn up VMs, set up
-             credentials, run the main float playbook)
+             credentials, ensure VMs are reachable)
 
   wait-ready Wait until the VMs are ready (part of "init")
 
   cleanup    Cleanup the test environment (turn down VMs, etc)
 
-  run        Run the test suite, using the playbooks specified by
-             the remaining command-line arguments
+  run        Run the main float playbook, and the test suite, using
+             the playbooks specified by the remaining command-line
+             arguments
 
 If DIR is specified, chdir there before running anything.
 
@@ -138,6 +135,10 @@ case "$cmd" in
         ;;
 
     run)
+        log Running main playbook
+        ${float_dir}/float run site.yml \
+            || die "failed to run the main playbook"
+
         for playbook in "${float_dir}/test/integration-test.yml" "$@"; do
             log Running test playbook ${playbook}
             ${float_dir}/float run ${playbook} \

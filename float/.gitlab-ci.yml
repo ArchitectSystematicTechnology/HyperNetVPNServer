@@ -2,6 +2,7 @@
 stages:
   - docker_build
   - test
+  - cleanup
 
 variables:
   IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
@@ -24,12 +25,12 @@ variables:
       ${APT_PROXY:+-e config.apt_proxy=${APT_PROXY}}
       $CREATE_ENV_VARS $BUILD_DIR
 
-    - with-ssh-key ./scripts/floatup.py ${LIBVIRT:+--ssh $LIBVIRT} --inventory $BUILD_DIR/hosts.yml --ram 2048 --cpu 2 --image ${VM_IMAGE:-bullseye} up
+    - with-ssh-key floatup ${LIBVIRT:+--ssh $LIBVIRT} --inventory $BUILD_DIR/hosts.yml --ram 2048 --cpu 2 --image ${VM_IMAGE:-bullseye} ${FLOATUP_ARGS} up
     - with-ssh-key ./test-driver init --no-vagrant $BUILD_DIR
     - with-ssh-key ./test-driver run $BUILD_DIR
   after_script:
     - with-ssh-key ./test-driver cleanup --no-vagrant $BUILD_DIR
-    - with-ssh-key ./scripts/floatup.py ${LIBVIRT:+--ssh $LIBVIRT} down
+    - with-ssh-key floatup ${LIBVIRT:+--ssh $LIBVIRT} down
   variables:
     CREATE_ENV_VARS: ""
     TEST_DIR: ""
@@ -55,6 +56,45 @@ full_test:
     VM_IMAGE: "bullseye"
     CREATE_ENV_VARS: "-e config.float_debian_dist=bullseye -e inventory.group_vars.vagrant.ansible_python_interpreter=/usr/bin/python3"
     TEST_DIR: "test/full.ref"
+  rules:
+    - if: $CI_MERGE_REQUEST_ID == ''
+
+full_test_review:
+  <<: *base_test
+  after_script:
+    - with-ssh-key ./test-driver cleanup --no-vagrant $BUILD_DIR
+  variables:
+    VM_IMAGE: "bullseye"
+    CREATE_ENV_VARS: "-e config.float_debian_dist=bullseye -e inventory.group_vars.vagrant.ansible_python_interpreter=/usr/bin/python3"
+    FLOATUP_ARGS: "--state-file .vmine_group_review_$CI_MERGE_REQUEST_ID --ttl 6h --env deploy.env --dashboard-url https://vm.investici.org"
+    TEST_DIR: "test/full.ref"
+  allow_failure: true
+  artifacts:
+    when: always
+    reports:
+      dotenv: deploy.env
+    paths: ['.vmine_group_review*']
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    url: $VMINE_GROUP_URL
+    on_stop: stop_full_test_review
+    auto_stop_in: "6 hours"
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+
+stop_full_test_review:
+  stage: cleanup
+  dependencies: [full_test_review]
+  image: registry.git.autistici.org/ai3/docker/float-runner:master
+  script:
+    - with-ssh-key floatup --state-file .vmine_group_review_$CI_MERGE_REQUEST_ID ${LIBVIRT:+--ssh $LIBVIRT} down
+  allow_failure: true
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    action: stop
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
 
 backup_test:
   <<: *base_test
@@ -69,7 +109,7 @@ docker_build_and_release_tests:
   services:
     - docker:dind
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.autistici.org
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - cd test && docker build --build-arg ci_token=$CI_JOB_TOKEN --pull -t $IMAGE_TAG .
     - docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:integration-test
     - docker push $CI_REGISTRY_IMAGE:integration-test

@@ -10,6 +10,7 @@ frontend:
     - name: replds-acme
   systemd_services:
     - nginx.service
+    - haproxy.service
     - sso-proxy.service
     - replds@acme.service
   ports:
@@ -18,6 +19,9 @@ frontend:
     - name: cache
       path: /var/cache/nginx
       size: 20g
+  monitoring_endpoints:
+    - port: 8404
+      scheme: http
 
 dns:
   scheduling_group: frontend
@@ -73,7 +77,6 @@ prometheus:
         - /etc/prometheus: /etc/prometheus
         - /var/lib/prometheus/alertmanager: /var/lib/prometheus/alertmanager
       args: "--web.external-url=https://alertmanager.{{ domain_public[0] }} --cluster.listen-address=:9094 --cluster.advertise-address={{ float_host_dns_map.get(inventory_hostname + '.prometheus', ['']) | list | first }}:9094{% for h in groups['prometheus']|sort if h != inventory_hostname %} --cluster.peer={{ h }}.prometheus.{{ domain }}:9094{% endfor %}"
-      egress_policy: internal
     - name: blackbox
       image: registry.git.autistici.org/ai3/docker/prometheus-blackbox:master
       ports:

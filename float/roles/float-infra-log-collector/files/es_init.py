@@ -15,7 +15,7 @@ import urllib.request
 # exist. This way we solve the race condition between the creation of
 # index templates and the auto-creation of indices triggered by
 # rsyslog.
-INDEX_SETTINGS = '''
+INDEX_SETTINGS = b'''
 {
   "index": {
     "number_of_replicas": 0,
@@ -45,7 +45,7 @@ def wait_for_es(url, timeout):
 
 
 def load_index_template(url, tplfile):
-    with open(tplfile, 'r') as fd:
+    with open(tplfile, 'rb') as fd:
         tpldata = fd.read()
     name = os.path.splitext(os.path.basename(tplfile))[0]
     req = urllib.request.Request(
@@ -97,7 +97,7 @@ def main():
                         help='Elasticsearch URL')
     parser.add_argument('--dir', default='/etc/elasticsearch/templates',
                         help='Directory containing JSON index templates')
-    parser.add_argument('--wait-timeout', dest='wait_timeout', type='int',
+    parser.add_argument('--wait-timeout', dest='wait_timeout', type=int,
                         default=1800)
     args = parser.parse_args()
 

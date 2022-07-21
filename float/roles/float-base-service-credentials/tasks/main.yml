@@ -24,3 +24,9 @@
 - file:
     path: /etc/credentials/public
     state: directory
+
+# Generate a summary file for the node-exporter credentials SSL expiration time script.
+- name: Create credentials summary for node-exporter
+  template:
+    src: service_credentials_map.dat.j2
+    dest: "/etc/prometheus/service_credentials_map.dat"

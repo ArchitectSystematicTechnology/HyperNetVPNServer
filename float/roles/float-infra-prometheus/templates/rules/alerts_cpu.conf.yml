@@ -36,3 +36,31 @@ groups:
       summary: 'Host {{$labels.host}} is running too hot'
       description: |
         The CPU on {{$labels.host}} is being throttled because it is running too hot.
+
+  # PSI alerts - in testing mode for now.
+  - alert: HostMemoryPressureHigh
+    expr: rate(node_pressure_memory_waiting_seconds_total[10m]) > 0.2
+    for: 10m
+    labels:
+      scope: host
+      severity: warn
+    annotations:
+      summary: "High memory pressure on host {{$labels.host}}"
+      description: |
+        PSI metrics report high memory pressure on host {{$labels.host}}:
+          {{$value}} > 0.2.
+        Processes might be at risk of eventually OOMing.
+
+  # PSI alerts - in testing mode for now.
+  - alert: HostCPUPressureHigh
+    expr: rate(node_pressure_cpu_waiting_seconds_total[10m]) > 0.2
+    for: 10m
+    labels:
+      scope: host
+      severity: warn
+    annotations:
+      summary: "High CPU pressure on host {{$labels.host}}"
+      description: |
+        PSI metrics report high CPU pressure on host {{$labels.host}}:
+          {{$value}} > 0.2.
+        The host might become unresponsive due to contention on CPU time.

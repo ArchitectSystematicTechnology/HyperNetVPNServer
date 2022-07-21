@@ -8,8 +8,10 @@ import argparse
 import base64
 import binascii
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 import yaml
 
 
@@ -126,6 +128,25 @@ def generate_rsa_key(bits):
         encoding='ascii')
 
 
+def generate_self_signed_x509_certificate(cn, bits, days):
+    """Create a X509 self-signed certificate."""
+    tmpdir = tempfile.mkdtemp()
+    try:
+        subprocess.check_call(
+            ['openssl', 'req', '-x509', '-newkey', 'rsa:%d' % bits,
+             '-keyout', os.path.join(tmpdir, 'key.pem'), '-nodes',
+             '-out', os.path.join(tmpdir, 'cert.pem'),
+             '-sha256', '-days', str(days),
+             '-subj', f'/CN={cn}'])
+        with open(os.path.join(tmpdir, 'key.pem')) as f:
+            key = f.read()
+        with open(os.path.join(tmpdir, 'cert.pem')) as f:
+            cert = f.read()
+        return {'key': key, 'cert': cert}
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+
 def generate_password(entry):
     ptype = entry.get('type', 'simple')
     if ptype == 'simple':
@@ -138,6 +159,11 @@ def generate_password(entry):
         return generate_tsig_key()
     if ptype == 'rsakey':
         return generate_rsa_key(bits=int(entry.get('bits', 2048)))
+    if ptype == 'self-signed-cert':
+        return generate_self_signed_x509_certificate(
+            cn=entry.get('cn', 'localhost'),
+            bits=int(entry.get('bits', 2048)),
+            days=int(entry.get('days', 3650)))
     raise Exception('Unknown password type "%s"' % ptype)
 
 

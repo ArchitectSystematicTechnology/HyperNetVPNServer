@@ -1,9 +1,12 @@
 ---
 
+# Register this task so we can use it later, in other roles,
+# to reload haproxy/nginx.
 - name: Create /etc/hosts
   template:
     dest: /etc/hosts
     src: hosts.j2
+  register: etc_hosts
 
 - name: Create /etc/host.conf
   copy:

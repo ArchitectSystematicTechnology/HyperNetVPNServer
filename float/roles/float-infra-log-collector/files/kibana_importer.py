@@ -42,14 +42,14 @@ def upload_kibana_dashboards(kibana_base_url, jsonArray):
         }
         req = urllib.request.Request(
             f'{kibana_base_url}/api/kibana/dashboards/import?force=true',
-            data=json.dumps(obj), headers=headers)
+            data=json.dumps(obj).encode('utf-8'), headers=headers)
         urllib.request.urlopen(req)
 
 
 def set_default_index(kibana_base_url, index_id):
     req = urllib.request.Request(
         f'{kibana_base_url}/api/kibana/settings/defaultIndex',
-        data=json.dumps({'value': index_id}),
+        data=json.dumps({'value': index_id}).encode('utf-8'),
         headers={
             'kbn-xsrf': 'anything',
             'Content-Type': 'application/json',

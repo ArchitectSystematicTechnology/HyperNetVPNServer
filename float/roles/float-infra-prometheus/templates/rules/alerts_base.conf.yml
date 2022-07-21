@@ -68,8 +68,23 @@ groups:
       description: 'Job {{ $labels.job }} is down globally (availability {{ $value }}).'
       runbook: '[[ alert_runbook_fmt | format("JobDown") ]]'
 
+  - alert: CronJobFailure
+    expr: cronjob_ok < 1 and (time() - cronjob_last_success) > 259200
+    for: 30m
+    labels:
+      severity: warn
+      scope: host
+    annotations:
+      summary: 'Cron job {{$labels.cronjob}} on {{$labels.host}} has been failing consistently'
+      description: 'The cron job "{{$labels.cronjob}}" on host {{$labels.host}} has been
+        failing for the last 3 days. Check the logs for errors.'
+      runbook: '[[ alert_runbook_fmt | format("CronJobFailure") ]]'
+
+{% set services_with_custom_timeouts = services.values() | selectattr('prober_alert_timeout', 'defined') | map(attribute='name') | reject('eq', 'prometheus') | sort %}
+{# Default ProbeFailure alerts (host/global).
+   The 'ping' probe is excluded because we use it to build the HostUnreachable signal. #}
   - alert: ProbeFailure
-    expr: target:probe_success:ratio{probe!="ping",probeset!="service"} < 0.5
+    expr: target:probe_success:ratio{probe!="ping"{% if services_with_custom_timeouts %},prober_float_service!~"([[ services_with_custom_timeouts | join('|') ]])"{% endif %}} < 0.5
     for: 5m
     labels:
       severity: page
@@ -84,7 +99,7 @@ groups:
       runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
 
   - alert: ProbeFailure
-    expr: probe:probe_success:ratio{probe!="ping",probeset!="service"} < 0.5
+    expr: probe:probe_success:ratio{probe!="ping"{% if services_with_custom_timeouts %},prober_float_service!~"([[ services_with_custom_timeouts | join('|') ]])"{% endif %}} < 0.5
     for: 5m
     labels:
       severity: page
@@ -98,14 +113,37 @@ groups:
         Failed probe logs: https://{{ $labels.prober_float_service }}.[[ domain_public[0] ]]/
       runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
 
-  - alert: CronJobFailure
-    expr: cronjob_ok < 1 and (time() - cronjob_last_success) > 259200
-    for: 30m
+{# Specific ProbeFailure alerts for each custom prober_service->timeout pair #}
+{% for prober_service_name in services_with_custom_timeouts %}
+{% set timeout = services[prober_service_name].prober_alert_timeout %}
+  - alert: ProbeFailure
+    expr: target:probe_success:ratio{prober_float_service="[[ prober_service_name ]]"} < 0.5
+    for: [[ timeout ]]
     labels:
-      severity: warn
+      severity: page
       scope: host
     annotations:
-      summary: 'Cron job {{$labels.cronjob}} on {{$labels.host}} has been failing consistently'
-      description: 'The cron job "{{$labels.cronjob}}" on host {{$labels.host}} has been
-        failing for the last 3 days. Check the logs for errors.'
-      runbook: '[[ alert_runbook_fmt | format("CronJobFailure") ]]'
+      summary: 'Probe {{ $labels.probe }}@{{ $labels.host }} is failing'
+      description: >-
+        Probe {{ $labels.probe }} ({{ $labels.host }}) is failing for target {{ $labels.host }}
+        (success ratio {{ $value }}).
+
+        Failed probe logs: https://{{ $labels.prober_float_service }}.[[ domain_public[0] ]]/
+      runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
+
+  - alert: ProbeFailure
+    expr: probe:probe_success:ratio{prober_float_service="[[ prober_service_name ]]"} < 0.5
+    for: [[ timeout ]]
+    labels:
+      severity: page
+      scope: global
+    annotations:
+      summary: 'Probe {{ $labels.probe }} is failing globally'
+      description: >-
+        Probe {{ $labels.probe }} ({{ $labels.zone }}) is failing globally
+        (success ratio {{ $value }}).
+
+        Failed probe logs: https://{{ $labels.prober_float_service }}.[[ domain_public[0] ]]/
+      runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
+
+{% endfor %}

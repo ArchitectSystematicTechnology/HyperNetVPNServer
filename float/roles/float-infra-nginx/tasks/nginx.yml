@@ -201,3 +201,10 @@
     - /usr/local/bin/acme-reload-nginx
     - /etc/cron.d/acme-reload-nginx
 
+# Explicit reload of nginx whenever /etc/hosts changes
+- name: Reload nginx
+  debug:
+    msg: "reload nginx"
+  notify: "reload nginx"
+  changed_when: "etc_hosts is defined and etc_hosts.changed"
+

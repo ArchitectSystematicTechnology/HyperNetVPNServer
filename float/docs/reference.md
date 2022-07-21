@@ -1592,6 +1592,27 @@ prometheus_additional_blackbox_probers:
     target_regex: "http://\\1:2020"
 ```
 
+### Customizing alert timeouts for additional blackbox probes
+
+The Prometheus configuration for the default *float* blackbox probes
+is appropriate for high-frequency, high-accuracy probes (with 10s
+polling and a 5m alert timeout). This is not going to be appropriate
+for all use cases, such as more complex probes that require less
+frequent polling.
+
+Float provides a way to configure alert timeouts on a *prober*
+(i.e. float service) basis, by using the optional
+*prober_alert_timeout* attribute in the service description
+metadata. For instance, to set a 30 minute alert timeout in the
+context of the previous example, the services.yml file should be
+modified:
+
+```yaml
+my-prober:
+  ...
+  prober_alert_timeout: 30m
+```
+
 ## Log Collection and Analysis
 
 Logs are forwarded by all machines to a set of (one or more)

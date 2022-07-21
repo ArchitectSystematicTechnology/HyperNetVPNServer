@@ -49,6 +49,9 @@ account_recovery_url: "{{ sso_server_account_recovery_url | default('') }}"
 default_signed_in_redirect: "{{ sso_server_default_signed_in_redirect | default('') }}"
 device_manager:
   auth_key: "{{ sso_device_manager_auth_secret }}"
+http_server:
+  enable_compression: true
+  request_timeout: 10
   trusted_forwarders:
     - 127.0.0.1
     - ::1

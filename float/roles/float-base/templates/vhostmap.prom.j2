@@ -2,13 +2,20 @@
 
 Map tying float services (float_service=), systemd services (service=)
 and vhosts together, used to build Graphana dynamic dashboards.
+Skip public_endpoints with a path, to avoid duplication of entries.
 
 #}
 {% for service_name, service in services | dictsort %}
 {% for ep in service.get('public_endpoints', []) %}
-{% for s in service.get('systemd_services', []) %}
+{% for systemd_service in service.get('systemd_services', []) %}
 {% for d in domain_public %}
-vhostmap{float_service="{{ service_name }}",service="{{ s }}",vhost="{{ ep.name }}.{{ d }}:443"} 1
+{% if ep.sharded | default(False) %}
+{% for shard_id in service.hosts | map('extract', hostvars) | map(attribute='shard_id') | sort %}
+vhostmap{float_service="{{ service_name }}",service="{{ systemd_service }}",vhost="{{ shard_id }}.{{ ep.name }}.{{ d }}:443"} 1
+{% endfor %}
+{% else %}
+vhostmap{float_service="{{ service_name }}",service="{{ systemd_service }}",vhost="{{ ep.name }}.{{ d }}:443"} 1
+{% endif %}
 {% endfor %}
 {% endfor %}
 {% endfor %}

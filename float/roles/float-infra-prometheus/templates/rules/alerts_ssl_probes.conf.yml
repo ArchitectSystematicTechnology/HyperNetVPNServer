@@ -12,3 +12,26 @@ groups:
       description: 'The "{{ $labels.probe }}" prober reports that {{ $labels.host }} is serving a SSL certificate that will expire in {{ $value }} days.'
       runbook: '[[ alert_runbook_fmt | format("SSLCertificateAboutToExpire") ]]'
 
+  - alert: InternalSSLCertificateAboutToExpire
+    expr: min:service_credentials_expiration_time:days < 10
+    for: 3h
+    labels:
+      scope: global
+      severity: page
+    annotations:
+      summary: 'Internal SSL certificates about to expire'
+      description: |
+        Some internal SSL certificates are about to expire in {{ $value }} days.
+        You can check the details by looking for further service-specific
+        InternalSSLCertificateAboutToExpire alerts.
+
+        In order to renew them, it should be sufficient to just run "float" again.
+
+  - alert: InternalSSLCertificateAboutToExpire
+    expr: service_credentials_expiration_time:days < 10
+    for: 3h
+    labels:
+      scope: global
+      severity: warn
+    annotations:
+      summary: 'Internal SSL certificates about to expire for {{ $labels.float_service }}'

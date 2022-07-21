@@ -24,7 +24,7 @@
 {% macro config_vhost(endpoint, shard=None) %}
 server {
         listen [::]:{{ nginx_https_port }} http2 ssl;
-{% if endpoint.domains %}
+{% if endpoint.get('domains') %}
         server_name {{ endpoint.domains | join(' ') }};
 {% else %}
         server_name {% for d in domain_public %}{% if shard %}{{ shard }}.{% endif %}{{ endpoint.name }}.{{ d }} {% endfor %};

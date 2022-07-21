@@ -267,6 +267,11 @@ scrape_configs:
           probe: {{ p.name }}
           probeset: custom
           prober_float_service: {{ p.service }}
+{% if p.service is defined %}
+{% for k, v in services[p.service].prober_labels | default({}) | dictsort %}
+          {{ k }}: {{ v }}
+{% endfor %}
+{% endif %}
 {% endfor %}
 {% endfor %}
 

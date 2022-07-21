@@ -26,4 +26,3 @@ prometheus_scrape_interval: "10s"
 # Copied from float-infra-log-collector defaults, will
 # in any case be overridden by group vars if set.
 enable_elasticsearch: true
-

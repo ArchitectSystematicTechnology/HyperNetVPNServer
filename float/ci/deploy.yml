@@ -1,0 +1,128 @@
+# Build a simple float-based environment off a
+# services.yml/passwords.yml combination.
+#
+# Example usage:
+#
+# include:
+#   - project: ai3/float
+#     file: ci/deploy.yml
+#
+# variables:
+#   FLOATUP_ARGS: "--ssh user@jump.host"
+#
+# deploy:
+#   variables:
+#     SERVICES_FILE: my-services.yml
+#     PASSWORDS_FILE: my-passwords.yml
+#
+
+stages:
+  - deploy
+  - run
+
+# These are all configurable, globally and per-build.
+variables:
+  SERVICES_FILE: services.yml
+  PASSWORDS_FILE: passwords.yml
+  PLAYBOOK_FILE: site.yml
+  ROLES_PATH: "${CI_PROJECT_DIR}/roles"
+  DOMAIN: example.com
+  NUM_HOSTS: 1
+  VM_IMAGE: bullseye
+  VM_RAM: 2048
+  VM_CPU: 1
+  VM_TTL: "4h"
+  VM_TAG: default
+  VM_DASHBOARD_URL: "https://vm.investici.org"
+  FLOATUP_ARGS: ""
+  CREATE_ENV_ARGS: ""
+
+.deploy_template:
+  stage: deploy
+  image: registry.git.autistici.org/ai3/docker/float-runner:master
+  variables:
+    # Internal, do not change.
+    DEPLOY_ENV_FILE: "deploy-${VM_TAG}.env"
+    # This can be any temporary directory as long as it is unique
+    # (multiple jobs may be running off the same CI_PROJECT_DIR).
+    BUILD_DIR: "${CI_PROJECT_DIR}/env-${VM_TAG}-${CI_JOB_ID}"
+    VMINE_STATE_FILE: ".vmine_state_${CI_MERGE_REQUEST_ID}_${VM_TAG}"
+  before_script:
+    - mkdir -p $BUILD_DIR
+  script:
+    - (cd $BUILD_DIR && git clone --depth 1 https://git.autistici.org/ai3/float.git)
+    - >
+      $BUILD_DIR/float/float create-env
+      --domain=${DOMAIN}
+      --services=${BUILD_DIR}/float/services.yml.no-elasticsearch
+      --services=${SERVICES_FILE}
+      --passwords=${BUILD_DIR}/float/passwords.yml.default
+      --passwords=${PASSWORDS_FILE}
+      --playbook=${BUILD_DIR}/float/playbooks/all.yml
+      --playbook=${PLAYBOOK_FILE}
+      --num-hosts=${NUM_HOSTS}
+      --roles-path=${ROLES_PATH}
+      -e ansible_cfg.defaults.strategy=mitogen_linear
+      -e config.docker_registry_url=${CI_REGISTRY}
+      -e config.docker_registry_username=${CI_REGISTRY_USER}
+      -e config.docker_registry_password=${CI_REGISTRY_PASSWORD}
+      ${APT_PROXY:+-e config.apt_proxy=${APT_PROXY}}
+      ${CREATE_ENV_ARGS}
+      ${BUILD_DIR}
+    - with-ssh-key floatup $FLOATUP_ARGS --inventory $BUILD_DIR/hosts.yml --ram $VM_RAM --cpu $VM_CPU --image $VM_IMAGE --state-file $VMINE_STATE_FILE --env $DEPLOY_ENV_FILE --ttl $VM_TTL --dashboard-url $VM_DASHBOARD_URL up
+    - with-ssh-key $BUILD_DIR/float/test-driver init --no-vagrant $BUILD_DIR
+    - echo BUILD_DIR=$BUILD_DIR >> $DEPLOY_ENV_FILE
+  allow_failure: true
+  artifacts:
+    when: always
+    expire_in: "1 day"
+    reports:
+      dotenv: "$DEPLOY_ENV_FILE"
+    paths:
+      - "${BUILD_DIR}"
+      - "$VMINE_STATE_FILE"
+  environment:
+    name: "review/$CI_COMMIT_REF_SLUG"
+    url: "$VMINE_GROUP_URL"
+    auto_stop_in: "3 hours"
+
+.run_template:
+  stage: run
+  image: registry.git.autistici.org/ai3/docker/float-runner:master
+  script:
+    - cd $BUILD_DIR
+    - with-ssh-key ./float/float run -e docker_registry_password=$CI_REGISTRY_PASSWORD site.yml
+    - with-ssh-key ./float/float run -e docker_registry_password=$CI_REGISTRY_PASSWORD ./float/test/integration-test.yml
+  after_script:
+    - cd $BUILD_DIR
+    - with-ssh-key ./float/test-driver cleanup --no-vagrant .
+  artifacts:
+    when: always
+    paths:
+      - "${BUILD_DIR}/logs"
+
+.stop_deploy_template:
+  stage: run
+  image: registry.git.autistici.org/ai3/docker/float-runner:master
+  allow_failure: true
+  variables:
+    # Internal, do not change.
+    VMINE_STATE_FILE: ".vmine_state_${CI_MERGE_REQUEST_ID}_${VM_TAG}"
+  script:
+    - with-ssh-key floatup $FLOATUP_ARGS --state-file $VMINE_STATE_FILE down
+  environment:
+    name: "review/$CI_COMMIT_REF_SLUG"
+    action: stop
+
+deploy:
+  extends: .deploy_template
+  environment:
+    on_stop: "stop_deploy"
+
+run:
+  extends: .run_template
+
+stop_deploy:
+  extends: .stop_deploy_template
+  rules:
+    - when: manual

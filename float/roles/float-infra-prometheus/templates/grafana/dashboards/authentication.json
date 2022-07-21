@@ -158,8 +158,8 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(sso_logins_total[5m])) by (status,method)",
-          "legendFormat": "{{status}} ({{method}})",
+          "expr": "sum(rate(auth_requests{service='sso',status='ok'}[10m])) by (status,mechanism)",
+          "legendFormat": "{{status}} ({{mechanism}})",
           "refId": "A"
         }
       ],
@@ -167,7 +167,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Logins",
+      "title": "SSO logins",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -2132,5 +2132,5 @@
   "timezone": "",
   "title": "Authentication",
   "uid": "Slw4XP4Wk",
-  "version": 2
+  "version": 3
 }

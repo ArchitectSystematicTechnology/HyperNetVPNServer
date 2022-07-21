@@ -77,8 +77,8 @@ on the local machine using [Go](https://golang.org):
 
 ```shell
 sudo apt-get install golang
-go get -u git.autistici.org/ale/x509ca
-go get -u git.autistici.org/ale/ed25519gen
+go install git.autistici.org/ale/x509ca@latest
+go install git.autistici.org/ale/ed25519gen@latest
 export PATH=$PATH:$HOME/go/bin
 ```
 

@@ -65,7 +65,7 @@ Vagrant.configure(2) do |config|
   hosts.each do |hostname, hostvars|
     config.vm.define hostname do |m|
       m.vm.hostname = hostname
-      m.vm.network "private_network", ip: hostvars["ip"], libvirt__dhcp_enabled: false, libvirt__network_name: network_name
+      m.vm.network "private_network", ip: hostvars["ips"][0], libvirt__dhcp_enabled: false, libvirt__network_name: network_name
     end
   end
 end
@@ -116,14 +116,18 @@ VVSaq+sWqN+ugjpj9sJ++/O1uSiUPNZdIwIBAg==
     'services.yml': '''---
 include:
 {% if services_yml_path %}
-  - "{{ services_yml_path | relpath(targetdir) }}"
+{% for p in services_yml_path %}
+  - "{{ p | relpath(targetdir) }}"
+{% endfor %}
 {% else %}
   - "{{ srcdir | relpath(targetdir) }}/services.yml.no-elasticsearch"
 {% endif %}
 ''',
     'passwords.yml': '''---
 {% if passwords_yml_path %}
-- include: "{{ passwords_yml_path | relpath(targetdir) }}"
+{% for p in passwords_yml_path %}
+- include: "{{ p | relpath(targetdir) }}"
+{% endfor %}
 {% else %}
 - include: "{{ srcdir | relpath(targetdir) }}/passwords.yml.default"
 {% endif %}
@@ -142,8 +146,8 @@ DEFAULT_VARS = {
     # Paths, some set by command-line options.
     'srcdir': SRCDIR,
     'targetdir': None,
-    'services_yml_path': None,
-    'passwords_yml_path': None,
+    'services_yml_path': [],
+    'passwords_yml_path': [],
     'playbooks': [],
 
     # Memory for the virtual machines (MB).
@@ -529,9 +533,11 @@ memberships, using the --additional-host-group command-line option.
         help='infrastructural domain to use (default: "infra." + domain)')
     create_env_parser.add_argument(
         '--services', metavar='FILE',
+        action='append', default=[],
         help='your custom services.yml')
     create_env_parser.add_argument(
         '--passwords', metavar='FILE',
+        action='append', default=[],
         help='your custom passwords.yml')
     create_env_parser.add_argument(
         '--playbook', metavar='FILE',

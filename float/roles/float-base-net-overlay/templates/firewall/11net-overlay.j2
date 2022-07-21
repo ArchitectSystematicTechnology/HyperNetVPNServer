@@ -19,7 +19,8 @@ add_rule -A vpn-{{ tinc_net }}-input -p tcp --dport {{ ep.port }} -j ACCEPT
 {% endfor %}
 {% for ep in services[s].get('public_tcp_endpoints', {}) %}
 {% for port in ep.get('ports', []) %}
-add_rule -A vpn-{{ tinc_net }}-input -p tcp --dport {{ port }} -j ACCEPT
+{% set internal = port.internal | default(port) %}
+add_rule -A vpn-{{ tinc_net }}-input -p tcp --dport {{ internal }} -j ACCEPT
 {% endfor %}
 {% if 'port' in ep %}
 add_rule -A vpn-{{ tinc_net }}-input -p tcp --dport {{ ep.port }} -j ACCEPT

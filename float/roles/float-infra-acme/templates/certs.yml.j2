@@ -3,7 +3,7 @@
 {# Create certificates for all the HTTP public endpoints #}
 {% for pe in service.get('public_endpoints', []) if pe.get('name') and not pe.get('skip_acme', False) and pe.get('path', '/') == '/' %}
 - names:
-{% if pe.domains is defined %}
+{% if pe.get('domains') %}
 {% for d in pe.domains %}
     - "{{ d }}"
 {% endfor %}
