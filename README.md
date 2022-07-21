@@ -41,7 +41,7 @@ cd lilypad
     
 ## 2. Initialize the ansible vault
 
-... by creating a password file. Keep the public fingerprint of your OpenPGP keys at hand:
+... by creating a password file. Keep the public user ID of your OpenPGP keys at hand:
 
 ```shell
 tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 26 | gpg -ea -o .ansible_vault_pw.gpg
@@ -95,7 +95,7 @@ This will generate service-level credentials, which are automatically managed by
 ... to git, and pushing them to a repository. All auto-generated credentials are stored in the _credentials_dir_ - you will want to ensure that these are properly encrypted, checked into a git repository and kept private. The secret material is encrypted with ansible-vault, so it cannot be read without the access to the _.ansible_vault_pw_. If you commit these files, and push them to a respository, then you can share them with other admins, but be aware that these are secrets that should not be shared with anyone but trusted admins. If you gpg encrypted the _.ansible_vault_pw_, then that file is also encrypted and could also be committed.
 
 ## 6. Ensure SSH access
-Lilypad uses elliptic curves, ed25519, make sure you can ssh to the hosts as root without being prompted for a password every time. You should have verified and accepted the correct host key:
+Lilypad uses elliptic curves for ssh, ed25519. Make sure you can ssh to the hosts as root without being prompted for a password every time after having verified and accepted the correct host key. Try to login:
 ```shell
 ssh -i ~/.ssh/id_ed25519 root@float.example.com
 ```
