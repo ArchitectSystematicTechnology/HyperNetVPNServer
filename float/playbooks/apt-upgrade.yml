@@ -1,9 +1,8 @@
 ---
-
 - hosts: all
   tasks:
     - copy:
-        src: float/roles/float-base/files/apt/deb_autistici_org.gpg
+        src: ../roles/float-base/files/apt/deb_autistici_org.gpg
         dest: /usr/share/keyrings/deb.autistici.org.gpg
     - apt:
         update_cache: yes

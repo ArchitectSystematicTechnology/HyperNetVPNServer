@@ -54,6 +54,7 @@ log-collector:
         - /etc/rsyslog-collector-lognorm: /etc/rsyslog-collector-lognorm
         - /var/spool/rsyslog-collector: /var/spool/rsyslog
         - /var/log/remote: /var/log/remote
+      egress_policy: internal
     - name: kibana
       image: registry.git.autistici.org/ai3/docker/kibana:master
       port: 5601

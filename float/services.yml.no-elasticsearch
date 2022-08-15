@@ -52,6 +52,7 @@ log-collector:
         - /etc/rsyslog-collector-lognorm: /etc/rsyslog-collector-lognorm
         - /var/spool/rsyslog-collector: /var/spool/rsyslog
         - /var/log/remote: /var/log/remote
+      egress_policy: internal
   ports:
     - 6514
 
