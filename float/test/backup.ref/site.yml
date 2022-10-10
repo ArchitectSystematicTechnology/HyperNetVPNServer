@@ -7,4 +7,11 @@
     - name: Create the test bucket
       run_once: true
       command: "podman run --env MC_HOST_local=http://minio:miniopassword@backup:9000 --network host --rm quay.io/minio/mc mb local/backuptest"
+    - systemd:
+        name: tabacco-metadb.service
+        state: restarted
+    - systemd:
+        name: user-meta-server.service
+        state: restarted
+    - local_action: shell sleep 60
 

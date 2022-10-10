@@ -28,7 +28,7 @@ allowed_services:
 allowed_cors_origins: {{ sso_allowed_cors_origins | to_json }}
 allowed_exchanges: {{ sso_allowed_exchanges | to_json }}
 service_ttls: {{ sso_service_ttls | to_json }}
-auth_session_lifetime: 43200
+auth_session_lifetime: {{ sso_auth_session_lifetime }}
 session_auth_key: "{{ sso_session_auth_secret }}"
 session_enc_key: "{{ sso_session_enc_secret }}"
 csrf_secret: "{{ sso_csrf_secret }}"

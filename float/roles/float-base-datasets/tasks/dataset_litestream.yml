@@ -2,7 +2,6 @@
 
 - set_fact:
     dataset_filename: "{{ dataset.filename }}"
-    dataset_replica_url: "{{ backup_litestream_url | default('') }}/{{ dataset_tag }}"
     dataset_replication_unit: "replicate-{{ dataset_tag }}.service"
     # Just don't backup at all if litestream is not configured.
     dataset_should_backup: "{{ dataset_should_backup and (backup_litestream_config is defined) }}"

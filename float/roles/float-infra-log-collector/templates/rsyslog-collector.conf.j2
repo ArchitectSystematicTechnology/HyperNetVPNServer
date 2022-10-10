@@ -1,6 +1,7 @@
 
 global(
   maxMessageSize="64k"
+  workDirectory="/var/spool/rsyslog"
 )
 
 main_queue(
@@ -24,7 +25,7 @@ ruleset(name="process_stats") {
   action(
     type="omprog"
     name="to_exporter"
-    binary="/usr/bin/rsyslog_exporter -web.listen-address=:9105"
+    binary="/usr/bin/rsyslog_exporter -web.listen-address=:{{ rsyslog_exporter_port }}"
     queue.type="linkedlist"
     queue.workerThreads="1"
   )
@@ -165,8 +166,8 @@ ruleset(name="incoming"){
     if ($syslogfacility-text == "auth" and $programname == "audit") then {
       # Structured audit logs go to a dedicated Elasticsearch index.
       action(type="omelasticsearch"
-             server="127.0.0.1"
-             serverport="9200"
+             server="{{ rsyslog_elasticsearch_host }}"
+             serverport="{{ rsyslog_elasticsearch_port }}"
              template="esTemplateAudit"
              searchIndex="esIndexAudit"
              searchType="_doc"
@@ -179,7 +180,6 @@ ruleset(name="incoming"){
              queue.mindequeuebatchsize="100"
              queue.mindequeuebatchsize.timeout="3000"
              queue.filename="es-audit"
-             queue.spoolDirectory="/var/spool/rsyslog"
              action.resumeretrycount="-1")
     } else {
       # Extension point for rules applying to structured logs.
@@ -191,8 +191,8 @@ ruleset(name="incoming"){
       # Normal structured log present in the default syslog flow. Send
       # straight to Elasticsearch, skipping the log normalization step.
       action(type="omelasticsearch"
-             server="127.0.0.1"
-             serverport="9200"
+             server="{{ rsyslog_elasticsearch_host }}"
+             serverport="{{ rsyslog_elasticsearch_port }}"
              template="esTemplateJSON"
              searchIndex="esIndex"
              searchType="_doc"
@@ -205,7 +205,6 @@ ruleset(name="incoming"){
              queue.mindequeuebatchsize="100"
              queue.mindequeuebatchsize.timeout="3000"
              queue.filename="es-structured"
-             queue.spoolDirectory="/var/spool/rsyslog"
              action.resumeretrycount="-1")
     }
   } else if ($syslogfacility-text == "local3") then {
@@ -219,8 +218,8 @@ ruleset(name="incoming"){
       set $!request = "/sso_login?";
     }
     action(type="omelasticsearch"
-           server="127.0.0.1"
-           serverport="9200"
+           server="{{ rsyslog_elasticsearch_host }}"
+           serverport="{{ rsyslog_elasticsearch_port }}"
            template="esTemplateHTTP"
            searchIndex="esIndexHTTP"
            searchType="_doc"
@@ -233,7 +232,6 @@ ruleset(name="incoming"){
            queue.mindequeuebatchsize="100"
            queue.mindequeuebatchsize.timeout="3000"
            queue.filename="es-http"
-           queue.spoolDirectory="/var/spool/rsyslog"
            action.resumeretrycount="-1")
   } else {
     # Traditional syslog message. Run it through mmnormalize to
@@ -268,8 +266,8 @@ ruleset(name="incoming"){
     # valid and ES will refuse it.
     set $!ignore = "1";
     action(type="omelasticsearch"
-           server="127.0.0.1"
-           serverport="9200"
+           server="{{ rsyslog_elasticsearch_host }}"
+           serverport="{{ rsyslog_elasticsearch_port }}"
            template="esTemplate"
            searchIndex="esIndex"
            searchType="_doc"
@@ -282,7 +280,6 @@ ruleset(name="incoming"){
            queue.mindequeuebatchsize="100"
            queue.mindequeuebatchsize.timeout="3000"
            queue.filename="es-default"
-           queue.spoolDirectory="/var/spool/rsyslog"
            action.resumeretrycount="-1")
   }
 {% endif %}
@@ -295,14 +292,14 @@ module(
 
 input(
   type="imrelp"
-  port="6514"
+  port="{{ rsyslog_port }}"
   maxDataSize="64k"
   ruleset="incoming"
   tls="on"
   tls.compression="on"
-  tls.cacert="/etc/credentials/x509/log-collector/ca.pem"
-  tls.mycert="/etc/credentials/x509/log-collector/server/cert.pem"
-  tls.myprivkey="/etc/credentials/x509/log-collector/server/private_key.pem"
-  tls.permittedpeer="*.{{ domain }}" 
+  tls.cacert="{{ rsyslog_tls_ca }}"
+  tls.mycert="{{ rsyslog_tls_cert }}"
+  tls.myprivkey="{{ rsyslog_tls_key }}"
+  tls.permittedpeer="{{ rsyslog_tls_permittedpeer }}"
   tls.authmode="certvalid"
 )
