@@ -114,6 +114,7 @@ kernel.sysrq=0
 # (linux-hardened default)
 net.core.bpf_jit_harden=2
 kernel.unprivileged_bpf_disabled=1
+{% endif %}
 
 {% if not disable_restricted_sysctl %}
 # Disable unprivileged user namespaces
