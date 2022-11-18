@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -24,7 +27,6 @@
   "gnetId": 10562,
   "graphTooltip": 0,
   "id": 104,
-  "iteration": 1656718917376,
   "links": [
     {
       "icon": "external link",
@@ -91,9 +93,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 2,
-        "w": 19,
-        "x": 2,
+        "h": 5,
+        "w": 12,
+        "x": 0,
         "y": 0
       },
       "id": 12,
@@ -112,9 +114,9 @@
           "values": false
         },
         "text": {},
-        "textMode": "value"
+        "textMode": "name"
       },
-      "pluginVersion": "8.3.1",
+      "pluginVersion": "9.0.7",
       "targets": [
         {
           "datasource": {
@@ -127,65 +129,303 @@
           "instant": true,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "",
+          "legendFormat": "{{host}}",
           "refId": "A"
         }
       ],
       "type": "stat"
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
       "datasource": {
         "type": "prometheus",
         "uid": "P49960DE5880E8C68"
       },
       "fieldConfig": {
         "defaults": {
-          "links": []
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false,
+            "minWidth": 50
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
         },
         "overrides": []
       },
-      "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
-        "h": 10,
+        "h": 5,
+        "w": 11,
+        "x": 12,
+        "y": 0
+      },
+      "id": 37,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "9.0.7",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "exemplar": false,
+          "expr": "instance:node_cpus:count{host=~\"$host\"}",
+          "format": "table",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "exemplar": false,
+          "expr": "node_cpu_frequency_max_hertz{host=~\"$host\",cpu=\"0\"} / 1000000000",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "exemplar": false,
+          "expr": "round(node_memory_MemTotal_bytes{host=~\"$host\"} / 1073741824)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "instance:network_receive_bytes_total:rate5m{host=~\"$host\"} * 8 / 1000000",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "range": false,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "openvpn_server_connected_clients{status_path=\"/tmp/openvpn-status-tcp\", host=~\"$host\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "range": false,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "openvpn_server_connected_clients{status_path=\"/tmp/openvpn-status-udp\",host=~\"$host\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "range": false,
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "node_load5{host=~\"$host\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "range": false,
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "100 - ((avg by (host) (rate(node_cpu_seconds_total{host=~\"$host\",mode=\"idle\"}[5m]))) * 100)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "range": false,
+          "refId": "H"
+        }
+      ],
+      "title": "Endpoint Stats",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "host",
+                "Value #A",
+                "Value #B",
+                "Value #C",
+                "Value #D",
+                "Value #E",
+                "Value #F",
+                "Value #G",
+                "Value #H"
+              ]
+            }
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "Value #A": "Cores",
+              "Value #B": "GHz",
+              "Value #C": "RAM(GB)",
+              "Value #D": "Network(Mbit/s)",
+              "Value #E": "Clients(tcp)",
+              "Value #F": "Clients(udp)",
+              "Value #G": "Load",
+              "Value #H": "CPU Util(%)",
+              "host": "Endpoint"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P49960DE5880E8C68"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "Bits/sec",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "links": [],
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
         "w": 12,
         "x": 0,
-        "y": 2
+        "y": 5
       },
-      "hiddenSeries": false,
       "id": 24,
       "interval": "",
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "max": true,
-        "min": false,
-        "show": true,
-        "sort": "avg",
-        "sortDesc": false,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
       "options": {
-        "alertThreshold": true
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
       },
-      "percentage": false,
-      "pluginVersion": "8.3.1",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      "pluginVersion": "9.0.7",
       "targets": [
         {
           "datasource": {
@@ -193,7 +433,7 @@
             "uid": "P49960DE5880E8C68"
           },
           "exemplar": true,
-          "expr": "instance:network_receive_bytes_total:rate5m{host=~\"$host\"}",
+          "expr": "instance:network_receive_bytes_total:rate5m{host=~\"$host\"} * 8",
           "interval": "",
           "legendFormat": "{{host}} Rx",
           "refId": "A"
@@ -204,7 +444,8 @@
             "uid": "P49960DE5880E8C68"
           },
           "exemplar": true,
-          "expr": "instance:network_transmit_bytes_total:rate5m{host=~\"$host\"}",
+          "expr": "instance:network_transmit_bytes_total:rate5m{host=~\"$host\"} * 8",
+          "hide": true,
           "interval": "",
           "legendFormat": "{{host}} Tx",
           "refId": "B"
@@ -230,39 +471,170 @@
           "refId": "D"
         }
       ],
-      "thresholds": [],
-      "timeRegions": [],
       "title": "Total Gateway Network",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P49960DE5880E8C68"
       },
-      "type": "graph",
-      "xaxis": {
-        "mode": "time",
-        "show": true,
-        "values": []
+      "description": "Sum of all bandwidth for servers, by location",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "Bits/sec",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "links": [],
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "Bps"
+        },
+        "overrides": []
       },
-      "yaxes": [
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "id": 38,
+      "interval": "",
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.0.7",
+      "targets": [
         {
-          "$$hashKey": "object:47",
-          "format": "short",
-          "label": "Bytes",
-          "logBase": 1,
-          "min": "0",
-          "show": true
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "sum(instance:network_receive_bytes_total:rate5m{host=~\"vpn.*-sea\"} * 8)",
+          "interval": "",
+          "legendFormat": "Seattle",
+          "range": true,
+          "refId": "A"
         },
         {
-          "$$hashKey": "object:48",
-          "format": "short",
-          "logBase": 1,
-          "show": true
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "expr": "sum(instance:network_receive_bytes_total:rate5m{host=~\"vpn.*-mtl\"} * 8)",
+          "hide": false,
+          "legendFormat": "Montreal",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "expr": "sum(instance:network_receive_bytes_total:rate5m{host=~\"vpn.*-mia\"} * 8)",
+          "hide": false,
+          "legendFormat": "Miami",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "expr": "sum(instance:network_receive_bytes_total:rate5m{host=~\"vpn.*-ams\"} * 8)",
+          "hide": false,
+          "legendFormat": "Amsterdam",
+          "range": true,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "expr": "sum(instance:network_receive_bytes_total:rate5m{host=~\"vpn.*-par\"} * 8)",
+          "hide": false,
+          "legendFormat": "Paris",
+          "range": true,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "editorMode": "code",
+          "expr": "sum(instance:network_receive_bytes_total:rate5m{host=~\"vpn.*-nyc\"} * 8)",
+          "hide": false,
+          "legendFormat": "New York",
+          "range": true,
+          "refId": "F"
         }
       ],
-      "yaxis": {
-        "align": false
-      }
+      "title": "Total Location Network",
+      "transformations": [],
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -325,10 +697,113 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 10,
+        "h": 8,
         "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 14,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "exemplar": true,
+          "expr": "openvpn_server_connected_clients{status_path=\"/tmp/openvpn-status-tcp\", host=~\"$host\"}",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{host}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Clients connected (tcp)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P49960DE5880E8C68"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "Clients",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "links": [],
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 11,
         "x": 12,
-        "y": 2
+        "y": 14
       },
       "id": 35,
       "links": [],
@@ -343,7 +818,8 @@
           "placement": "bottom"
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.3.1",
@@ -379,200 +855,6 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P49960DE5880E8C68"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "Clients",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 0,
-          "links": [],
-          "mappings": [],
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 12,
-        "x": 0,
-        "y": 12
-      },
-      "id": 14,
-      "links": [],
-      "options": {
-        "legend": {
-          "calcs": [
-            "min",
-            "max",
-            "mean"
-          ],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "pluginVersion": "8.3.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P49960DE5880E8C68"
-          },
-          "exemplar": true,
-          "expr": "openvpn_server_connected_clients{status_path=\"/tmp/openvpn-status-tcp\", host=~\"$host\"}",
-          "format": "time_series",
-          "instant": false,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{host}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Clients connected (tcp)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P49960DE5880E8C68"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 12,
-        "x": 12,
-        "y": 12
-      },
-      "id": 28,
-      "options": {
-        "legend": {
-          "calcs": [
-            "min",
-            "max",
-            "mean"
-          ],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P49960DE5880E8C68"
-          },
-          "exemplar": true,
-          "expr": "openvpn_server_connected_clients{status_path=\"/tmp/openvpn-status-udp\",host=~\"$host\"}",
-          "interval": "",
-          "legendFormat": "{{host}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Clients connected (udp)",
-      "type": "timeseries"
-    },
-    {
       "alerting": {},
       "aliasColors": {
         "iowait ": "#BF1B00",
@@ -593,7 +875,7 @@
       "fillGradient": 0,
       "grid": {},
       "gridPos": {
-        "h": 12,
+        "h": 9,
         "w": 12,
         "x": 0,
         "y": 22
@@ -626,7 +908,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.1",
+      "pluginVersion": "9.0.7",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -685,6 +967,99 @@
       }
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P49960DE5880E8C68"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "id": 28,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P49960DE5880E8C68"
+          },
+          "exemplar": true,
+          "expr": "openvpn_server_connected_clients{status_path=\"/tmp/openvpn-status-udp\",host=~\"$host\"}",
+          "interval": "",
+          "legendFormat": "{{host}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Clients connected (udp)",
+      "type": "timeseries"
+    },
+    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
@@ -702,10 +1077,10 @@
       "fill": 2,
       "fillGradient": 0,
       "gridPos": {
-        "h": 12,
+        "h": 9,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 31
       },
       "hiddenSeries": false,
       "id": 32,
@@ -728,7 +1103,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.1",
+      "pluginVersion": "9.0.7",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -807,7 +1182,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 34
+        "y": 40
       },
       "hiddenSeries": false,
       "id": 26,
@@ -828,7 +1203,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.1",
+      "pluginVersion": "9.0.7",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -855,6 +1230,7 @@
           },
           "exemplar": true,
           "expr": "node_nf_conntrack_entries_limit{host=~\"$host\"}",
+          "hide": true,
           "interval": "",
           "legendFormat": "{{host}} limit",
           "refId": "B"
@@ -896,7 +1272,7 @@
     }
   ],
   "refresh": "",
-  "schemaVersion": 33,
+  "schemaVersion": 36,
   "style": "dark",
   "tags": [
     "openvpn"
@@ -905,7 +1281,7 @@
     "list": [
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -971,6 +1347,6 @@
   "timezone": "",
   "title": "OpenVPN Stats",
   "uid": "_1DM17Zwz",
-  "version": 18,
+  "version": 22,
   "weekStart": ""
 }
