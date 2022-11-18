@@ -41,6 +41,26 @@ add_rule6 -A FORWARD -i tun0 -p tcp -o tun0 -j DROP
 add_rule6 -A FORWARD -i tun1 -p udp -o tun0 -j DROP
 {% endif %}
 
+# deny outgoing ports that shouldn't be used
+# Strict egress filtering:
+# SMTP (TCP 25)
+# Trivial File Transfer Protocol - TFTP (UDP 69)
+# MS RPC (TCP & UDP 135)
+# NetBIOS/IP (TCP/UDP 139 & UDP 137, UDP 138)
+# Simple Network Management Protocol – SNMP (UDP/TCP 161-162)
+# SMB/IP (TCP/UDP 445)
+# Syslog (UDP 514)
+# Gamqowi trojan: TCP 4661
+# Mneah trojan: TCP 4666
+add_rule4 -A OUTPUT -o tun0 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
+add_rule4 -A OUTPUT -o tun1 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
+add_rule4 -A OUTPUT -o tun0 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
+add_rule4 -A OUTPUT -o tun1 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
+add_rule6 -A OUTPUT -o tun0 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
+add_rule6 -A OUTPUT -o tun1 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
+add_rule6 -A OUTPUT -o tun0 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
+add_rule6 -A OUTPUT -o tun1 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
+
 # allow tcp vpn clients to resolve DNS (i.e. query knot-resolver)
 add_rule -A user-input -i tun0 -p udp --dport 53 -j ACCEPT
 add_rule -A user-input -i tun0 -p tcp --dport 53 -j ACCEPT
