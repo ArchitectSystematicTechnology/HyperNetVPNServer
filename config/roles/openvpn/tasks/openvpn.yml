@@ -11,6 +11,17 @@
     dest: "/etc/firewall/filter.d/50openvpn"
   notify: "reload firewall"
 
+# Ensure the conntrack module is loaded before systemd-sysctl tries to set parameters
+# Without this, systemd-sysctl will try to load on boot conntrack settings before the module
+# is loaded, and fail to adjust them.
+- name: Set conntrack to load before systemd-sysctl does its operations
+  copy:
+    dest: '/etc/modules-load.d/conntrack.conf'
+    content: |
+      # in order for sysctl to adjust some nf_conntrack settings shortly after boot
+      # we load the module early
+      nf_conntrack
+
 # Set ip forwarding necessary for openvpn ipv4
 - sysctl:
     name: net.ipv4.ip_forward
@@ -45,6 +56,24 @@
     - net.core.rmem_default
     - net.core.wmem_max
     - net.core.wmem_default
+
+# Increase the conntrack buckets
+- sysctl:
+    name: net.netfilter.nf_conntrack_buckets
+    value: '65536'
+    sysctl_set: yes
+
+# Increase conntrack established timeouts
+- sysctl:
+    name: net.netfilter.nf_conntrack_tcp_timeout_established
+    value: '172800'
+    sysctl_set: yes
+
+# Decreate conntrack time_wait
+- sysctl:
+    name: net.netfilter.nf_conntrack_tcp_timeout_time_wait
+    value: '60'
+    sysctl_set: yes
 
 - name: Install firewall nat config for vpnweb
   template:
