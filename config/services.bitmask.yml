@@ -24,7 +24,7 @@ menshen:
       skip_acme: true
 
 openvpn:
-  scheduling_group: openvpn
+  scheduling_group: gateway
   num_instances: all
   monitoring_endpoints:
     - job_name: openvpn
@@ -109,4 +109,33 @@ provider:
       scheme: http
       domains:
         - "{{ domain_public[0] }}"
+
+obfsvpn:
+  scheduling_group: bridge
+  num_instances: all
+  containers:
+    - name: obfsvpn
+      image: registry.0xacab.org/leap/obfsvpn:server-main
+
+      # This is how float handles providing a "command" 🙃
+      args: /opt/obfsvpn/start_obfsvpn.sh
+      ports: [443]
+      drop_capabilities: false
+      docker_options: '--cap-add=NET_ADMIN --cap-add=CAP_NET_BIND_SERVICE'
+      volumes:
+        - /opt/obfsvpn/data: /opt/obfsvpn/data
+        - /dev/net: /dev/net
+      env:
+        # non-hopping:
+        PROTO: "tcp"
+        KCP: "0"
+        OBFS4_HOST: "0.0.0.0"
+        OPENVPN_HOST: "{{ gateway | default(groups['gateway'][0]) }}"
+        OPENVPN_PORT: "80"
+        HOP_PT: "0"
+        OBFS4_DATA_DIR: /opt/obfsvpn/data
+        OBFS4_KEY_FILE: /opt/obfsvpn/data/obfs4_state.json
+        # necessary for traditional/non-hopping mode
+        OBFS4_PORT: "443"
+        LOGLEVEL: DEBUG
 
