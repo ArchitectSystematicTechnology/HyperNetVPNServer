@@ -5,7 +5,7 @@ hosts:
     ip: 10.121.20.10
     ip_vpn0: 172.16.1.1
   floatapp1:
-    groups: [backend, vagrant]
+    groups: [backend, vpnweb, vagrant]
     ansible_host: 10.121.20.11
     ip: 10.121.20.11
     ip_vpn0: 172.16.1.2
