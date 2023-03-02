@@ -1,7 +1,7 @@
 # this is a recursive copy
-- name: Install shapeshifter state
+- name: Install obfs4 state
   copy:
-    src: "{{ credentials_dir }}/shapeshifter/"
+    src: "{{ credentials_dir }}/obfs4/"
     dest: "/srv/leap/shapeshifter-state"
     owner: docker-openvpn
     mode: 0600

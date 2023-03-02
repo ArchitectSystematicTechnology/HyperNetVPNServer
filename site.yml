@@ -6,6 +6,10 @@
     - kresd
     - openvpn
 
+- hosts: bridge
+  roles:
+    - bridge
+
 - hosts: vpnweb
   roles:
     - vpnweb

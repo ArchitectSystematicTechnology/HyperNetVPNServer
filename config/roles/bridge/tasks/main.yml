@@ -1,0 +1,25 @@
+# this is a recursive copy
+- name: Install obfs4 state
+  copy:
+    src: "{{ credentials_dir }}/obfs4/"
+    dest: "/opt/obfsvpn/data"
+    owner: docker-obfsvpn
+    mode: 0600
+
+- name: Install firewall config for obfsvpn
+  copy:
+    src: "50obfsvpn.firewall"
+    dest: "/etc/firewall/filter.d/50obfsvpn"
+  notify: "reload firewall"
+
+- name: Make sure obfs4 state file ownership is correct
+  file:
+    path: "/opt/obfsvpn/data/obfs4_state.json"
+    owner: docker-obfsvpn
+    mode: 0600
+
+- name: Make sure obfs4 obfs4_bridgeline.txt file ownership is correct
+  file:
+    path: "/opt/obfsvpn/data/obfs4_cert.txt"
+    owner: docker-obfsvpn
+    mode: 0600

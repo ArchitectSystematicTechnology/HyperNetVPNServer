@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-Generates the Curve25519 keypair that is needed by the shapeshifter-dispatcher
-server.
+Generates the Curve25519 keypair that is needed by obfs4
 
 Depends on python3-pysodium package.
 """
@@ -22,7 +21,7 @@ def generate(statedir):
         os.makedirs(statedir)
     except Exception:
         pass
-    print("[+] Generating shapeshifter parameters...")
+    print("[+] Generating obfs4 parameters...")
 
     public, private = pysodium.crypto_box_keypair()
 

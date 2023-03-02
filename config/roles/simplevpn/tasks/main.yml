@@ -1,7 +1,7 @@
 - name: "Generate eip-service.json and provider.json"
   local_action:
     module: simplevpn
-    obfs4_state_dir: "{{ credentials_dir }}/shapeshifter"
+    obfs4_state_dir: "{{ credentials_dir }}/obfs4"
     locations: "{{ locations }}"
     domain: "{{ domain_public[0] }}"
     provider_description: "{{ provider_config.description }}"
