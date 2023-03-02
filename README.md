@@ -16,21 +16,7 @@ You will need to pick a subdomain and delegate its DNS for the system to manage.
 
 The following commands should be run  ***locally on your computer*** in order to install and deploy Lilypad on the remote machines.
 
-## 0. Install the float and LEAP platform pre-requisites
-
-This installation guide is tested on Debian Bullseye.
-Other Linux distributions might need additional steps to install all requirements in the correct version.
-
-```shell
-sudo apt-get install golang build-essential bind9utils python3-pysodium python3-jinja2 python3-netaddr python3-openssl python3-yaml python3-six python3-pycryptodome ansible git ansible-mitogen
-
-go install git.autistici.org/ale/x509ca@latest
-go install git.autistici.org/ale/ed25519gen@latest
-go install git.autistici.org/ai3/go-common/cmd/pwtool@latest
-export PATH=$PATH:$HOME/go/bin
-```
-
-## 1. Clone the float repository
+## 0. Clone the float repository
 
 ...and enter it
 
@@ -38,7 +24,32 @@ export PATH=$PATH:$HOME/go/bin
 git clone https://0xacab.org/leap/container-platform/lilypad
 cd lilypad
 ```
-    
+
+## 1. Install the float and LEAP platform pre-requisites
+
+This installation guide is tested on Debian Bullseye.
+Other Linux distributions might need additional steps to install all requirements in the correct version.
+
+```shell
+sudo apt-get install golang build-essential bind9utils git
+
+go install git.autistici.org/ale/x509ca@latest
+go install git.autistici.org/ale/ed25519gen@latest
+go install git.autistici.org/ai3/go-common/cmd/pwtool@latest
+export PATH=$PATH:$HOME/go/bin
+```
+
+We'll use [virtualenv](https://virtualenv.pypa.io/en/latest/) to manage and install python packages:
+```
+virtualenv -p /usr/bin/python3 venv
+source ./venv/bin/activate
+pip install -r ./requirements.txt
+```
+
+This will create a virtual environment where we can install+version control specific python dependencies.
+
+When working on this project, if you're in a new shell, you'll need to run the `source ./venv/bin/activate` command again to re-enter the virtual environment.
+
 ## 2. Initialize the ansible vault
 
 ... by creating a password file. Keep the public user ID of your OpenPGP keys at hand:

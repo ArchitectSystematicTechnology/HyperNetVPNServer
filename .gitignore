@@ -2,3 +2,4 @@
 *.retry
 .vagrant
 ansible.log
+venv
