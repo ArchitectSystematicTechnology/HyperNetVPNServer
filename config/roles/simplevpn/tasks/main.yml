@@ -7,7 +7,7 @@
     provider_description: "{{ provider_config.description }}"
     gateways: "{{ groups['openvpn'] | map('extract', hostvars) | list }}"
     openvpn: "{{ openvpn_config }}"
-    provider_api_uri: "https://{{ api_uri }}:4430"
+    provider_api_uri: "https://{{ api_uri }}"
     ca_cert_uri: "https://{{ ca_cert_uri }}"
     ca_public_crt: "{{ credentials_dir }}/common/api_ca.crt"
   run_once: true
