@@ -1,0 +1,93 @@
+{
+  "datasource": {
+    "type": "prometheus",
+    "uid": "P49960DE5880E8C68"
+  },
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "linear",
+        "barAlignment": 0,
+        "lineWidth": 1,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "showPoints": "auto",
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "off"
+        }
+      },
+      "color": {
+        "mode": "palette-classic"
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "color": "green",
+            "value": null
+          },
+          {
+            "color": "red",
+            "value": 80
+          }
+        ]
+      }
+    },
+    "overrides": []
+  },
+  "gridPos": {
+    "h": 10,
+    "w": 12,
+    "x": 0,
+    "y": 10
+  },
+  "id": 18,
+  "options": {
+    "tooltip": {
+      "mode": "single",
+      "sort": "none"
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "list",
+      "placement": "bottom",
+      "calcs": []
+    }
+  },
+  "targets": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P49960DE5880E8C68"
+      },
+      "editorMode": "code",
+      "expr": "sum by (status, network, probeCC) (\n  oonifetch_gateway_status_per_network{status=~\"(failure|n/a)\"} > 3\n) * on(status, network, probeCC) group_left() sum_over_time(oonifetch_gateway_status_per_network{status=~\"(failure|n/a)\"}[5m])\n",
+      "hide": false,
+      "legendFormat": "{{probeCC}} {{network}} {{status}}",
+      "range": true,
+      "refId": "D"
+    }
+  ],
+  "title": "Failures or Anmalies per AS and country",
+  "type": "timeseries"
+}
