@@ -23,6 +23,7 @@ variables:
       --roles-path=config/roles
       --num-hosts=3
       --additional-host-group=openvpn=host3
+      --additional-host-group=bridge=host3
       --additional-config ${TEST_DIR}/group_vars/all/openvpn_config.yml
       --additional-config ${TEST_DIR}/group_vars/all/custom_config.yml
       --additional-config ${TEST_DIR}/group_vars/all/gateway_locations.yml
