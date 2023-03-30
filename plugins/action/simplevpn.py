@@ -1,34 +1,36 @@
-import hashlib
 import os
-import yaml
-import tempfile
 from OpenSSL import crypto
 from ipaddress import ip_address, IPv4Address, IPv6Address
 from ansible.plugins.action import ActionBase
 
+
 def ipv4(str):
-  try:
-    return type(ip_address(str)) == IPv4Address
-  except ValueError:
-    return False
+    try:
+        return type(ip_address(str)) == IPv4Address
+    except ValueError:
+        return False
+
 
 def ipv6(str):
-  try:
-    return type(ip_address(str)) == IPv6Address
-  except ValueError:
-    return False
+    try:
+        return type(ip_address(str)) == IPv6Address
+    except ValueError:
+        return False
+
 
 def first_ipv4(list):
-  try:
-    return [i for i in list if ipv4(i)][0]
-  except IndexError:
-    return None
+    try:
+        return [i for i in list if ipv4(i)][0]
+    except IndexError:
+        return None
+
 
 def first_ipv6(list):
-  try:
-    return [i for i in list if ipv6(i)][0]
-  except IndexError:
-    return None
+    try:
+        return [i for i in list if ipv6(i)][0]
+    except IndexError:
+        return None
+
 
 def get_fingerprint(cert_data):
     with open(cert_data) as cert_file:
@@ -36,12 +38,14 @@ def get_fingerprint(cert_data):
         cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_contents)
         return cert.digest('sha256').replace(b':', b'').lower().decode('ascii')
 
+
 class EIPConfig:
 
     def __init__(self, openvpn, locations, gateways):
         self.openvpn = openvpn
         self.locations = locations
         self.gateways = gateways
+
 
 def patch_obfs4_cert(transports, cert):
     for t in transports:
@@ -142,6 +146,7 @@ def produce_provider_config(public_domain, provider_description, provider_api_ur
     # module.
     return no_nulls(provider_config)
 
+
 class ActionModule(ActionBase):
 
     TRANSFERS_FILES = False
@@ -153,7 +158,8 @@ class ActionModule(ActionBase):
         public_domain = self._task.args['domain']
         provider_description = self._task.args['provider_description']
         transports = self._task.args.get('transports', [
-            dict(type="openvpn", protocols=["tcp", "udp"], ports=["53","80","1194"]),
+            dict(type="openvpn", protocols=[
+                 "tcp", "udp"], ports=["53", "80", "1194"]),
             dict(type="obfs4", protocols=["tcp"], ports=["443"]),
         ])
         gateways = self._task.args['gateways']
@@ -165,14 +171,16 @@ class ActionModule(ActionBase):
         ca_public_crt = self._task.args['ca_public_crt']
 
         config = EIPConfig(openvpn, locations, gateways)
-        eip_config = produce_eip_config(config, obfs4_state_dir, public_domain, transports)
-        provider_config = produce_provider_config(public_domain, provider_description, provider_api_uri, ca_cert_uri, ca_public_crt)
+        eip_config = produce_eip_config(
+            config, obfs4_state_dir, public_domain, transports)
+        provider_config = produce_provider_config(
+            public_domain, provider_description, provider_api_uri, ca_cert_uri, ca_public_crt)
 
         result = super(ActionModule, self).run(tmp, task_vars)
         result.update({
             'changed': False,   # Always nice to return 'changed'.
-            'eip_config': eip_config, # Actual result.
-            'provider_config': provider_config, # Actual result.
+            'eip_config': eip_config,  # Actual result.
+            'provider_config': provider_config,  # Actual result.
         })
 
         return result
