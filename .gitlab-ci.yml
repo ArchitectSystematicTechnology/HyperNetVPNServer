@@ -63,4 +63,11 @@ full_test:
   variables:
     TEST_DIR: "test/test-full"
 
-
+unittest:
+  image: python:alpine
+  stage: test
+  script:
+    - pip install -r requirements.txt
+    - python -m unittest discover -s test -t . -v
+  tags:
+    - linux
