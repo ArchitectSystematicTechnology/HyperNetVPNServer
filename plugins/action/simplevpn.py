@@ -31,9 +31,10 @@ def first_ipv6(list):
     return None
 
 def get_fingerprint(cert_data):
-    cert_contents = open(cert_data).read()
-    cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_contents)
-    return cert.digest('sha256').replace(b':', b'').lower().decode('ascii')
+    with open(cert_data) as cert_file:
+        cert_contents = cert_file.read()
+        cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_contents)
+        return cert.digest('sha256').replace(b':', b'').lower().decode('ascii')
 
 class EIPConfig:
 
@@ -64,9 +65,9 @@ def no_nulls(d):
 
 def produce_eip_config(config, obfs4_state_dir, public_domain, transports):
     if obfs4_state_dir:
-        obfs4_cert = open(
-            obfs4_state_dir + '/obfs4_cert.txt').read().rstrip()
-        transports = patch_obfs4_cert(transports, obfs4_cert)
+        with open(os.path.join(obfs4_state_dir, 'obfs4_cert.txt')) as obfs4_cert_file:
+            obfs4_cert = obfs4_cert_file.read().rstrip()
+            transports = patch_obfs4_cert(transports, obfs4_cert)
 
     # Build the JSON data structure that needs to end up in eip-service.json.
     eip_config = {
