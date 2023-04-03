@@ -41,10 +41,11 @@ def get_fingerprint(cert_data):
 
 class EIPConfig:
 
-    def __init__(self, openvpn, locations, gateways):
+    def __init__(self, openvpn, locations, gateways, bridges):
         self.openvpn = openvpn
         self.locations = locations
         self.gateways = gateways
+        self.bridges = bridges
 
 
 def patch_obfs4_cert(transports, cert):
@@ -67,11 +68,11 @@ def no_nulls(d):
         return d
 
 
-def produce_eip_config(config, obfs4_state_dir, public_domain, transports):
+def produce_eip_config(config, obfs4_state_dir, public_domain, openvpn_transports, bridge_transports):
     if obfs4_state_dir:
         with open(os.path.join(obfs4_state_dir, 'obfs4_cert.txt')) as obfs4_cert_file:
             obfs4_cert = obfs4_cert_file.read().rstrip()
-            transports = patch_obfs4_cert(transports, obfs4_cert)
+            bridge_transports = patch_obfs4_cert(bridge_transports, obfs4_cert)
 
     # Build the JSON data structure that needs to end up in eip-service.json.
     eip_config = {
@@ -87,9 +88,20 @@ def produce_eip_config(config, obfs4_state_dir, public_domain, transports):
                 "adblock": False,
                 "filter_dns": False,
                 "limited": False,
-                "transport": transports,
+                "transport": openvpn_transports,
             },
-        } for v in config.gateways],
+        } for v in config.gateways] + [{
+            "host": "%s.%s" % (v["inventory_hostname"], public_domain),
+            "ip_address": first_ipv4(v.get("ips")),
+            "ip_address6": first_ipv6(v.get("ips")),
+            "location": v.get("location", "Unknown"),
+            "capabilities": {
+                "adblock": False,
+                "filter_dns": False,
+                "limited": False,
+                "transport": bridge_transports,
+            },
+        } for v in config.bridges],
         "openvpn_configuration": config.openvpn,
     }
 
@@ -157,12 +169,15 @@ class ActionModule(ActionBase):
         locations = self._task.args['locations']
         public_domain = self._task.args['domain']
         provider_description = self._task.args['provider_description']
-        transports = self._task.args.get('transports', [
+        openvpn_transports = self._task.args.get('openvpn_transports', [
             dict(type="openvpn", protocols=[
                  "tcp", "udp"], ports=["53", "80", "1194"]),
-            dict(type="obfs4", protocols=["tcp"], ports=["443"]),
         ])
+        bridge_transports = self._task.args.get('bridge_transports', [
+            dict(type="obfs4", protocols=["tcp"], ports=["443"])
+            ])
         gateways = self._task.args['gateways']
+        bridges = self._task.args['bridges']
         openvpn = self._task.args['openvpn']
 
         # Get provider config task elements
@@ -170,11 +185,10 @@ class ActionModule(ActionBase):
         ca_cert_uri = self._task.args['ca_cert_uri']
         ca_public_crt = self._task.args['ca_public_crt']
 
-        config = EIPConfig(openvpn, locations, gateways)
+        config = EIPConfig(openvpn, locations, gateways, bridges)
         eip_config = produce_eip_config(
-            config, obfs4_state_dir, public_domain, transports)
-        provider_config = produce_provider_config(
-            public_domain, provider_description, provider_api_uri, ca_cert_uri, ca_public_crt)
+            config, obfs4_state_dir, public_domain, openvpn_transports, bridge_transports)
+        provider_config = produce_provider_config(public_domain, provider_description, provider_api_uri, ca_cert_uri, ca_public_crt)
 
         result = super(ActionModule, self).run(tmp, task_vars)
         result.update({

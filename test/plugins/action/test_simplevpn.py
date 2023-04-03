@@ -69,6 +69,18 @@ class TestSimpleVpn(unittest.TestCase):
             "ips": ["10.10.10.2"],
             "public_ips": ["10.10.10.2"],
         }]
+        bridges = [{
+            "inventory_hostname": "bridge1",
+            "ip": "10.10.10.3",
+            "ips": ["10.10.10.3"],
+            "public_ips": ["10.10.10.3"],
+        },
+            {
+            "inventory_hostname": "bridge2",
+            "ip": "10.10.10.4",
+            "ips": ["10.10.10.4"],
+            "public_ips": ["10.10.10.4"],
+        }]
 
         locations = {"Amsterdam": {"country_code": "NL",
                                    "hemisphere": "N",
@@ -93,12 +105,15 @@ class TestSimpleVpn(unittest.TestCase):
                                  "tls-version-min": "1.2",
                                  "verb": "3"}
 
-        transports = [{"ports": ["53", "80", "1194"],
-                       "protocols": ["tcp", "udp"],
-                       "type": "openvpn"},
-                      {"ports": ["443"], "protocols": ["tcp"], "type": "obfs4"}]
+        openvpn_transports = [{"ports": ["53", "80", "1194"],
+                               "protocols": ["tcp", "udp"],
+                               "type": "openvpn"},
+                              ]
+
+        bridge_transports = [
+            {"ports": ["443"], "protocols": ["tcp"], "type": "obfs4"}]
         config = simplevpn.EIPConfig(
-            openvpn_configuration, locations, gateways)
+            openvpn_configuration, locations, gateways, bridges)
 
         expected = {
             "gateways": [{"capabilities": {"adblock": False,
@@ -107,9 +122,7 @@ class TestSimpleVpn(unittest.TestCase):
                                            "transport": [{"ports": ["53", "80", "1194"],
                                                           "protocols": ["tcp", "udp"],
                                                           "type": "openvpn"},
-                                                         {"ports": ["443"],
-                                                          "protocols": ["tcp"],
-                                                          "type": "obfs4"}]},
+                                                         ]},
                           "host": "gateway1.test.com",
                           "ip_address": "10.10.10.1",
                           "location": "Unknown"},
@@ -119,11 +132,29 @@ class TestSimpleVpn(unittest.TestCase):
                                            "transport": [{"ports": ["53", "80", "1194"],
                                                           "protocols": ["tcp", "udp"],
                                                           "type": "openvpn"},
-                                                         {"ports": ["443"],
-                                                          "protocols": ["tcp"],
-                                                          "type": "obfs4"}]},
+                                                         ]},
                           "host": "gateway2.test.com",
                           "ip_address": "10.10.10.2",
+                          "location": "Unknown"},
+                         {"capabilities": {"adblock": False,
+                                           "filter_dns": False,
+                                           "limited": False,
+                                           "transport": [{"ports": ["443"],
+                                                          "protocols": ["tcp"],
+                                                          "type": "obfs4"},
+                                                         ]},
+                          "host": "bridge1.test.com",
+                          "ip_address": "10.10.10.3",
+                          "location": "Unknown"},
+                         {"capabilities": {"adblock": False,
+                                           "filter_dns": False,
+                                           "limited": False,
+                                           "transport": [{"ports": ["443"],
+                                                          "protocols": ["tcp"],
+                                                          "type": "obfs4"},
+                                                         ]},
+                          "host": "bridge2.test.com",
+                          "ip_address": "10.10.10.4",
                           "location": "Unknown"}
                          ],
             "locations": {"Amsterdam": {"country_code": "NL",
@@ -153,7 +184,7 @@ class TestSimpleVpn(unittest.TestCase):
         }
 
         actual = simplevpn.produce_eip_config(
-            config, None, public_domain, transports
+            config, None, public_domain, openvpn_transports, bridge_transports
         )
 
         self.assertEqual(expected, actual)
