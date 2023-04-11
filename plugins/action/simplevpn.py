@@ -50,10 +50,9 @@ class EIPConfig:
 
 def patch_obfs4_cert(transports, cert):
     for t in transports:
-        if t['type'] == "obfs4":
-            t.setdefault('options', {})
-            t['options']['cert'] = cert
-            t['options']['iatMode'] = "0"
+        t.setdefault('options', {})
+        t['options']['cert'] = cert
+        t['options']['iatMode'] = "0"
     return transports
 
 
@@ -74,12 +73,22 @@ def produce_eip_config(config, obfs4_state_dir, public_domain, openvpn_transport
             obfs4_cert = obfs4_cert_file.read().rstrip()
             bridge_transports = patch_obfs4_cert(bridge_transports, obfs4_cert)
 
-    # Build the JSON data structure that needs to end up in eip-service.json.
-    eip_config = {
-        "serial": 3,
-        "version": 3,
-        "locations": config.locations,
-        "gateways": [{
+    bridges = [{
+            "host": "%s.%s" % (v["inventory_hostname"], public_domain),
+            "ip_address": first_ipv4(v.get("ips")),
+            "ip_address6": first_ipv6(v.get("ips")),
+            "location": v.get("location", "Unknown"),
+            "capabilities": {
+                "adblock": False,
+                "filter_dns": False,
+                "limited": False,
+                "transport": [t if t['type'] == 'obfs4-hop' else None for t in bridge_transports]
+                if v.get('hopping', False)
+                else [t if t['type'] == 'obfs4' else None for t in bridge_transports],
+            },
+        } for v in config.bridges]
+
+    gateways = [{
             "host": "%s.%s" % (v["inventory_hostname"], public_domain),
             "ip_address": first_ipv4(v.get("ips")),
             "ip_address6": first_ipv6(v.get("ips")),
@@ -90,18 +99,14 @@ def produce_eip_config(config, obfs4_state_dir, public_domain, openvpn_transport
                 "limited": False,
                 "transport": openvpn_transports,
             },
-        } for v in config.gateways] + [{
-            "host": "%s.%s" % (v["inventory_hostname"], public_domain),
-            "ip_address": first_ipv4(v.get("ips")),
-            "ip_address6": first_ipv6(v.get("ips")),
-            "location": v.get("location", "Unknown"),
-            "capabilities": {
-                "adblock": False,
-                "filter_dns": False,
-                "limited": False,
-                "transport": bridge_transports,
-            },
-        } for v in config.bridges],
+        } for v in config.gateways]
+
+    # Build the JSON data structure that needs to end up in eip-service.json.
+    eip_config = {
+        "serial": 3,
+        "version": 3,
+        "locations": config.locations,
+        "gateways": gateways + bridges,
         "openvpn_configuration": config.openvpn,
     }
 
@@ -174,7 +179,8 @@ class ActionModule(ActionBase):
                  "tcp", "udp"], ports=["53", "80", "1194"]),
         ])
         bridge_transports = self._task.args.get('bridge_transports', [
-            dict(type="obfs4", protocols=["tcp"], ports=["443"])
+            dict(type="obfs4", protocols=["tcp"], ports=["443"]),
+            dict(type="obfs4-hop", protocols=["tcp"], ports=[], options={'portSeed': 0, 'portCount': 100, 'experimental': True})
             ])
         gateways = self._task.args['gateways']
         bridges = self._task.args['bridges']

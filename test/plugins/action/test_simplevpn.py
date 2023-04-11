@@ -57,29 +57,42 @@ class TestSimpleVpn(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_produce_eip_config(self):
+        self.maxDiff = None
         gateways = [{
             "inventory_hostname": "gateway1",
             "ip": "10.10.10.1",
             "ips": ["10.10.10.1"],
             "public_ips": ["10.10.10.1"],
+            "location": "Amsterdam"
         },
             {
             "inventory_hostname": "gateway2",
             "ip": "10.10.10.2",
             "ips": ["10.10.10.2"],
             "public_ips": ["10.10.10.2"],
+            "location": "Seattle"
         }]
         bridges = [{
             "inventory_hostname": "bridge1",
             "ip": "10.10.10.3",
             "ips": ["10.10.10.3"],
             "public_ips": ["10.10.10.3"],
+            "location": "Amsterdam"
         },
             {
             "inventory_hostname": "bridge2",
             "ip": "10.10.10.4",
             "ips": ["10.10.10.4"],
             "public_ips": ["10.10.10.4"],
+            "location": "Seattle"
+        },
+            {
+            "inventory_hostname": "bridge3",
+            "ip": "10.10.10.5",
+            "ips": ["10.10.10.5"],
+            "public_ips": ["10.10.10.5"],
+            "location": "Seattle",
+            "hopping": True,
         }]
 
         locations = {"Amsterdam": {"country_code": "NL",
@@ -111,7 +124,8 @@ class TestSimpleVpn(unittest.TestCase):
                               ]
 
         bridge_transports = [
-            {"ports": ["443"], "protocols": ["tcp"], "type": "obfs4"}]
+            {"ports": ["443"], "protocols": ["tcp"], "type": "obfs4"},
+            {"ports": [], "protocols": ["tcp"], "type": "obfs4-hop", "options": {'portSeed': 0, 'portCount': 100, 'experimental': True}}]
         config = simplevpn.EIPConfig(
             openvpn_configuration, locations, gateways, bridges)
 
@@ -125,7 +139,7 @@ class TestSimpleVpn(unittest.TestCase):
                                                          ]},
                           "host": "gateway1.test.com",
                           "ip_address": "10.10.10.1",
-                          "location": "Unknown"},
+                          "location": "Amsterdam"},
                          {"capabilities": {"adblock": False,
                                            "filter_dns": False,
                                            "limited": False,
@@ -135,7 +149,7 @@ class TestSimpleVpn(unittest.TestCase):
                                                          ]},
                           "host": "gateway2.test.com",
                           "ip_address": "10.10.10.2",
-                          "location": "Unknown"},
+                          "location": "Seattle"},
                          {"capabilities": {"adblock": False,
                                            "filter_dns": False,
                                            "limited": False,
@@ -145,7 +159,7 @@ class TestSimpleVpn(unittest.TestCase):
                                                          ]},
                           "host": "bridge1.test.com",
                           "ip_address": "10.10.10.3",
-                          "location": "Unknown"},
+                          "location": "Amsterdam"},
                          {"capabilities": {"adblock": False,
                                            "filter_dns": False,
                                            "limited": False,
@@ -155,7 +169,21 @@ class TestSimpleVpn(unittest.TestCase):
                                                          ]},
                           "host": "bridge2.test.com",
                           "ip_address": "10.10.10.4",
-                          "location": "Unknown"}
+                          "location": "Seattle"},
+                         {"capabilities": {"adblock": False,
+                                           "filter_dns": False,
+                                           "limited": False,
+                                           "transport": [{"ports": [],
+                                                          "protocols": ["tcp"],
+                                                          "type": "obfs4-hop",
+                                                          "options": {
+                                                              'portSeed': 0,
+                                                              'portCount': 100,
+                                                              'experimental': True}},
+                                                         ]},
+                          "host": "bridge3.test.com",
+                          "ip_address": "10.10.10.5",
+                          "location": "Seattle"}
                          ],
             "locations": {"Amsterdam": {"country_code": "NL",
                                         "hemisphere": "N",

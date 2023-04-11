@@ -29,4 +29,8 @@ Vagrant.configure(2) do |config|
     m.vm.hostname = "bridge1"
     m.vm.network "private_network", ip: "10.121.20.13", libvirt__dhcp_enabled: false
   end
+  config.vm.define "bridge2" do |m|
+    m.vm.hostname = "bridge2"
+    m.vm.network "private_network", ip: "10.121.20.14", libvirt__dhcp_enabled: false
+  end
 end
