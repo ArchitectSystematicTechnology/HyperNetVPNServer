@@ -1,2 +1,2 @@
-allow_port tcp 443
-allow_port udp 443
+allow_port tcp 443 # Normal non-hopping obfsvpn
+add_rule -I base-input -p tcp --match multiport --dports 49152:65535 -j ACCEPT # Port range for hopping
