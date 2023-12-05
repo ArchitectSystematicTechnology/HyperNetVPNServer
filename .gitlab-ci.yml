@@ -22,6 +22,7 @@ variables:
       --roles-path=config/roles
       --num-hosts=3
       --additional-host-group=openvpn=host3
+      --additional-host-group=gateway=host3
       --additional-config ${TEST_DIR}/group_vars/all/openvpn_config.yml
       --additional-config ${TEST_DIR}/group_vars/all/custom_config.yml
       --additional-config ${TEST_DIR}/group_vars/all/gateway_locations.yml
@@ -36,7 +37,8 @@ variables:
     - cp -v ${TEST_DIR}/site.yml ${BUILD_DIR}
     - echo "$(awk '!/- backend/ || ++ctr != 2' ${BUILD_DIR}/hosts.yml)" > ${BUILD_DIR}/hosts.yml
     - with-ssh-key ./float/scripts/floatup.py --url $VMINE_URL --ssh $VMINE_SSH --inventory $BUILD_DIR/hosts.yml --ram 3072 --image ${VM_IMAGE:-bullseye} up
-    - (cd ${BUILD_DIR} && with-ssh-key ../float/float run ../playbooks/init-credentials.yml -e ansible_cfg.defaults.strategy=mitogen_linear -e ansible_cfg.defaults.action_plugins=../float/plugins/action:../plugins/action)
+    - pwd && cat ${BUILD_DIR}/config.yml && cat ${BUILD_DIR}/hosts.yml  && echo ${BUILD_DIR}
+    - (cd ${BUILD_DIR} && with-ssh-key ../float/float run ../playbooks/init-credentials.yml)
     - with-ssh-key ./float/test-driver init --no-vagrant $BUILD_DIR
     - sleep 10
     - with-ssh-key ./float/test-driver run $BUILD_DIR
