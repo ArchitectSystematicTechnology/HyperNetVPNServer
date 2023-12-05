@@ -1,4 +1,3 @@
-
 stages:
   - test
 
@@ -37,7 +36,7 @@ variables:
     - cp -v ${TEST_DIR}/site.yml ${BUILD_DIR}
     - echo "$(awk '!/- backend/ || ++ctr != 2' ${BUILD_DIR}/hosts.yml)" > ${BUILD_DIR}/hosts.yml
     - with-ssh-key ./float/scripts/floatup.py --url $VMINE_URL --ssh $VMINE_SSH --inventory $BUILD_DIR/hosts.yml --ram 3072 --image ${VM_IMAGE:-bullseye} up
-    - (cd ${BUILD_DIR} && with-ssh-key ../float/float run ../playbooks/init-credentials.yml)
+    - (cd ${BUILD_DIR} && with-ssh-key ../float/float run ../playbooks/init-credentials.yml -e ansible_cfg.defaults.strategy=mitogen_linear -e ansible_cfg.defaults.action_plugins=../float/plugins/action:../plugins/action)
     - with-ssh-key ./float/test-driver init --no-vagrant $BUILD_DIR
     - sleep 10
     - with-ssh-key ./float/test-driver run $BUILD_DIR
