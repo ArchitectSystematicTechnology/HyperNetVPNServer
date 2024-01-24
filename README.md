@@ -6,17 +6,40 @@ Monitoring, alerting, log-collection and analysis, DNS and Let's Encrypt certifi
 
 ## Pre-requisites
 
-You need at least three different remote machines. These can be bare-metal, or virtual machines (eg. KVM). They should have a minimal Debian Buster installation and be reachable by SSH. 
+  - **Three different machines**: 
+     reverse-proxy, backend, gateway/s(atleast one, more the merrier) 
 
-One machine will act as a reverse proxy, and provide the infrastructure front-end. The second machine will run as an application server that the reverse proxy talks to, it runs the LEAP web API, its gateway selection service, and the infrastructure that provides monitoring and alerting. The third+ machine(s) are the VPN gateways, they *** will need two publicly addressable IP addresses ***. 
+    These can be bare-metal, or virtual machines (eg. KVM). They should have a minimal Debian 11 (bullseye) installation and be reachable by SSH. 
+  
+  - **You will need to pick a subdomain and delegate the DNS to the system to manage.**
+    
+    For example, if your domain is `example.com`, then you could delegate the subdomain `float.example.com`. 
+    You would do this by adding a `NS` record for `float.example.com` that points to `ns1.example.com` 
+    and then an `A` record for `ns1.example.com` that points to the IP address you use for the reverse proxy host (note: not the gateway IP).
+    
+    like:
+
+|Domain | Type | Destination|
+|--|--|--|
+|float.example.com	|NS	|ns1.example.com |
+|ns1.example.com	  |A	| \<IP of ReverseProxy instance>|
+
+
+## Architecture
+
+ - Reverse Proxy: runs nginx, DNS nameserver and provide the infrastructure front-end. 
+ - Backend: runs the application services that the reverse proxy talks to, it runs, inter alia, the LEAP web API, the gateway selection service, and the infrastructure that provides monitoring and alerting.  
+ - Gateway/s: These runs openvpn and act as **VPN gateways, which ideally require two publicly addressable IP addresses, one for ingress and one for egress.**
+
+
+## How to provision a new provider?
 
 The machines should be considered to be fully managed by this framework when things have been deployed. It will modify the system-level configuration, install packages, start services, etc. However, it assumes that certain functionality is present, either managed manually or with some external mechanisms: network configuration, partitions, file systems, and logical volumes must be externally (or manually) managed. SSH access and configuration must be externally managed _unless_ you explicitly set enable_ssh=true (and add SSH keys to your admin users), in which case deployment will take over the SSH configuration.
 
-You will need to pick a subdomain and delegate its DNS for the system to manage. For example, if your domain is `example.com`, then you could delegate, for example, the subdomain `float.example.com`. You would do this by adding a `NS` record for `float.example.com` that points to `ns1.example.com` and then an `A` record for `ns1.example.com` that points to the IP address you use for the reverse proxy host (note: not the gateway IP).
 
 The following commands should be run  ***locally on your computer*** in order to install and deploy Lilypad on the remote machines.
 
-## 0. Clone the float repository
+### 0. Clone the float repository
 
 ...and enter it
 
@@ -25,13 +48,15 @@ git clone https://0xacab.org/leap/container-platform/lilypad
 cd lilypad
 ```
 
-## 1. Install the float and LEAP platform pre-requisites
+### 1. Install the float and LEAP platform pre-requisites
 
-This installation guide is tested on Debian Bullseye.
+This installation guide is tested on Debian Bullseye and Bookworm
 Other Linux distributions might need additional steps to install all requirements in the correct version.
 
 ```shell
-sudo apt-get install golang build-essential bind9utils git
+sudo apt-get install golang build-essential bind9utils git libsodium23 virtualenv
+
+# for golang version lower than 1.16 and use go get instead of go install after running export GO111MODULE=on 
 
 go install git.autistici.org/ale/x509ca@latest
 go install git.autistici.org/ale/ed25519gen@latest
@@ -50,7 +75,7 @@ This will create a virtual environment where we can install+version control spec
 
 When working on this project, if you're in a new shell, you'll need to run the `source ./venv/bin/activate` command again to re-enter the virtual environment.
 
-## 2. Initialize the ansible vault
+### 2. Initialize the ansible vault
 
 ... by creating a password file. Keep the public user ID of your OpenPGP keys at hand:
 
@@ -68,7 +93,7 @@ export ANSIBLE_VAULT_PASSWORD_FILE=.ansible_vault_pw.gpg
 
 This environment variable will only be set for this shell, you will need to add it to your shell environment initialization file so it will be set automatically everytime.
 
-## 3. Customize the environment 
+### 3. Customize the environment 
 
 Open _hosts.yml_ and change `floatapp1` to your app host's hostname, and specify the `ansible_host` and `ip` values to be the IP addresses for that host. If you have more than one app server, then you would just create a copy of this block, modifying the values, being sure to keep the 'backend' group assigned to each one.
 
@@ -88,7 +113,7 @@ Then edit _group_vars/all/gateway_locations.yml_, _group_vars/all/provider_confi
 
 NOTE: The value of `location` for a VPN gateway host, and the location keys in _gateway_locations.yml_, **must** match exactly one of [these city names](https://github.com/tidwall/cities/blob/master/cities.go).
 
-## 4. Generate credentials 
+### 4. Generate credentials 
 
 ... by running the init-credentials playbook. This will ansible-vault-encrypt the resulting secret files under _credentials/_. 
 _Note:_ this is not the built-in float init-credentials, rather this is the LEAP provided one, which will instantiate the float init-credentials when it is finished.
@@ -101,17 +126,17 @@ float/float run playbooks/init-credentials
 
 This will generate service-level credentials, which are automatically managed by the toolkit and are encrypted with ansible-vault. These include the internal X509 PKI for TLS service authentication, a SSH PKI for hosts, and application credentials. 
 
-## 5. Consider comitting the generated credentials 
+### 5. Consider comitting the generated credentials 
 
 ... to git, and pushing them to a repository. All auto-generated credentials are stored in the _credentials_dir_ - you will want to ensure that these are properly encrypted, checked into a git repository and kept private. The secret material is encrypted with ansible-vault, so it cannot be read without the access to the _.ansible_vault_pw_. If you commit these files, and push them to a respository, then you can share them with other admins, but be aware that these are secrets that should not be shared with anyone but trusted admins. If you gpg encrypted the _.ansible_vault_pw_, then that file is also encrypted and could also be committed.
 
-## 6. Ensure SSH access
+### 6. Ensure SSH access
 Lilypad uses elliptic curves for ssh, ed25519. Make sure you can ssh to the hosts as root without being prompted for a password every time after having verified and accepted the correct host key. Try to login:
 ```shell
 ssh -i ~/.ssh/id_ed25519 root@float.example.com
 ```
 
-## 7. Deploy the configuration 
+### 7. Deploy the configuration 
 
 Run: 
 ```shell
@@ -119,7 +144,7 @@ float/float run site.yml
 ```
 This will take some time to finish, as it needs to download packages and Docker images and configure everything.
 
-## 8. Update servers
+### 8. Update servers
 
 Run:
 
@@ -129,21 +154,22 @@ float/float run float/playbooks/apt-upgrade.yml
 
 Congratulations. You have successfully installed and deployed the LEAP platform! You should [read the documentation about how to perform common operations](https://git.autistici.org/ai3/float/-/blob/master/docs/playbook.md).
 
-## Testing
-
-Certificate authority from provider: `leap.ca`
-
-Make a CSR/key
-
-sign cert against CA
+### Testing
 
 make sure the x509 v3 extensions exist: x509.ExtKeyUsageClientAuth x509.KeyUsageDigitalSignature
 
-```shell
-/usr/sbin/openvpn --client --remote-cert-tls server --tls-client --remote 37.218.241.84 80 --proto tcp --verb 3 --auth SHA1 --keepalive 10 30 --tls-version-min 1.2 --dev tun --tun-ipv6 --ca ./ca.pem --cert ./testopenvpn.crt --key ./testopenvpn.key
+```
+# Fetch ca-certificate
+$ curl -vsL -o ca.crt https://api.float.example.com/ca.crt
+# Fetch  openvpn.pem
+$ curl -vskL -o openvpn.pem https://api.float.example.com/3/cert
 ```
 
-Reference: https://0xacab.org/leap/vpnweb/blob/master/certs.go#L37
+```shell
+/usr/sbin/openvpn --client --remote-cert-tls server --tls-client --remote <gateway-IP> 80 --proto tcp --verb 3 --auth SHA1 --keepalive 10 30 --tls-version-min 1.2 --dev tun --tun-ipv6 --ca ./ca.crt --cert ./openvpn.pem --key ./openvpn.pem
+```
+
+Reference: https://0xacab.org/leap/vpnweb/-/blob/ecaa22111ee8e34111080139e1e8a92b90e30158/pkg/web/certs.go#L56
 
         ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
         KeyUsage:    x509.KeyUsageDigitalSignature,
@@ -151,7 +177,7 @@ Reference: https://0xacab.org/leap/vpnweb/blob/master/certs.go#L37
         subjectkeyID: random
         serial: random
 
-### Integration Testing
+#### Integration Testing
 Integration tests can be run to:
             * check that public endpoints for built-in services are reachable
             * check that no Prometheus alerts are firing
@@ -183,7 +209,7 @@ priv_user:
   password: password
 ```
 
-### Testing float
+#### Testing float
 
 ```shell
     apt install qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils vagrant vagrant-libvirt
