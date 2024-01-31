@@ -22,6 +22,7 @@ variables:
       --playbook=${TEST_DIR}/site.yml
       --roles-path=config/roles
       --num-hosts=3
+      --additional-host-group=bridge=host2
       --additional-host-group=openvpn=host3
       --additional-config ${TEST_DIR}/group_vars/all/openvpn_config.yml
       --additional-config ${TEST_DIR}/group_vars/all/custom_config.yml
