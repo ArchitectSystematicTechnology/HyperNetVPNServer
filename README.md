@@ -162,7 +162,7 @@ make sure the x509 v3 extensions exist: x509.ExtKeyUsageClientAuth x509.KeyUsage
 # Fetch ca-certificate
 $ curl -vsL -o ca.crt https://api.float.example.com/ca.crt
 # Fetch  openvpn.pem
-$ curl -vskL -o openvpn.pem https://api.float.example.com/3/cert
+$ curl -vL --cacert ca.crt -o openvpn.pem https://api.float.example.com:4430/3/cert
 ```
 
 ```shell
