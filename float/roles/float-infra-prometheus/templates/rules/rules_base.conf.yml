@@ -31,6 +31,10 @@ groups:
       - record: probe:probe_success:ratio
         expr: probe:probe_success:sum / probe:probe_success:count
 
+      # Separate SLI-oriented metric that looks at success across prober hosts.
+      - record: probe:probe_success:max
+        expr: max(probe_success) without (job,instance,prober_host,host)
+
       # Special metric for the ping probe.
       # The 'bool' qualifier makes the greater-than operation not act as a filter.
       - record: host_reachable

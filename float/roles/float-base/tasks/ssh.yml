@@ -70,11 +70,13 @@
     path: /etc/ssh/authorized_keys
     state: directory
 
+- float_authorized_keys: {}
+
 # Configure root's authorized_keys with the admin keys.
 - name: Install admin public keys
   authorized_key:
     user: root
-    key: "{% if emergency_ssh_key %}{{ emergency_ssh_key }}\n{% endif %}{% for a in admins %}{% for k in a.get('ssh_keys', []) %}{{ k }}\n{% endfor %}{% endfor %}"
+    key: "{% if emergency_ssh_key %}{{ emergency_ssh_key }}\n{% endif %}{{ float_authorized_keys }}"
     path: /etc/ssh/authorized_keys/root
     manage_dir: no
     state: present

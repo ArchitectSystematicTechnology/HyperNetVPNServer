@@ -56,7 +56,7 @@ save_logs() {
     log "Saving logs from VMs (if any)"
     mkdir -p "${out_dir}"
     ANSIBLE_STDOUT_CALLBACK=null \
-    ${float_dir}/float run -e "callback_whitelist=" -e "out_dir=${out_dir}" \
+    ${float_dir}/float run -e "callbacks_enabled=" -e "out_dir=${out_dir}" \
         ${float_dir}/test/save-logs.yml
 }
 
@@ -92,9 +92,12 @@ Commands:
 
   cleanup    Cleanup the test environment (turn down VMs, etc)
 
-  run        Run the main float playbook, and the test suite, using
-             the playbooks specified by the remaining command-line
-             arguments
+  provision  Run the main float playbook
+
+  test       Run the test suite, using the playbooks specified by
+             the remaining command-line arguments
+
+  run        (deprecated) Run 'provision' and 'test'
 
 If DIR is specified, chdir there before running anything.
 
@@ -119,6 +122,20 @@ if [ $# -gt 0 ]; then
     shift
 fi
 
+do_provision() {
+    log Running main playbook
+    ${float_dir}/float run site.yml \
+        || die "failed to run the main playbook"
+}
+
+do_test() {
+    for playbook in "${float_dir}/test/integration-test.yml" "$@"; do
+        log Running test playbook ${playbook}
+        ${float_dir}/float run ${playbook} \
+            || die "test playbook failed"
+    done
+}
+
 case "$cmd" in
     init)
         run_init
@@ -134,16 +151,18 @@ case "$cmd" in
         run_cleanup
         ;;
 
-    run)
-        log Running main playbook
-        ${float_dir}/float run site.yml \
-            || die "failed to run the main playbook"
+    provision)
+        do_provision
+        ;;
 
-        for playbook in "${float_dir}/test/integration-test.yml" "$@"; do
-            log Running test playbook ${playbook}
-            ${float_dir}/float run ${playbook} \
-                || die "test playbook failed"
-        done
+    test)
+        do_test
+        ;;
+
+    # Legacy command to run both 'provision' and 'test' at once.
+    run)
+        do_provision
+        do_test
         ;;
 
     *)

@@ -1,0 +1,4 @@
+map $http_accept $http_accept_simplified {
+ default $http_accept;
+ ~text/html html;
+}

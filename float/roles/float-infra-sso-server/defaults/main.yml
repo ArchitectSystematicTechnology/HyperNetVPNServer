@@ -41,3 +41,7 @@ sso_service_ttls:
 # List of allowed Origins for CORS (URLs without path component).
 # These are not regular expressions, but you can use wildcards (*).
 sso_allowed_cors_origins: []
+
+# When are users asked to authenticate again? (seconds)
+sso_auth_session_lifetime: 43200
+

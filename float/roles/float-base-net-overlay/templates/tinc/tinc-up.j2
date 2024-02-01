@@ -1,4 +1,4 @@
 #!/bin/sh
 ip link set $INTERFACE up
-ip addr add {{ hostvars[inventory_hostname]['ip_' + tinc_net] }}/{{ tinc_netmask_cidr }} dev $INTERFACE
+ip addr add {{ tinc_host_ip_cidr }} dev $INTERFACE
 exit 0

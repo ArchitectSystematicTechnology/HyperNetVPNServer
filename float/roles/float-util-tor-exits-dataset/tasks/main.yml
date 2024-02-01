@@ -1,0 +1,31 @@
+---
+
+- name: Create tor-exits state directory
+  file:
+    path: "/var/lib/tor-exits"
+    state: directory
+
+- name: Install tor-exits scripts
+  copy:
+    src: "{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: "0755"
+  loop:
+    - "update-tor-exits"
+    - "is-tor-exit"
+
+- name: Set up tor-exits update cron job
+  copy:
+    dest: "/etc/cron.d/update-tor-exits"
+    content: "55 */3 * * * root /usr/local/bin/splay 60 && /usr/local/bin/update-tor-exits >/dev/null\n"
+
+# Run the script right away on first install. It might fail on testing
+# environments due to strict rate-limiting on the source URL.
+- stat:
+    path: "/var/lib/tor-exits/exit-nodes"
+  register: tor_exits_dataset
+
+- name: Update list of Tor exit nodes
+  command: "/usr/local/bin/update-tor-exits"
+  when: "not tor_exits_dataset.stat.exists"
+  ignore_errors: true

@@ -10,6 +10,8 @@ binary={{ container_runtime }}
 
 auth_file={{ docker_auth_file }}
 
+manifest_mime_types="application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json"
+
 # Automatically pick up proxy settings if present.
 [ -e /etc/containers/proxy-settings.sh ] && . /etc/containers/proxy-settings.sh
 
@@ -19,11 +21,10 @@ get_main_auth_token() {
 
 get_auth_token() {
     local url="$1"
-    local auth_hdr="$(curl -s -I -H "Accept: application/vnd.docker.distribution.manifest.v2+json" "$url" \
+    local auth_hdr="$(curl -s -I -H "Accept: ${manifest_mime_types}" "$url" \
                          | awk 'BEGIN{IGNORECASE=1} /^www-authenticate:/ {print $3}')"
     if [ -z "$auth_hdr" ]; then
-        echo "Could not obtain authentication token from $url" >&2
-        exit 1
+        return
     fi
     local scope=$(printf "%s" "${auth_hdr}" | sed -e 's/^.*scope="\([^"]*\)".*$/\1/')
     local service=$(printf "%s" "${auth_hdr}" | sed -e 's/^.*service="\([^"]*\)".*$/\1/')
@@ -36,8 +37,8 @@ get_auth_token() {
 get_remote_image_version() {
     local url="https://${registry_hostname}/v2/${image_path}/manifests/${image_tag}"
     local token="$(get_auth_token "$url")"
-    curl -sf -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-         -H "Authorization: Bearer ${token}" \
+    curl -sf -H "Accept: ${manifest_mime_types}" \
+         ${token:+-H "Authorization: Bearer ${token}"} \
          "$url" \
          | jq -r .config.digest
 }

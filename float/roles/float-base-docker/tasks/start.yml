@@ -4,21 +4,31 @@
   file:
     path: /usr/lib/float/docker
     state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Configure container runner
+  float_container_options:
+    service: "{{ services[item.service] }}"
+    container: "{{ item.container }}"
+  loop: "{{ float_enabled_containers }}"
+  register: float_container_options
 
 - name: Create run scripts
   template:
     src: run.sh.j2
-    dest: "/usr/lib/float/docker/run-{{ item.service }}-{{ item.container.name }}.sh"
-    mode: 0755
+    dest: "/usr/lib/float/docker/run-{{ item.0.tag }}.sh"
+    mode: "0750"
+    owner: root
+    group: root
+  vars:
+    service_user: "{{ services[item.0.service].user }}"
+    container: "{{ item.0.container }}"
+    container_options: "{{ item.1.options }}"
+    tag: "{{ item.0.tag }}"
   register: docker_systemd_run_script
-  loop: "{{ float_enabled_containers }}"
-
-# TODO temporary only, to be removed once all symlinks are gone
-- name: Cleanup Alias symlink
-  file:
-    dest: "/etc/systemd/system/{{ item.tag }}"
-    state: absent
-  loop: "{{ float_enabled_containers }}"
+  loop: "{{ float_enabled_containers | zip(float_container_options.results) }}"
 
 - name: Set up the systemd units
   template:

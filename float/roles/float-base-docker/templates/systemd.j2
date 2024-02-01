@@ -7,15 +7,25 @@ Requires=docker.service
 
 [Service]
 ExecStartPre=-rm -f %t/%N.cid
+{# Since Podman 4, we can switch to a 'forking' model without the extra podman process
+   due to the support for --log-driver=passthrough. #}
+{% if container_runtime == 'podman' and podman_version != '3' %}
+Type=forking
+ExecStart=/usr/lib/float/docker/run-{{ item.service }}-{{ item.container.name }}.sh --cidfile=%t/%N.cid --conmon-pidfile=%t/%N.pid
+ExecStopPost=/usr/bin/{{ container_runtime }} rm -f -i --cidfile=%t/%N.cid
+PIDFile=%t/%N.pid
+{% else %}
+Type=notify
+NotifyAccess=all
 ExecStart=/usr/lib/float/docker/run-{{ item.service }}-{{ item.container.name }}.sh --cidfile=%t/%N.cid
 ExecStopPost=-/usr/bin/{{ container_runtime }} rm -f -i --cidfile=%t/%N.cid
+{% endif %}
 ExecStopPost=-rm -f %t/%N.cid
 TimeoutStopSec=60
+TimeoutStartSec=240
 KillMode=mixed
 Restart=always
 RestartSec=3s
-Type=notify
-NotifyAccess=all
 SyslogIdentifier={{ item.service }}-{{ item.container.name }}
 
 {% if item.container.resources is defined %}
@@ -34,7 +44,7 @@ LimitNOFILE=65535
 IPAddressDeny=any
 IPAddressAllow=localhost
 {# This is a terrible way to determine which private networks the host is on.
-  It would be a good candidate for pre-processing in the float plugin. #}
+   It would be a good candidate for pre-processing in the float plugin. #}
 {% for net_overlay in net_overlays | sort if ('ip_' + net_overlay.name) in hostvars[inventory_hostname] %}
 IPAddressAllow={{ net_overlay.network }}
 {% endfor %}

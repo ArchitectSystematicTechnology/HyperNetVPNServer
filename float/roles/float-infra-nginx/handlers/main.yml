@@ -11,3 +11,9 @@
   systemd:
     name: firewall.service
     state: restarted
+
+- name: reload mtail
+  systemd:
+    name: mtail.service
+    state: restarted
+

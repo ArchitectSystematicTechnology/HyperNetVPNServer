@@ -49,6 +49,9 @@ net.netfilter.nf_conntrack_max={{ nf_conntrack_max }}
 # Restrict core dumps for SUID binaries.
 fs.suid_dumpable=0
 
+# Protect against time-wait assassination.
+net.ipv4.tcp_rfc1337=1
+
 # Disable source routed packet acceptance.
 net.ipv4.conf.all.accept_source_route=0
 net.ipv4.conf.default.accept_source_route=0
@@ -76,6 +79,9 @@ net.ipv4.conf.default.rp_filter=1
 # Prevent the automatic loading of line disciplines
 # https://lore.kernel.org/patchwork/patch/1034150
 dev.tty.ldisc_autoload=0
+
+# Restrict userfaultfd() syscall to the CAP_SYS_PTRACE capability.
+vm.unprivileged_userfaultfd=0
 
 # Additional protections for fifos, hardlinks, regular files, and symlinks
 # https://patchwork.kernel.org/patch/10244781
@@ -114,9 +120,7 @@ kernel.sysrq=0
 # (linux-hardened default)
 net.core.bpf_jit_harden=2
 kernel.unprivileged_bpf_disabled=1
-{% endif %}
 
-{% if not disable_restricted_sysctl %}
 # Disable unprivileged user namespaces
 # https://lwn.net/Articles/673597
 # (linux-hardened default)

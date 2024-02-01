@@ -43,7 +43,7 @@ class TestBuiltinServiceURLs(URLTestBase):
     """Verify that all the public_endpoints are reachable.
 
     Tests will only run if the corresponding service (from
-    services.yml.default) is actually enabled.
+    services.yml) is actually enabled.
 
     """
 
@@ -57,8 +57,8 @@ class TestBuiltinServiceURLs(URLTestBase):
     def test_okserver(self):
         self.assert_endpoint_ok_if_enabled('ok', 'ok')
 
-    def test_admin_dashboard(self):
-        self.assert_endpoint_ok_if_enabled('admin-dashboard', 'admin', True)
+    def test_service_dashboard(self):
+        self.assert_endpoint_ok_if_enabled('service-dashboard', 'service-dashboard', True)
 
     def test_monitor(self):
         self.assert_endpoint_ok_if_enabled('prometheus', 'monitor', True)

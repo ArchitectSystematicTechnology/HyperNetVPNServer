@@ -26,7 +26,9 @@ defaults
 frontend stats
         bind :::8404
         mode http
+{% if float_debian_dist in ('buster', 'bullseye') %}
         option http-use-htx
+{% endif %}
         http-request use-service prometheus-exporter if { path /metrics }
         stats enable
         stats uri /stats

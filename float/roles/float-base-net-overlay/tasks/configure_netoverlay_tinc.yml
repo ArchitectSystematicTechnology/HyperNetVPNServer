@@ -3,7 +3,11 @@
 - set_fact:
     tinc_net: "{{ item }}"
     tinc_dir: "/etc/tinc/{{ item }}"
-    tinc_netmask_cidr: 24
+    tinc_host_ip: "{{ hostvars[inventory_hostname]['ip_' + item] }}"
+    net_overlay_config: "{{ net_overlays | selectattr('name', 'eq', item) | first }}"
+
+- set_fact:
+    tinc_host_ip_cidr: "{{ tinc_host_ip }}/{{ net_overlay_config.network | regex_replace('^.*/', '') }}"
 
 - name: Install the tinc package
   apt:
@@ -18,10 +22,25 @@
   args:
     creates: "{{ tinc_dir }}/rsa_key.pub"
 
-- name: Generate tinc host configuration
-  tinc_host_conf:
-    overlay: "{{ tinc_net }}"
+- name: Fetch tinc host public key
+  slurp:
+    src: "{{ tinc_dir }}/rsa_key.pub"
+  register: tinc_host_public_key
   check_mode: no
+
+- name: Generate tinc host configuration
+  set_fact:
+    tinc_host_config: |
+      {% for ip in ips %}
+      Address = {{ ip }}
+      {% endfor %}
+      Port = {{ net_overlay_config.port | default('655') }}
+      Cipher = {{ net_overlay_config.cipher | default('aes-128-cbc') }}
+      Digest = {{ net_overlay_config.digest | default('sha256') }}
+      Compression = {{ net_overlay_config.compression | default('0') }}
+      PMTU = {{ net_overlay_config.pmtu | default('1460') }}
+      Subnet = {{ tinc_host_ip }}/32
+      {{ tinc_host_public_key['content'] | b64decode }}
 
 # Generate tinc host entries for all *other* hosts. Skip if for
 # some reason (failures) we weren't able to fetch it.

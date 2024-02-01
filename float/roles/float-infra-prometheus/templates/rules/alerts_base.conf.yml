@@ -95,7 +95,7 @@ groups:
         Probe {{ $labels.probe }} ({{ $labels.host }}) is failing for target {{ $labels.host }}
         (success ratio {{ $value }}).
 
-        Failed probe logs: https://{{ $labels.prober_float_service }}.[[ domain_public[0] ]]/
+        Failed probe logs: https://{{ $labels.prober_float_endpoint }}.[[ domain_public[0] ]]/
       runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
 
   - alert: ProbeFailure
@@ -110,7 +110,7 @@ groups:
         Probe {{ $labels.probe }} ({{ $labels.zone }}) is failing globally
         (success ratio {{ $value }}).
 
-        Failed probe logs: https://{{ $labels.prober_float_service }}.[[ domain_public[0] ]]/
+        Failed probe logs: https://{{ $labels.prober_float_endpoint }}.[[ domain_public[0] ]]/
       runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
 
 {# Specific ProbeFailure alerts for each custom prober_service->timeout pair #}
@@ -128,7 +128,7 @@ groups:
         Probe {{ $labels.probe }} ({{ $labels.host }}) is failing for target {{ $labels.host }}
         (success ratio {{ $value }}).
 
-        Failed probe logs: https://{{ $labels.prober_float_service }}.[[ domain_public[0] ]]/
+        Failed probe logs: https://{{ $labels.prober_float_endpoint }}.[[ domain_public[0] ]]/
       runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
 
   - alert: ProbeFailure
@@ -143,7 +143,7 @@ groups:
         Probe {{ $labels.probe }} ({{ $labels.zone }}) is failing globally
         (success ratio {{ $value }}).
 
-        Failed probe logs: https://{{ $labels.prober_float_service }}.[[ domain_public[0] ]]/
+        Failed probe logs: https://{{ $labels.prober_float_endpoint }}.[[ domain_public[0] ]]/
       runbook: '[[ alert_runbook_fmt | format("ProbeFailure") ]]'
 
 {% endfor %}

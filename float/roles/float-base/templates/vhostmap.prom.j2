@@ -6,7 +6,7 @@ Skip public_endpoints with a path, to avoid duplication of entries.
 
 #}
 {% for service_name, service in services | dictsort %}
-{% for ep in service.get('public_endpoints', []) %}
+{% for ep in service.get('public_endpoints', []) if ep.get('path', '/') == '/' %}
 {% for systemd_service in service.get('systemd_services', []) %}
 {% for d in domain_public %}
 {% if ep.sharded | default(False) %}

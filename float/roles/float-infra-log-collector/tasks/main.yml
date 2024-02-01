@@ -49,5 +49,14 @@
   template:
     src: "rsyslog-collector.conf.j2"
     dest: "/etc/rsyslog-collector.conf"
+  vars:
+    rsyslog_port: 6514
+    rsyslog_exporter_port: 9105
+    rsyslog_elasticsearch_host: "127.0.0.1"
+    rsyslog_elasticsearch_port: 9200
+    rsyslog_tls_ca: "/etc/credentials/x509/log-collector/ca.pem"
+    rsyslog_tls_cert: "/etc/credentials/x509/log-collector/server/cert.pem"
+    rsyslog_tls_key: "/etc/credentials/x509/log-collector/server/private_key.pem"
+    rsyslog_tls_permittedpeer: "*.{{ domain }}"
   notify: "restart rsyslog-collector"
 

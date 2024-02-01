@@ -40,6 +40,14 @@
 - include_tasks: rollback_protection.yml
   when: "git_revision != 'none' and not testing|default(True)"
 
+# Detect virtual machines / physical hardware.
+- name: Detect virtual machine
+  slurp:
+    src: "/sys/class/dmi/id/sys_vendor"
+  register: slurp_sysfs_dmi_vendor
+- set_fact:
+    float_is_vm: "{{ slurp_sysfs_dmi_vendor['content'] | b64decode == 'QEMU' }}"
+
 # Create the /usr/lib/float and /var/lib/float directories for
 # internal scripts.
 - file:
@@ -93,6 +101,8 @@
 
 - include_tasks: ipmi.yml
   when: ipmi_device.stat.exists == true
+
+- include_tasks: systemd.yml
 
 # Finally run some cleanups.
 - import_tasks: cleanup.yml

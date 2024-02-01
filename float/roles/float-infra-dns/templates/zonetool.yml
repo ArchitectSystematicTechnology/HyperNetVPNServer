@@ -1,6 +1,6 @@
 ---
 {% set all_ips = services['frontend'].hosts | map('extract', hostvars) | rejectattr('traffic', 'false') | map(attribute='public_ips') | reject('undefined') | flatten %}
 
-FRONTENDS4: {{ all_ips | ansible.netcommon.ipv4 | list | to_json }}
+FRONTENDS4: {{ all_ips | ansible.utils.ipv4 | list | to_json }}
 
-FRONTENDS6: {{ all_ips | ansible.netcommon.ipv6 | list | to_json }}
+FRONTENDS6: {{ all_ips | ansible.utils.ipv6 | list | to_json }}

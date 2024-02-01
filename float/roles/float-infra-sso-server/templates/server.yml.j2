@@ -28,7 +28,7 @@ allowed_services:
 allowed_cors_origins: {{ sso_allowed_cors_origins | to_json }}
 allowed_exchanges: {{ sso_allowed_exchanges | to_json }}
 service_ttls: {{ sso_service_ttls | to_json }}
-auth_session_lifetime: 43200
+auth_session_lifetime: {{ sso_auth_session_lifetime }}
 session_auth_key: "{{ sso_session_auth_secret }}"
 session_enc_key: "{{ sso_session_enc_secret }}"
 csrf_secret: "{{ sso_csrf_secret }}"
@@ -47,8 +47,14 @@ keystore_enable_groups:
 url_path_prefix: "{{ sso_server_url_path_prefix }}"
 account_recovery_url: "{{ sso_server_account_recovery_url | default('') }}"
 default_signed_in_redirect: "{{ sso_server_default_signed_in_redirect | default('') }}"
+cookie_same_site_mode: "{{ sso_cookie_same_site_mode | default('strict') }}"
 device_manager:
   auth_key: "{{ sso_device_manager_auth_secret }}"
+  zone_maps:
+    - type: ipset
+      path: /var/lib/tor-exits/exit-nodes
+      value: Tor
+    - type: geoip
 http_server:
   enable_compression: true
   request_timeout: 10
@@ -71,4 +77,10 @@ site_name: {{ sso_site_title }}
 {% endif %}
 {% if sso_favicon is defined %}
 site_favicon: {{ sso_favicon }}
+{% endif %}
+{% if sso_login_username_label is defined %}
+login_username_label: {{ sso_login_username_label }}
+{% endif %}
+{% if sso_login_again_url is defined %}
+login_again_url: "{{ sso_login_again_url }}"
 {% endif %}

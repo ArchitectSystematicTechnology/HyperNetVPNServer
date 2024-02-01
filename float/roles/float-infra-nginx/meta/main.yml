@@ -4,4 +4,4 @@ dependencies:
   - role: float-base-public-credentials
     vars:
       credentials_type: http
-
+  - role: float-util-tor-exits-dataset

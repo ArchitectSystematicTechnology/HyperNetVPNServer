@@ -4,3 +4,5 @@ dependencies:
   - role: float-util-geoip-dataset
     vars:
       geoip_dataset: 'Country'
+  - role: float-util-tor-exits-dataset
+

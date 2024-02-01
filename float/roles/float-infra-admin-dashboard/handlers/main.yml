@@ -1,6 +1,0 @@
----
-
-- name: reload admin-dashboard
-  systemd:
-    name: docker-admin-dashboard-http
-    state: restarted

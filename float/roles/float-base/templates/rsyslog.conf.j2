@@ -1,5 +1,6 @@
 global(
   maxMessageSize="64k"
+  defaultNetstreamDriver="ossl"
 )
 
 module(load="imuxsock"
@@ -30,7 +31,12 @@ ruleset(name="process_stats") {
   action(
     type="omprog"
     name="to_exporter"
+{% if float_debian_dist in ('buster', 'bullseye') %}
     binary="/usr/bin/rsyslog_exporter -web.listen-address=:9106"
+{% else %}
+    binary="/usr/bin/rsyslog_exporter -silent -web.listen-address=:9106"
+{% endif %}
+
     queue.type="linkedlist"
     queue.workerThreads="1"
   )

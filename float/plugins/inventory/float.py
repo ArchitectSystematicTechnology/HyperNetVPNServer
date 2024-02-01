@@ -352,6 +352,14 @@ def _build_public_endpoints_map(services):
     return upstreams, endpoints
 
 
+def _build_public_endpoint_port_map(services):
+    endpoints_by_port = {}
+    for svc in services.values():
+        for pe in svc.get('public_endpoints', []):
+            endpoints_by_port[pe['port']] = pe['name']
+    return endpoints_by_port
+
+
 # Build the map of upstreams for 'horizontal' (well-known etc) HTTP
 # public endpoints.
 #
@@ -491,7 +499,9 @@ class Assignments(object):
         return str(self._fwd)
 
     @classmethod
-    def _available_hosts(cls, service, group_map):
+    def _available_hosts(cls, service, group_map, service_hosts_map):
+        if 'schedule_with' in service:
+            return service_hosts_map[service['schedule_with']]
         scheduling_groups = ['all']
         if 'scheduling_group' in service:
             scheduling_groups = [service['scheduling_group']]
@@ -499,6 +509,8 @@ class Assignments(object):
             scheduling_groups = service['scheduling_groups']
         available_hosts = set()
         for g in scheduling_groups:
+            if g not in group_map:
+                raise Exception(f'The scheduling_group "{g}" is not defined in inventoy')
             available_hosts.update(group_map[g])
         return list(available_hosts)
 
@@ -518,13 +530,17 @@ class Assignments(object):
 
         # Iterations should happen over sorted items for reproducible
         # results. The sort function combines the 'scheduling_order'
-        # attribute (default -1) and the service name.
+        # attribute (default -1), the presence of the 'schedule_with'
+        # attribute, and the service name.
         def _sort_key(service_name):
-            return (services[service_name].get('scheduling_order', -1), service_name)
+            return (services[service_name].get('scheduling_order', -1),
+                    1 if 'schedule_with' in services[service_name] else 0,
+                    service_name)
 
         for service_name in sorted(services.keys(), key=_sort_key):
             service = services[service_name]
-            available_hosts = cls._available_hosts(service, group_map)
+            available_hosts = cls._available_hosts(service, group_map,
+                                                   service_hosts_map)
             num_instances = service.get('num_instances', 'all')
             if num_instances == 'all':
                 service_hosts = sorted(available_hosts)
@@ -611,6 +627,7 @@ def run_scheduler(config):
         # The following variables are just used for debugging purposes (dashboards).
         'float_service_assignments': assignments._fwd,
         'float_service_masters': assignments._masters,
+        'float_http_endpoints_by_port': _build_public_endpoint_port_map(services),
     })
 
     # Set the HTTP frontend configuration on the 'frontend' group.

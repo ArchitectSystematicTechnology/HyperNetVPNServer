@@ -50,6 +50,7 @@
       float with "-e rollback=true".
   when: "commit_guard_stat.stat.exists and commit_compare.rc != 0 and not skip_rollback_protection"
 
-- copy:
+- name: Update current git revision
+  copy:
     dest: /etc/.float-ansible-commit
     content: "{{ git_revision }}\n"

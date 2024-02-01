@@ -35,8 +35,8 @@ other dependencies can be installed with the following commands:
 
 ```shell
 sudo apt install golang ansible vagrant
-go get -u git.autistici.org/ale/x509ca
-go get -u git.autistici.org/ale/ed25519gen
+go install git.autistici.org/ale/x509ca@latest
+go install git.autistici.org/ale/ed25519gen@latest
 export PATH=$PATH:$HOME/go/bin
 ```
 
@@ -106,7 +106,7 @@ files for Ansible and Vagrant, with default values filled in by
   *create-env* automatically generates a default *admin* user, with
   password *password*.
 
-You can read the [configuration reference](configuration.md) for
+You can read the [configuration reference](reference.md) for
 details on the configuration file syntax and what the various options
 mean.
 

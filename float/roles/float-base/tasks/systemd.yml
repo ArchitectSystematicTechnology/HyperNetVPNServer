@@ -1,0 +1,13 @@
+---
+
+# Find the systemd units matching locally running services, and ensure
+# that they are set to always restart.
+- set_fact:
+    local_systemd_units: "{{ float_enabled_services | map('extract', services) | rejectattr('systemd_services', 'undefined') | map(attribute='systemd_services') | flatten | reject('search', '^docker-') }}"
+- name: Fix systemd services to autorestart
+  include_role:
+    name: float-util-systemd-custom-snippet
+  vars:
+    systemd_unit: "{{ item }}"
+    fix_restart: true
+  loop: "{{ local_systemd_units }}"

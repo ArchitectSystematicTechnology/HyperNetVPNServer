@@ -3,8 +3,6 @@
 # Whether to set up elasticsearch/kibana at all.
 enable_elasticsearch: true
 
-es_major_version: "6"
-
 # This number is very low and only useful for the testing environment.
 es_heap_size: "166m"
 

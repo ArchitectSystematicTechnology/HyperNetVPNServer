@@ -2,20 +2,13 @@
 # See the sshd_config(5) manpage for details
 
 Port {{ ssh_port }}
-#ListenAddress ::
-#ListenAddress 0.0.0.0
-Protocol 2
+AddressFamily any
 
 # HostKeys for protocol version 2
 {% for key_type in ssh_host_key_types %}
 HostKey /etc/ssh/ssh_host_{{ key_type }}_key
 HostCertificate /etc/ssh/ssh_host_{{ key_type }}_key-cert.pub
 {% endfor %}
-
-# Ciphers and MACs
-KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
-Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
-MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com
 
 # Logging. VERBOSE logs the fingerprint of keys used to login.
 SyslogFacility AUTH
@@ -24,10 +17,13 @@ LogLevel VERBOSE
 # Authentication:
 StrictModes yes
 AuthorizedKeysFile /etc/ssh/authorized_keys/%u
-PermitRootLogin without-password
+PermitRootLogin prohibit-password
 PermitEmptyPasswords no
 PubkeyAuthentication yes
 UsePAM yes
+
+# Allow more attempts for people with many keys in their agent.
+MaxAuthTries 10
 
 # Disable a bunch of features.
 IgnoreRhosts yes
@@ -35,7 +31,6 @@ HostbasedAuthentication no
 ChallengeResponseAuthentication no
 PasswordAuthentication no
 UseDNS no
-#IgnoreUserKnownHosts yes
 
 # Makes ansible faster?
 PrintMotd no
@@ -49,7 +44,15 @@ ClientAliveInterval 120
 #AcceptEnv LANG LC_*
 
 # Be restrictive on forwarding / proxying.
+
+# Disable agent forwarding for the clients' safety.
 AllowAgentForwarding no
-AllowTcpForwarding no
-X11Forwarding no
-#PermitTunnel no
+
+# Reverse forwarding can lead to security issues due to manipulating
+# the network perimeter.
+AllowTcpForwarding local
+AllowStreamLocalForwarding local
+PermitListen none
+
+Subsystem sftp /usr/lib/openssh/sftp-server
+

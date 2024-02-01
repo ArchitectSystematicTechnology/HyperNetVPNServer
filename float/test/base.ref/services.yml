@@ -32,7 +32,7 @@ ok:
       image: registry.git.autistici.org/ai3/docker/okserver:latest
       port: 3100
       env:
-        PORT: 3100
+        ADDR: ":3100"
   public_endpoints:
     - name: ok
       port: 3100

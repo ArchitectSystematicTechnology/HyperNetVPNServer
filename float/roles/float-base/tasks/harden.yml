@@ -103,3 +103,8 @@
     - 'disable-kmod-load.service'
   ignore_errors: "{{ ansible_check_mode }}"
 
+- name: Configure module options and blocklists
+  copy:
+    src: "modprobe-hardening.conf"
+    dest: "/etc/modprobe.d/security.conf"
+
