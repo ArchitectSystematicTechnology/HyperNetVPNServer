@@ -499,6 +499,8 @@ class Assignments(object):
             scheduling_groups = service['scheduling_groups']
         available_hosts = set()
         for g in scheduling_groups:
+            if g not in group_map:
+                raise Exception(f'The scheduling_group "{g}" is not defined in inventoy')
             available_hosts.update(group_map[g])
         return list(available_hosts)
 
