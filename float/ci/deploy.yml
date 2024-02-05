@@ -54,7 +54,7 @@ variables:
     - >
       $BUILD_DIR/float/float create-env
       --domain=${DOMAIN}
-      --services=${BUILD_DIR}/float/services.yml.no-elasticsearch
+      --services=${BUILD_DIR}/float/services.core.yml
       --services=${SERVICES_FILE}
       --passwords=${BUILD_DIR}/float/passwords.yml.default
       --passwords=${PASSWORDS_FILE}

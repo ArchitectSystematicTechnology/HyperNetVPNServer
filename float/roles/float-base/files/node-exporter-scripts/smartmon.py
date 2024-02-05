@@ -232,16 +232,13 @@ def device_smart_capabilities(device):
             (bool): True whenever SMART is available, False otherwise.
             (bool): True whenever SMART is enabled, False otherwise.
     """
-    groups = device_info(device)
-
-    state = {
-        g[1].split(' ', 1)[0]
-        for g in groups if g[0] == 'SMART support'}
-
-    smart_available = 'Available' in state
-    smart_enabled = 'Enabled' in state
-
-    return smart_available, smart_enabled
+    try:
+        subprocess.check_call(
+                ['/usr/sbin/smartctl', '--info'] + device.smartctl_select(),
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True, True
+    except subprocess.CalledProcessError:
+        return False, False
 
 
 def collect_device_info(device):

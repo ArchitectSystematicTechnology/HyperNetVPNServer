@@ -1,15 +1,25 @@
 ---
-- name: Install ipmitool packages and dependency
+- name: Install freeipmi packages and dependency
   apt:
     name: "{{ packages }}"
     state: present
   vars:
     packages:
-      - ipmitool
-      - gawk # prometheus-node-exporter-ipmitool-sensor dependency
+      - freeipmi-tools
+      - gawk # node-exporter-freeipmi.awk dependency
 
-- name: Enable prometheus node-exporter ipmitool sensor
+- name: Remove ipmitool, not used anymore
+  apt:
+    name: ipmitool
+    state: absent
+
+- name: Disable prometheus node-exporter ipmitool sensor
   systemd:
     name: prometheus-node-exporter-ipmitool-sensor.timer
-    state: started
-    enabled: yes
+    state: stopped
+    enabled: no
+
+- name: Install freeipmi node-exporter script
+  copy:
+    src: "node-exporter-freeipmi.awk"
+    dest: "/usr/lib/float/node-exporter-freeipmi.awk"

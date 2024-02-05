@@ -1,13 +1,34 @@
 ---
 
+# Pick a package source for Podman - defaults to using the stock
+# Debian package since bullseye. Possible choices are 'ai' (a version
+# pinned in our repository, tested working on Debian buster), 'debian'
+# (use standard Debian packages, only available from bullseye) or
+# 'kubic' (use the upstream Kubic repositories, with the latest
+# release).
+- set_fact:
+    podman_default_package_source: "{{ podman_default_package_source_by_distro[float_debian_dist] | default('debian') }}"
+- set_fact:
+    podman_package_source: "{{ podman_default_package_source }}"
+  when: "podman_package_source is not defined"
+
 - include_tasks: "podman_{{ podman_package_source }}.yml"
+
+# Try to detect which podman version we're on based on source and
+# distribution.
+- set_fact:
+    podman_version: "{{ 3 if float_debian_dist in ('buster', 'bullseye') else 4 }}"
+  when: "podman_package_source == 'debian'"
+- set_fact:
+    podman_version: 4
+  when: "podman_package_source != 'debian'"
 
 # If we've changed sources.list for podman, it is important
 # that we run apt upgrade now.
 - name: Apt upgrade
   apt:
     upgrade: 'yes'
-  when: "podman_sources_list.changed"
+  when: "podman_sources_list is defined and podman_sources_list.changed"
 
 - name: Symlink podman to docker
   file:

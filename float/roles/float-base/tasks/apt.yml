@@ -45,6 +45,15 @@
     - "deb http://deb.autistici.org/urepo ai3/"
     - "deb http://deb.autistici.org/urepo buster-podman/"
 
+- set_fact:
+    apt_debian_components:
+      - main
+      - contrib
+      - non-free
+- set_fact:
+    apt_debian_components: "{{ apt_debian_components + ['non-free-firmware'] }}"
+  when: "float_debian_dist not in ('buster', 'bullseye')"
+
 - name: Install our standard sources.list
   template:
     src: "sources.list.j2"
@@ -59,6 +68,7 @@
     - stretch
     - buster
     - bullseye
+    - bookworm
 
 - name: Run apt update
   apt:
@@ -78,9 +88,9 @@
 
 # When testing, try to make dpkg faster by disabling fsync.
 - name: Speed up dpkg
-  apt:
-    name: dpkg-eatmydata
-    state: present
+  copy:
+    dest: "/etc/dpkg/dpkg.cfg.d/no-sync"
+    content: "force-unsafe-io\n"
   when: "testing|default(True)"
 
 # Remove legacy stretch/buster mtail package pin.
@@ -89,52 +99,62 @@
     path: "/etc/apt/preferences.d/99float-syslog"
     state: absent
 
-- name: Install base packages
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
+- set_fact:
+    extra_packages: []
+    ssh_packages: []
+    base_packages:
+      # Standard Debian packages
+      - acpid
+      - auditd
       - ca-certificates
-      - unattended-upgrades
-      - systemd-coredump
-      - rsync
+      - curl
       - git
+      - gpg
+      - jq
+      - lsof
+      - mtail
       - ntp
       - openssl
-      - curl
-      - lsof
-      - cgroups-exporter
-      - logcat
-      - tabacco
-      - restic
-      - litestream
-      - runcron
-      - acpid
-      - zstd
-      - man-db
-      - jq
-      - gpg
-      - firewall
-      - rsyslog
-      - rsyslog-relp
-      - rsyslog-exporter
-      - mtail
-      - auditd
-      - audisp-json
       - prometheus-node-exporter
       - prometheus-node-exporter-collectors
-      - assetmon
+      - rsync
+      - rsyslog
+      - rsyslog-exporter
+      - rsyslog-relp
+      - rsyslog-openssl
+      - systemd-coredump
+      - unattended-upgrades
+      - zstd
 
-- name: Install extra packages
-  apt:
-    name: "{{ extra_packages }}"
-    state: present
-  vars:
+      # Custom packages
+      - assetmon
+      - audisp-json
+      - cgroups-exporter
+      - firewall
+      - litestream
+      - logcat
+      - restic
+      - runcron
+      - tabacco
+
+- set_fact:
+    ssh_packages:
+      - ssh-key-wtmp
+  when: "enable_ssh and float_debian_dist != 'bullseye'"
+
+- set_fact:
     extra_packages:
       - net-tools
       - vim
   when: "not testing|default(True)"
+
+- set_fact:
+    all_packages: "{{ base_packages + ssh_packages + extra_packages }}"
+
+- name: Install packages
+  apt:
+    name: "{{ all_packages }}"
+    state: present
 
 - name: Remove blacklisted packages
   apt:

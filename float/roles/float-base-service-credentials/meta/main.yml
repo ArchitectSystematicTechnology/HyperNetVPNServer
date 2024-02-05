@@ -4,4 +4,6 @@ dependencies:
   - role: float-util-credentials
     vars:
       credentials: "{{ float_host_service_credentials }}"
+      ca_tag: "x509"
+
 

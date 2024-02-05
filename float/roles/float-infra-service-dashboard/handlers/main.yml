@@ -1,0 +1,6 @@
+---
+
+- listen: reload service-dashboard
+  systemd:
+    name: docker-service-dashboard-http.service
+    state: restarted

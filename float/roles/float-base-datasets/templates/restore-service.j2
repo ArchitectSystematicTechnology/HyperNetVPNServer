@@ -9,5 +9,8 @@ Type=oneshot
 RemainAfterExit=true
 ExecStart=/usr/lib/float/float-dataset-restore {{ dataset_tag }}
 
+Restart=on-failure
+RestartSec=10s
+
 [Install]
 RequiredBy={{ required_by | join(' ') }}

@@ -8,6 +8,7 @@
     packages:
       - sso-proxy
       - nginx-full
+      - libnginx-mod-http-headers-more-filter
 
 # SSO proxy setup.
 - name: Configure /etc/default/sso-proxy
@@ -113,7 +114,7 @@
     - "50-mod-http-upstream-fair.conf"
     - "50-mod-http-xslt-filter.conf"
     - "50-mod-mail.conf"
-    - "50-mod-stream.conf"
+  notify: reload nginx
 
 # Setup the HTTP router configuration.
 - name: Configure NGINX (upstreams)
@@ -151,14 +152,14 @@
   file:
     path: /var/www/html/__errors
     state: directory
-  when: "nginx_install_custom_error_pages | bool"
+  when: nginx_install_custom_error_pages
 
 - name: Copy custom error messages
   copy:
     src: "{{ item }}"
     dest: /var/www/html/__errors/
   with_fileglob: "errors/*"
-  when: "nginx_install_custom_error_pages | bool"
+  when: nginx_install_custom_error_pages
 
 # Create the cache directory.
 - file:
@@ -191,6 +192,7 @@
   template:
     src: "nginx.mtail.j2"
     dest: "/etc/mtail/nginx.mtail"
+  notify: reload mtail
 
 # Misc cleanup of old files.
 - name: Remove obsolete files

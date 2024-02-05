@@ -29,6 +29,10 @@ groups:
     expr: sum(rate(node_network_transmit_bytes_total{device=~"(eth|e[nl][op]).*"}[5m])) without (device)
   - record: instance:public_network_receive_bytes_total:rate5m
     expr: sum(rate(node_network_receive_bytes_total{device=~"(eth|e[nl][op]).*"}[5m])) without (device)
+  - record: instance:internal_network_transmit_bytes_total:rate5m
+    expr: sum(rate(node_network_transmit_bytes_total{device=~"vpn.*"}[5m])) without (device)
+  - record: instance:internal_network_receive_bytes_total:rate5m
+    expr: sum(rate(node_network_receive_bytes_total{device=~"vpn.*"}[5m])) without (device)
   - record: global:public_network_transmit_bytes_total:rate5m
     expr: sum(instance:public_network_transmit_bytes_total:rate5m) without (instance, host)
   - record: global:public_network_receive_bytes_total:rate5m

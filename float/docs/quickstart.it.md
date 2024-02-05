@@ -31,8 +31,8 @@ dipendenze possono essere installate con questo comando:
 
 ```shell
 sudo apt install golang ansible vagrant
-go get -u git.autistici.org/ale/x509ca
-go get -u git.autistici.org/ale/ed25519gen
+go install git.autistici.org/ale/x509ca@latest
+go install git.autistici.org/ale/ed25519gen@latest
 export PATH=$PATH:$HOME/go/bin
 ```
 

@@ -2,10 +2,10 @@
 # specific sets of hosts.
 
 {% macro allow_host_ips(h, chain) %}
-{% for ip in hostvars[h]['ips'] | ansible.netcommon.ipv4 | sort %}
+{% for ip in hostvars[h]['ips'] | ansible.utils.ipv4 | sort %}
 add_rule4 -A {{ chain }} -s {{ ip }} -j ACCEPT
 {% endfor %}
-{% for ip in hostvars[h]['ips'] | ansible.netcommon.ipv6 | sort %}
+{% for ip in hostvars[h]['ips'] | ansible.utils.ipv6 | sort %}
 add_rule6 -A {{ chain }} -s {{ ip }} -j ACCEPT
 {% endfor %}
 {% endmacro %}

@@ -30,10 +30,19 @@
     - src: "in-container.j2"
       dst: "/usr/local/bin/in-container"
 
+- name: Install docker-related files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dst }}"
+    mode: 0644
+  loop:
+    - src: "in-container.sh"
+      dst: "/etc/profile.d/in-container.sh"
+
 - name: Install docker cleanup cron job
   copy:
     dest: /etc/cron.d/docker-cleanup
-    content: "33 */3 * * * root runcron --quiet /usr/local/bin/docker-cleanup\n"
+    content: "33 3 * * * root runcron --quiet /usr/local/bin/docker-cleanup\n"
     mode: 0644
 
 - import_tasks: start.yml

@@ -1,0 +1,5 @@
+---
+
+podman_default_package_source_by_distro:
+  stretch: ai
+  buster: ai

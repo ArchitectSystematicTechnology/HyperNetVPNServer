@@ -5,6 +5,8 @@
 
 - name: restart user-meta-server
   systemd: name=user-meta-server.service state=restarted
+  # Allow failure when testing backups, the unit can't start until later.
+  ignore_errors: "{{ testing | default(True) }}"
 
 - name: restart auth-server
   systemd: name=auth-server.service state=restarted

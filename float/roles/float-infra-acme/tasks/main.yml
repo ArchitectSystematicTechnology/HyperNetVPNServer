@@ -31,7 +31,16 @@
     state: directory
     owner: acmeserver
     group: acmeserver
-    mode: 0700
+    mode: "0700"
+
+- name: Install ACME private key
+  copy:
+    content: "{{ acme_private_key }}\n"
+    dest: "/var/lib/acme/account.key"
+    owner: acmeserver
+    group: acmeserver
+    mode: "0600"
+  when: acme_private_key is defined
 
 - name: Add the acmeserver user to the public-credentials and acme-credentials group
   user:

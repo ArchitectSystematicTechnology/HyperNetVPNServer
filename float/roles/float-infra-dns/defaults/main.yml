@@ -4,3 +4,7 @@
 # By default, this is the first public domain.
 mx_ns_domain: "{{ domain_public[0] }}"
 
+# The default CAA record for all zones points to LE since that is what
+# 'acmeserver' uses.
+dns_caa_record: '0 issue "letsencrypt.org"'
+

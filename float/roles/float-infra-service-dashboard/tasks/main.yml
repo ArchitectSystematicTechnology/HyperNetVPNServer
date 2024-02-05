@@ -9,9 +9,10 @@
   copy:
     dest: "/etc/float/{{ item.name }}"
     content: "{{ item.data }}"
-    group: docker-admin-dashboard
+    group: docker-service-dashboard
     mode: 0640
-  notify: "reload admin-dashboard"
+  notify: "reload service-dashboard"
+  no_log: true
   with_items:
     - name: services.yml
       data: "{{ services | to_nice_yaml }}"

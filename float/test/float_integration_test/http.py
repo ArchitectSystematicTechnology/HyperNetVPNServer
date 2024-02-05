@@ -1,3 +1,4 @@
+import html
 import http.cookiejar
 import http.client
 import os
@@ -40,10 +41,10 @@ class SSOHandler(urllib.request.BaseHandler):
         self._login_form_url = login_server.rstrip('/') + '/login'
         self._auth_notify_cb = auth_notify_cb
 
-    def _extract_hidden_form_data(self, html):
+    def _extract_hidden_form_data(self, body):
         form = {}
-        for name, value in self._form_pattern.findall(html):
-            form[name] = value
+        for name, value in self._form_pattern.findall(body):
+            form[name] = html.unescape(value)
         return form
 
     def https_response(self, req, resp):
@@ -101,7 +102,8 @@ def _build_opener(ipaddr, follow_redirects=False, *extra_handlers):
     # Create a tolerant SSL context that accepts the self-signed
     # certificates used by the testing environment.
     ssl_context = ssl.create_default_context(
-        ssl.Purpose.CLIENT_AUTH)
+        purpose=ssl.Purpose.SERVER_AUTH)
+    ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
 
     debuglevel = 1 if os.getenv('HTTP_TRACE') else 0

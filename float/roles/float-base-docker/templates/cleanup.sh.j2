@@ -3,6 +3,6 @@
 # Cleanup unused and unreferenced Docker images and containers.
 #
 
-{{ container_runtime }} system prune --all --volumes --force
+{{ container_runtime }} system prune --all --volumes --force --filter until=24h
 
 exit 0

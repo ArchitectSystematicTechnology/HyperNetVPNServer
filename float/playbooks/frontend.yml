@@ -13,10 +13,10 @@
   roles:
     - float-infra-dns
 
-- hosts: admin_dashboard
+- hosts: service_dashboard
   gather_facts: no
   roles:
-    - float-infra-admin-dashboard
+    - float-infra-service-dashboard
 
 - hosts: acme
   gather_facts: no

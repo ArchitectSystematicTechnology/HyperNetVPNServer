@@ -3,8 +3,8 @@
 "@ns":
   _:
 {% for h in services['dns'].hosts | sort %}
-{% set host_ip4 = hostvars[h]['public_ips'] | ansible.netcommon.ipv4 %}
-{% set host_ip6 = hostvars[h]['public_ips'] | ansible.netcommon.ipv6 %}
+{% set host_ip4 = hostvars[h]['public_ips'] | ansible.utils.ipv4 %}
+{% set host_ip6 = hostvars[h]['public_ips'] | ansible.utils.ipv6 %}
 {% if host_ip4 %}
     - NS ns{{ loop.index }}.{{ mx_ns_domain }}.
 {% endif %}
@@ -12,6 +12,9 @@
     - NS ns{{ loop.index }}-v6.{{ mx_ns_domain }}.
 {% endif %}
 {% endfor %}
+{% if dns_caa_record is defined %}
+    - "CAA {{ dns_caa_record | regex_replace('\"', '\\\"') }}"
+{% endif %}
 
 "@base":
   EXTENDS: "@ns"
@@ -32,8 +35,8 @@
   # The explicit NS delegation for 'l' is necessary for dnssec-sign to work properly.
   l:
 {% for h in services['dns'].hosts | sort %}
-{% set host_ip4 = hostvars[h]['public_ips'] | ansible.netcommon.ipv4 %}
-{% set host_ip6 = hostvars[h]['public_ips'] | ansible.netcommon.ipv6 %}
+{% set host_ip4 = hostvars[h]['public_ips'] | ansible.utils.ipv4 %}
+{% set host_ip6 = hostvars[h]['public_ips'] | ansible.utils.ipv6 %}
 {% if host_ip4 %}
     - NS ns{{ loop.index }}.{{ mx_ns_domain }}.
 {% endif %}
@@ -45,8 +48,8 @@
 {% if d == mx_ns_domain %}
 {# Only generate the nameservers' A records on the chosen zone #}
 {% for h in services['dns'].hosts | sort %}
-{% set host_ip4 = hostvars[h]['public_ips'] | ansible.netcommon.ipv4 %}
-{% set host_ip6 = hostvars[h]['public_ips'] | ansible.netcommon.ipv6 %}
+{% set host_ip4 = hostvars[h]['public_ips'] | ansible.utils.ipv4 %}
+{% set host_ip6 = hostvars[h]['public_ips'] | ansible.utils.ipv6 %}
 {% if host_ip4 %}
   ns{{ loop.index }}: {{ host_ip4 | to_json }}
 {% endif %}

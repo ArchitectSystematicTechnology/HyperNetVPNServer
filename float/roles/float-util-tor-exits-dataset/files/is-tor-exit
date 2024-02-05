@@ -1,0 +1,6 @@
+#!/bin/sh
+
+exit_nodes_file="/var/lib/tor-exits/exit-nodes"
+
+test -e ${exit_nodes_file} || exit 1
+exec grep -q "^$1\$" ${exit_nodes_file}

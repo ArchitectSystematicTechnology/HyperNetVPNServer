@@ -10,7 +10,7 @@ options {
 {% if float_limit_bind_to_known_interfaces | default(False) %}
   listen-on {
     127.0.0.1;
-{% for ip in ips | ansible.netcommon.ipv4 | sort %}
+{% for ip in ips | ansible.utils.ipv4 | sort %}
     {{ ip }};
 {% endfor %}
 {% for n in net_overlays | sort if ('ip_' + n.name) in hostvars[inventory_hostname] %}
@@ -19,7 +19,7 @@ options {
   };
   listen-on-v6 {
     ::1;
-{% for ip in ips | ansible.netcommon.ipv6 | sort %}
+{% for ip in ips | ansible.utils.ipv6 | sort %}
     {{ ip }};
 {% endfor %}
   };
@@ -38,6 +38,12 @@ options {
 
   // Conform to RFC1035.
   auth-nxdomain no;
+
+  // Increase tcp-client limit from default, and prevent
+  // idle connections from hanging around.
+  tcp-clients 2000;
+  tcp-idle-timeout 50;
+  tcp-keepalive-timeout 50;
 
   allow-transfer { none; };
   allow-query {

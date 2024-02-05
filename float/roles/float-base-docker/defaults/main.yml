@@ -19,12 +19,5 @@ docker_daemon_config:
 docker_daemon_config_testing:
   insecure-registries: ["192.168.10.1:5000"]
 
-# Where should we get the Podman packages from?  Possible choices are
-# 'ai' (a version pinned in our repository, tested working on Debian
-# buster), 'debian' (use standard Debian packages, only available from
-# bullseye) or 'kubic' (use the upstream Kubic repositories, with the
-# latest release). The default is distribution-dependent.
-podman_package_source: "{{ 'debian' if float_debian_dist == 'bullseye' else 'ai' }}"
-
 # Provide a CA for Podman (to inject a caching registry proxy, for example).
 #podman_additional_ssl_ca: "{{ lookup('file', credentials_dir + '/podman_ca.pem') }}"

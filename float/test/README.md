@@ -135,8 +135,8 @@ clear speed improvement.
 This is, in fact, already the default for test environments created
 with "float create-env" and it can be achieved by:
 
-* importing "services.yml.no-elasticsearch" instead of
-  "services.yml.default" for the float built-in service definitions;
+* importing "services.core.yml" instead of
+  "services.default.yml" for the float built-in service definitions;
 * setting the configuration variable "enable_elasticsearch" to false.
 
 The resulting environment will still run the *log-collector* service,

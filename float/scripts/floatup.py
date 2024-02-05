@@ -87,7 +87,7 @@ def encode_dashboard_request(req):
     return base64.urlsafe_b64encode(comp.flush()).decode('ascii')
 
 
-def install_ssh_key():
+def install_vagrant_ssh_key():
     # Install the SSH key as Vagrant would do, for compatibility.
     key_path = os.path.join(
         os.getenv('HOME'), '.vagrant.d', 'insecure_private_key')
@@ -134,6 +134,13 @@ def main():
         '--dashboard-url', metavar='URL',
         help='vmine dashboard base URL (for Gitlab CI)')
     parser.add_argument(
+        '--ssh-key', metavar='FILE',
+        type=argparse.FileType('r'),
+        help='root SSH key to install on VMs')
+    parser.add_argument(
+        '--name', metavar='NAME',
+        help='group name (for named groups)')
+    parser.add_argument(
         'cmd',
         choices=['up', 'down'])
     args = parser.parse_args()
@@ -148,6 +155,12 @@ def main():
             host_attrs['image'] = args.image
         req = parse_inventory(args.inventory, host_attrs)
         req['ttl'] = args.ttl
+        if args.name:
+            req['name'] = args.name
+        if args.ssh_key:
+            req['ssh_key'] = args.ssh_key
+        else:
+            install_vagrant_ssh_key()
 
         print(f'creating VM group with attrs {host_attrs} ...')
         print(f'vmine request: {req}')
@@ -156,8 +169,6 @@ def main():
         with open(args.state_file, 'w') as fd:
             fd.write(group_id)
         print(f'created VM group {group_id}')
-
-        install_ssh_key()
 
         if args.env:
             with open(args.env, 'w') as fd:
@@ -168,16 +179,22 @@ def main():
                     fd.write(f'VMINE_GROUP_URL={base_url}/dash/{payload}\n')
 
     elif args.cmd == 'down':
-        try:
-            with open(args.state_file) as fd:
-                group_id = fd.read().strip()
-        except FileNotFoundError:
-            print('state file not found, exiting')
-            return
-        print(f'stopping VM group {group_id}...')
-        do_request(args.url + '/api/stop-group', args.ssh,
-                   {'group_id': group_id})
-        os.remove(args.state_file)
+        req = {}
+        if args.name:
+            req['name'] = args.name
+            print(f'stopping VM group {args.name}...')
+        else:
+            try:
+                with open(args.state_file) as fd:
+                    group_id = fd.read().strip()
+            except FileNotFoundError:
+                print('state file not found, exiting')
+                return
+            req['group_id'] = group_id
+            print(f'stopping VM group {group_id}...')
+        do_request(args.url + '/api/stop-group', args.ssh, req)
+        if args.state_file:
+            os.remove(args.state_file)
 
 
 if __name__ == '__main__':

@@ -96,23 +96,29 @@ stop_full_test_review:
     - if: $CI_MERGE_REQUEST_ID
       when: manual
 
-backup_test:
+#backup_test:
+#  <<: *base_test
+#  variables:
+#    VM_IMAGE: "bullseye"
+#    CREATE_ENV_VARS: "--additional-config test/backup.ref/config-backup.yml --playbook test/backup.ref/site.yml"
+#    TEST_DIR: "test/backup.ref"
+
+bookworm_test:
   <<: *base_test
   variables:
-    VM_IMAGE: "bullseye"
-    CREATE_ENV_VARS: "--additional-config test/backup.ref/config-backup.yml --playbook test/backup.ref/site.yml"
-    TEST_DIR: "test/backup.ref"
+    VM_IMAGE: "bookworm"
+    CREATE_ENV_VARS: "-e config.float_debian_dist=bookworm"
+    TEST_DIR: "test/full.ref"
 
 docker_build_and_release_tests:
   stage: docker_build
-  image: docker:latest
-  services:
-    - docker:dind
+  image: quay.io/podman/stable
+  tags: [podman]
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - cd test && docker build --build-arg ci_token=$CI_JOB_TOKEN --pull -t $IMAGE_TAG .
-    - docker tag $IMAGE_TAG $CI_REGISTRY_IMAGE:integration-test
-    - docker push $CI_REGISTRY_IMAGE:integration-test
+    - echo -n "$CI_JOB_TOKEN" | podman login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - cd test && podman build --build-arg ci_token=$CI_JOB_TOKEN --pull -t $IMAGE_TAG .
+    - podman tag $IMAGE_TAG $CI_REGISTRY_IMAGE:integration-test
+    - podman push $CI_REGISTRY_IMAGE:integration-test
   only:
     changes:
       - test/float_integration_test/**

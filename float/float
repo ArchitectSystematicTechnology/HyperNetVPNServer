@@ -51,7 +51,7 @@ Vagrant.configure(2) do |config|
     libvirt.memory = {{ ram }}
     libvirt.random_hostname = true
     libvirt.cpu_mode = 'host-passthrough'
-    libvirt.volume_cache = 'unsafe'
+    libvirt.disk_driver :cache => 'unsafe'
 {% if libvirt.remote_host %}
     libvirt.host = "{{ libvirt.remote_host }}"
     libvirt.username = "{{ libvirt.remote_user }}"
@@ -120,7 +120,7 @@ include:
   - "{{ p | relpath(targetdir) }}"
 {% endfor %}
 {% else %}
-  - "{{ srcdir | relpath(targetdir) }}/services.yml.no-elasticsearch"
+  - "{{ srcdir | relpath(targetdir) }}/services.core.yml"
 {% endif %}
 ''',
     'passwords.yml': '''---
@@ -185,7 +185,7 @@ DEFAULT_VARS = {
 
             'nocows': 1,
             'display_skipped_hosts': False,
-            'callback_whitelist': 'float_ci',
+            'callbacks_enabled': 'float_ci',
             'stdout_callback': 'float_ci',
             'host_key_checking': False,
             'forks': 50,
@@ -208,7 +208,7 @@ DEFAULT_VARS = {
         'domain_public': [],
 
         'testing': True,
-        'float_debian_dist': 'bullseye',
+        'float_debian_dist': 'bookworm',
         'net_overlays': [{
             'name': 'vpn0',
             'network': '192.168.13.0/24',
@@ -441,7 +441,7 @@ def command_run(config, playbooks,
 
         print('Running playbook %s...' % (arg,))
 
-        os.environ['LC_ALL'] = 'C'
+        os.environ['LC_ALL'] = 'C.UTF-8'
         _fix_ansible_vault_password_file()
         cmd = [os.getenv('ANSIBLE_PLAYBOOK', 'ansible-playbook'),
                '-i', config]

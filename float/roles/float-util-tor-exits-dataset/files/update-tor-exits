@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# Update list of Tor exit nodes in /var/lib/tor-exits/exit-nodes.
+#
+
+url="https://www.dan.me.uk/torlist/?exit"
+output="/var/lib/tor-exits/exit-nodes"
+tmpfile="/var/lib/tor-exits/.exit-nodes.tmp"
+
+trap "rm -f ${tmpfile} 2>/dev/null" EXIT
+
+curl --silent --fail --output "${tmpfile}" "${url}" && \
+    mv -f "${tmpfile}" "${output}"
+
+exit $?
