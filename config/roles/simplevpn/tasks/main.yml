@@ -3,12 +3,12 @@
     module: simplevpn
     obfs4_state_dir: "{{ credentials_dir }}/obfs4"
     locations: "{{ locations }}"
-    domain: "{{ domain_public[0] }}"
+    domain: "{{ provider_config.domain | default('{{ domain_public[0] }}') }}"
     provider_description: "{{ provider_config.description }}"
     gateways: "{{ groups['openvpn'] | map('extract', hostvars) | list }}"
     openvpn: "{{ openvpn_config }}"
-    provider_api_uri: "https://{{ api_uri }}:4430"
-    ca_cert_uri: "https://{{ ca_cert_uri }}"
+    provider_api_uri: "{{ provider_config.api_uri | default('https://{{ api_uri }}:4430') }}"
+    ca_cert_uri: "{{ provider_config.ca_cert_uri | default('https://{{ ca_cert_uri }}') }}"
     ca_public_crt: "{{ credentials_dir }}/common/api_ca.crt"
   run_once: true
   register: simplevpn_result
