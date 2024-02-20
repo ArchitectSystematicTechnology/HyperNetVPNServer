@@ -137,5 +137,6 @@ obfsvpn:
         OBFS4_KEY_FILE: /opt/obfsvpn/data/obfs4_state.json
         # necessary for traditional/non-hopping mode
         OBFS4_PORT: "443"
+        PERSIST_BRIDGE_STATE: "true"
         LOGLEVEL: DEBUG
 
