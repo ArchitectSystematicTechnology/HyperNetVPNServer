@@ -1,5 +1,38 @@
 ---
+# These values control the provider configuration for the LEAP VPN platform.
+#
+# The "provider" is a concept in LEAP that describes, to clients, through an
+# automatic, and machine-parsable way, the different parameters that make up the
+# VPN configuration. These values are interpolated into different json files
+# that are consumed by the client on bootstrap: provider.json and
+# eip-service.json.
+#
+# The first is the provider.json which is the initial bootstrap entry point for
+# all clients. This provider.json is picked up by bootstrapping clients in order
+# to determine the api endpoint URI, the URI for retreiving the api endpoint
+# certificate authority, and a fingerprint of that CA for further verification
+# purposes. Once the client has the provider.json, it then retrieves the
+# endpoint CA (ca.crt) over the same https endpoint. It verifies the fingerprint
+# of that CA with the fingerprint in the provider.json. From then on, the client
+# communicates with the API using the api URI (defined in provider.json), which
+# is secured with a certificate generated from that CA (see the sspki ansible
+# role for the details on the internal CA certificate generation). This
+# endpoint CA is also the CA that is used to generate the specific gateway
+# server certificates, which are verified by the clients.
+#
+# The second is the eip-services.json which is a json representation of all the
+# gateways, their capabilities, ports, protocols and locations. This is
+# generated automatically by the `simplevpn` role, using parameters defined
+# here.
+#
+# Finally, these values are used for generating the specific certificates
+# (mentioned above), the special nginx configuration needed for the api
+# endpoint, and the geoip endpoint (menshen).
 provider_config:
   name: "demo provider"
   description: "this is a demo provider"
   domain: 'float.bitmask.net'
+  provider_domain: 'black.bitmask.net'
+  api_domain: 'api.black.bitmask.net'
+  api_uri: "https://api.black.bitmask.net:4430"
+  ca_cert_uri: "https://black.bitmask.net/ca.crt"

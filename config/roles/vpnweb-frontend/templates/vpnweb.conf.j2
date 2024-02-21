@@ -4,8 +4,8 @@ upstream be_vpnweb {
 
 server {
   listen [::]:4430 ssl http2 ipv6only=off;
-  
-  server_name {{ api_uri }};
+
+  server_name {{ provider_config.api_domain}} {{ provider_config.provider_domain | default('') }};
   include /etc/nginx/snippets/site-common.conf;
 
   ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
