@@ -40,9 +40,9 @@ variables:
     - echo "$(awk '!/- backend/ || ++ctr != 2' ${BUILD_DIR}/hosts.yml)" > ${BUILD_DIR}/hosts.yml
     - with-ssh-key ./float/scripts/floatup.py --url $VMINE_URL --ssh $VMINE_SSH --inventory $BUILD_DIR/hosts.yml --ram 3072 --image ${VM_IMAGE:-bullseye} up
     - (cd ${BUILD_DIR} && with-ssh-key ../float/float run ../playbooks/init-credentials.yml)
-    - pwd && cat ${BUILD_DIR}/config.yml && cat ${BUILD_DIR}/hosts.yml  && echo ${BUILD_DIR}
-    - cat ${BUILD_DIR}/site.yml
-    #- with-ssh-key ./float/float run ${BUILD_DIR}/site.yml
+    - pwd && cat ${BUILD_DIR}/config.yml && cat ${BUILD_DIR}/site.yml  && echo ${BUILD_DIR}
+    - cat ${BUILD_DIR}/hosts.yml 
+    - cd ${BUILD_DIR} && with-ssh-key ../float/float run site.yml
     #- with-ssh-key ./float/test-driver init --no-vagrant $BUILD_DIR
     #- sleep 10
     #- with-ssh-key ./float/test-driver run $BUILD_DIR
