@@ -1,6 +1,6 @@
 
 stages:
-  - install-deps-and-float-run-validation
+  - install-py-deps-and-float-run-validation
 
 variables:
   BUILD_DIR: build-$CI_JOB_ID
@@ -8,8 +8,8 @@ variables:
   VMINE_URL: http://127.0.0.1:5959
 
 .base_test_template: &float_run_test
-  stage: install-deps-and-float-run-validation
-  image: $CI_REGISTRY/leap/container-platform/float-runner:main
+  stage: install-py-deps-and-float-run-validation
+  image: $CI_REGISTRY/leap/container-platform/float-runner:test-sgk-builds
   before_script:
     - mkdir -p $BUILD_DIR
   script:

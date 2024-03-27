@@ -3,3 +3,8 @@ provider_config:
   name: "demo provider"
   description: "this is a demo provider"
   domain: 'float.bitmask.net'
+  provider_domain: 'black.bitmask.net'
+  api_domain: 'api.black.bitmask.net'
+  api_uri: "https://api.black.bitmask.net:4430"
+  ca_cert_uri: "https://black.bitmask.net/ca.crt"
+
