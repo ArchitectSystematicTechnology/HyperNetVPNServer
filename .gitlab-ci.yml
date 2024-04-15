@@ -1,18 +1,22 @@
 
 stages:
-  - test
+  - float-run-validation
 
 variables:
   BUILD_DIR: build-$CI_JOB_ID
   VMINE_SSH: leap_ci@remotevirt.riseup.net
   VMINE_URL: http://127.0.0.1:5959
 
-.base_test_template: &base_test
-  stage: test
+.base_test_template: &float_run_test
+  stage: float-run-validation
   image: $CI_REGISTRY/leap/container-platform/float-runner:main
   before_script:
     - mkdir -p $BUILD_DIR
   script:
+    - virtualenv -p /usr/bin/python3 venv
+    - source ./venv/bin/activate
+    - pip install -r ./requirements.txt
+    - export ANSIBLE_STRATEGY_PLUGINS=../venv/lib/python3.11/site-packages/ansible_mitogen/plugins/strategy/
     - >
       ./float/float create-env
       --domain=hexacab.org
@@ -23,6 +27,8 @@ variables:
       --roles-path=config/roles
       --num-hosts=3
       --additional-host-group=openvpn=host3
+      --additional-host-group=gateway=host3
+      --additional-host-group=bridge=host3
       --additional-config ${TEST_DIR}/group_vars/all/openvpn_config.yml
       --additional-config ${TEST_DIR}/group_vars/all/custom_config.yml
       --additional-config ${TEST_DIR}/group_vars/all/gateway_locations.yml
@@ -38,11 +44,15 @@ variables:
     - echo "$(awk '!/- backend/ || ++ctr != 2' ${BUILD_DIR}/hosts.yml)" > ${BUILD_DIR}/hosts.yml
     - with-ssh-key ./float/scripts/floatup.py --url $VMINE_URL --ssh $VMINE_SSH --inventory $BUILD_DIR/hosts.yml --ram 3072 --image ${VM_IMAGE:-bullseye} up
     - (cd ${BUILD_DIR} && with-ssh-key ../float/float run ../playbooks/init-credentials.yml)
-    - with-ssh-key ./float/test-driver init --no-vagrant $BUILD_DIR
-    - sleep 10
-    - with-ssh-key ./float/test-driver run $BUILD_DIR
+    # uncomment for debugging
+    # - pwd && cat ${BUILD_DIR}/config.yml && cat ${BUILD_DIR}/site.yml  && echo ${BUILD_DIR}
+    # - cat ${BUILD_DIR}/hosts.yml 
+    - cd ${BUILD_DIR} && with-ssh-key ../float/float run site.yml
+    #- with-ssh-key ./float/test-driver init --no-vagrant $BUILD_DIR
+    #- sleep 10
+    #- with-ssh-key ./float/test-driver run $BUILD_DIR
   after_script:
-    - with-ssh-key ./float/test-driver cleanup --no-vagrant $BUILD_DIR
+    #- with-ssh-key ./float/test-driver cleanup --no-vagrant $BUILD_DIR
     - with-ssh-key ./float/scripts/floatup.py --url $VMINE_URL --ssh $VMINE_SSH down
   variables:
     CREATE_ENV_VARS: ""
@@ -58,9 +68,8 @@ variables:
       - "${BUILD_DIR}/ansible.log"
       - "${BUILD_DIR}/logs"
 
-full_test:
-  <<: *base_test
+float_run_validation:
+  <<: *float_run_test
   variables:
     TEST_DIR: "test/test-full"
-
 
