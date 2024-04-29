@@ -7,21 +7,32 @@ menshen:
     - job_name: menshen
       port: 9002
       scheme: http
-  containers:
-    - name: menshen
-      image: registry.0xacab.org/leap/menshen:latest
-      port: 9001
-      volumes:
-        - /var/lib/GeoIP: /var/lib/GeoIP/
-      env:
-        MENSHEN_API: "{{ menshen_api | default('https://api.{{ domain_public[0] }}') }}"
-        INSECURE_API: "{{ testing | lower }}"
   public_endpoints:
     - name: menshen
       port: 9001
       scheme: http
       autoconfig: false
       skip_acme: true
+  containers:
+    - name: menshen
+      image: registry.0xacab.org/leap/menshen:main
+      port: 9001
+      volumes:
+        - /var/lib/GeoIP: /var/lib/GeoIP/
+        - /etc/leap: /etc/leap
+        - /opt/menshen: /opt/menshen
+      env:
+        MENSHEN_PORT: 9001
+        MENSHEN_METRICS_PORT: 9002
+        MENSHEN_FROM_EIP_FILE: ""
+        MENSHEN_OVPN_CA_CRT: /etc/leap/keys/client_ca.crt
+        MENSHEN_OVPN_CA_KEY: /etc/leap/ca/client_ca.key
+        MENSHEN_CA_FILE: /etc/leap/ca/api_ca.crt
+        MENSHEN_DB_FILE: /opt/menshen/sqlite.db
+        MENSHEN_VERBOSE: true
+        MENSHEN_AUTO_TLS: false
+        MENSHEN_ALLOW_GATEWAY_LIST: true
+        MENSHEN_ALLOW_BRIDGE_LIST: true
 
 openvpn:
   scheduling_group: gateway
@@ -74,7 +85,7 @@ vpnweb:
       volumes:
         - /etc/leap: /etc/leap
       env:
-        VPNWEB_API_PATH: /etc/leap/config/vpnweb
+        VPNWEB_API_PATH: /etc/leap/config
         VPNWEB_CACRT: /etc/leap/ca/client_ca.crt
         VPNWEB_CAKEY: /etc/leap/keys/client_ca.key
         VPNWEB_PROVIDER_CA: /etc/leap/ca/api_ca.crt
@@ -139,4 +150,3 @@ obfsvpn:
         OBFS4_PORT: "443"
         PERSIST_BRIDGE_STATE: "true"
         LOGLEVEL: DEBUG
-

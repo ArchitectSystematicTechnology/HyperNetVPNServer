@@ -1,0 +1,6 @@
+---
+
+- listen: "restart docker-menshen-menshen"
+  systemd:
+    name: "docker-menshen-menshen.service"
+    state: restarted
