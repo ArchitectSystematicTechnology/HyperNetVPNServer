@@ -1,3 +1,4 @@
+---
 # Only needed if SIP support is enabled
 
 - include_role:

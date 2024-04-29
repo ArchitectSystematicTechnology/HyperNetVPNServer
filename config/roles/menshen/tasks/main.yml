@@ -1,0 +1,27 @@
+---
+- import_tasks: "credentials.yml"
+
+# need to install the api dirs
+- name: "Create API versioned directories"
+  file:
+    path: "/etc/leap/config/{{ item }}"
+    state: directory
+  with_items:
+    - 3
+
+- name: "Render the eip-service.json template"
+  template:
+    src: 'eip-config.json.j2'
+    dest: '/etc/leap/config/3/eip-service.json'
+  notify:
+    - "restart docker-menshen-menshen"
+
+- name: "Render the provider.json template"
+  template:
+    src: 'provider-config.json.j2'
+    dest: '/etc/leap/config/provider.json'
+  notify:
+    - "restart docker-menshen-menshen"
+
+- import_tasks: "sip.yml"
+  when: menshen_auth | default('anon') == "sip2"
