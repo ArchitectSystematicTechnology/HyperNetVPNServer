@@ -23,4 +23,11 @@ server {
           proxy_pass http://be_vpnweb;
           proxy_cache global;
   }
+
+  # Route cert generation requests to menshen
+  location /3/cert {
+          include /etc/nginx/snippets/block.conf;
+          include /etc/nginx/snippets/proxy.conf;
+          proxy_pass http://be_menshen/api/5/openvpn/cert;
+  }
 }
