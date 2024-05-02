@@ -11,8 +11,7 @@ menshen:
     - name: menshen
       port: 9001
       scheme: http
-      autoconfig: false
-      skip_acme: true
+      domains: "{{ custom_menshen_web_domains | default(['menshen.' + domain_public[0]]) }}"
   containers:
     - name: menshen
       image: registry.0xacab.org/leap/menshen:main
