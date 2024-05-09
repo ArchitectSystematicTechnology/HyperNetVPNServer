@@ -110,7 +110,7 @@ provider:
     - name: provider
       image: registry.0xacab.org/leap/container-platform/static-content:main
       volumes:
-        - /etc/leap/config/vpnweb: /var/www
+        - /etc/leap/config: /var/www
       env:
         ADDR: ":8080"
   public_endpoints:
