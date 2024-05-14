@@ -28,7 +28,7 @@ Monitoring, alerting, log-collection and analysis, DNS and Let's Encrypt certifi
 ## Architecture
 
  - Reverse Proxy: runs nginx, DNS nameserver and provide the infrastructure front-end. 
- - Backend: runs the application services that the reverse proxy talks to, it runs, inter alia, the LEAP web API, the gateway selection service, and the infrastructure that provides monitoring and alerting.  
+ - Backend: runs the application services that the reverse proxy talks to, it runs, among other things, the LEAP web API, the gateway selection service, and the infrastructure that provides monitoring and alerting.  
  - Gateway/s: These runs openvpn and act as **VPN gateways, which ideally require two publicly addressable IP addresses, one for ingress and one for egress.**
 
 
