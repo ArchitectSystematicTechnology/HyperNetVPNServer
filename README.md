@@ -7,15 +7,15 @@ Monitoring, alerting, log-collection and analysis, DNS and Let's Encrypt certifi
 ## Pre-requisites
 
   - **Three different machines**: 
-     reverse-proxy, backend, gateway/s(atleast one, more the merrier) 
+     reverse-proxy, backend, gateway/s(at least one, more the merrier) 
 
-    These can be bare-metal, or virtual machines (eg. KVM). They should have a minimal Debian 11 (bullseye) installation and be reachable by SSH. 
+    These can be bare-metal, or virtual machines (eg. KVM). They should have a minimal Debian 12 (Bookworm) installation and be reachable by SSH. 
   
   - **You will need to pick a subdomain and delegate the DNS to the system to manage.**
     
     For example, if your domain is `example.com`, then you could delegate the subdomain `float.example.com`. 
-    You would do this by adding a `NS` record for `float.example.com` that points to `ns1.example.com` 
-    and then an `A` record for `ns1.example.com` that points to the IP address you use for the reverse proxy host (note: not the gateway IP).
+    You would do this on your nameserver or DNS provider: add a `NS` record for `float.example.com` that points to `ns1.example.com` 
+    and then an `A` record for `ns1.example.com` that points to the IP address you use for the reverse proxy host (note: not the gateway IP). 
     
     like:
 
@@ -29,12 +29,13 @@ Monitoring, alerting, log-collection and analysis, DNS and Let's Encrypt certifi
 
  - Reverse Proxy: runs nginx, DNS nameserver and provide the infrastructure front-end. 
  - Backend: runs the application services that the reverse proxy talks to, it runs, among other things, the LEAP web API, the gateway selection service, and the infrastructure that provides monitoring and alerting.  
- - Gateway/s: These runs openvpn and act as **VPN gateways, which ideally require two publicly addressable IP addresses, one for ingress and one for egress.**
+ - Gateway/s: These run openvpn and act as **VPN gateways, which ideally require two publicly addressable IP addresses, one for ingress and one for egress.**
+ - Bridge: runs a [obfsvpn](https://0xacab.org/leap/obfsvpn) service, can run on the same machine as the gateway.
 
 
 ## How to provision a new provider?
 
-The machines should be considered to be fully managed by this framework when things have been deployed. It will modify the system-level configuration, install packages, start services, etc. However, it assumes that certain functionality is present, either managed manually or with some external mechanisms: network configuration, partitions, file systems, and logical volumes must be externally (or manually) managed. SSH access and configuration must be externally managed _unless_ you explicitly set enable_ssh=true (and add SSH keys to your admin users), in which case deployment will take over the SSH configuration.
+The machines should be considered to be fully managed by this framework when things have been deployed. It will modify the system-level configuration, install packages, start services, etc. However, it assumes that certain functionality is present, either managed manually or with some external mechanisms: network configuration, partitions, file systems, and logical volumes must be externally (or manually) managed. SSH access and configuration must be externally managed _unless_ you explicitly set `enable_ssh=true` in `lilypad/group_vars/all/config.yml` (and add SSH keys to your admin users), in which case deployment will take over the SSH configuration.
 
 
 The following commands should be run  ***locally on your computer*** in order to install and deploy Lilypad on the remote machines.
@@ -50,7 +51,7 @@ cd lilypad
 
 ### 1. Install the float and LEAP platform pre-requisites
 
-This installation guide is tested on Debian Bullseye and Bookworm
+This installation guide is tested on Debian Bookworm.
 Other Linux distributions might need additional steps to install all requirements in the correct version.
 
 ```shell
@@ -71,30 +72,31 @@ source ./venv/bin/activate
 pip install -r ./requirements.txt
 ```
 
-This will create a virtual environment where we can install+version control specific python dependencies.
+This will create a virtual environment where we can install and version control specific python dependencies.
 
 When working on this project, if you're in a new shell, you'll need to run the `source ./venv/bin/activate` command again to re-enter the virtual environment.
 
 ### 2. Initialize the ansible vault
 
-... by creating a password file. Keep the public user ID of your OpenPGP keys at hand:
+... by creating a password file. Keep the public user ID / email address of your OpenPGP keys at hand:
 
 ```shell
+# If you don't have PGP keys yet, generate a new one using
+# gpg --full-generate-key
+
 tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 26 | gpg -ea -o .ansible_vault_pw.gpg
 ```
 
 The resulting `.ansible_vault_pw.gpg` will be automatically decrypted by Ansible at runtime (use of an agent, such as `gpg-agent` is advised).
 
-Configure your local environment to know where the ansible vault password is located:
+Configure your local environment to know where the ansible vault password is located. To do so add it to your shell environment initialization file (`~/.bashrc`) so it will be set automatically everytime:
 
 ```shell
-# on shell after cd into dir where lilypad is cloned 
-export ANSIBLE_VAULT_PASSWORD_FILE=.ansible_vault_pw.gpg
-# or on .bashrc
+# Add it to ~/.bashrc
 export ANSIBLE_VAULT_PASSWORD_FILE=<path-to-lilypad-repo>/.ansible_vault_pw.gpg
+# Reload your bashrc for the change to take effect
+source ~/.bashrc
 ```
-
-This environment variable will only be set for this shell, you will need to add it to your shell environment initialization file so it will be set automatically everytime.
 
 ### 3. Customize the environment 
 
