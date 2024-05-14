@@ -88,7 +88,10 @@ The resulting `.ansible_vault_pw.gpg` will be automatically decrypted by Ansible
 Configure your local environment to know where the ansible vault password is located:
 
 ```shell
+# on shell after cd into dir where lilypad is cloned 
 export ANSIBLE_VAULT_PASSWORD_FILE=.ansible_vault_pw.gpg
+# or on .bashrc
+export ANSIBLE_VAULT_PASSWORD_FILE=<path-to-lilypad-repo>/.ansible_vault_pw.gpg
 ```
 
 This environment variable will only be set for this shell, you will need to add it to your shell environment initialization file so it will be set automatically everytime.
