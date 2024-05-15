@@ -35,7 +35,7 @@ Monitoring, alerting, log-collection and analysis, DNS and Let's Encrypt certifi
 
 ## How to provision a new provider?
 
-The machines should be considered to be fully managed by this framework when things have been deployed. It will modify the system-level configuration, install packages, start services, etc. However, it assumes that certain functionality is present, either managed manually or with some external mechanisms: network configuration, partitions, file systems, and logical volumes must be externally (or manually) managed. SSH access and configuration must be externally managed _unless_ you explicitly set `enable_ssh=true` in `lilypad/group_vars/all/config.yml` (and add SSH keys to your admin users), in which case deployment will take over the SSH configuration.
+The machines should be considered to be fully managed by this framework when things have been deployed. It will modify the system-level configuration, install packages, start services, etc. However, it assumes that certain functionality is present, either managed manually or with some external mechanisms: network configuration, partitions, file systems, and logical volumes must be externally (or manually) managed. SSH access and configuration must be externally managed _unless_ you explicitly set `enable_ssh=true` in _lilypad/group_vars/all/config.yml_ (and add SSH keys to your admin users), in which case deployment will take over the SSH configuration.
 
 
 The following commands should be run  ***locally on your computer*** in order to install and deploy Lilypad on the remote machines.
@@ -87,9 +87,9 @@ When working on this project, if you're in a new shell, you'll need to run the `
 tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 26 | gpg -ea -o .ansible_vault_pw.gpg
 ```
 
-The resulting `.ansible_vault_pw.gpg` will be automatically decrypted by Ansible at runtime (use of an agent, such as `gpg-agent` is advised).
+The resulting _.ansible_vault_pw.gpg_ will be automatically decrypted by Ansible at runtime (use of an agent, such as `gpg-agent` is advised).
 
-Configure your local environment to know where the ansible vault password is located. To do so add it to your shell environment initialization file (`~/.bashrc`) so it will be set automatically everytime:
+Configure your local environment to know where the ansible vault password is located. To do so add it to your shell environment initialization file (_~/.bashrc_) so it will be set automatically everytime:
 
 ```shell
 # Add it to ~/.bashrc
@@ -100,23 +100,31 @@ source ~/.bashrc
 
 ### 3. Customize the environment 
 
-Open _hosts.yml_ and change `floatapp1` to your app host's hostname, and specify the `ansible_host` and `ip` values to be the IP addresses for that host. If you have more than one app server, then you would just create a copy of this block, modifying the values, being sure to keep the 'backend' group assigned to each one.
+#### 3.1. Configure the ansible host file
+Open _hosts.yml_ and change `floatapp1` to your app host's hostname, and specify the `ansible_host` and `ip` values to be the IP address for that host. If you have more than one app server, then you would just create a copy of this block, modifying the values, being sure to keep the 'backend' group assigned to each one.
 
-Configure the front-end reverse proxy with in the same way, change the `floatrp1` hostname to your hostname, and the `ansible_host` and `ip` to the IP it should have, and set the `location` value to where this server is located. For the egress_ip, put the secondary gateway ip.
+Configure the front-end reverse proxy and the gateway sections in the same way. Change the `floatrp1` to your hostname, and the `ansible_host` and `ip` to the IP it should have. Same for the gateway section: change `gateway1` to your gateway server's hostname and put the respective IP address under `ansible_host` and `ip`. Also set the `location` value to where this server is located. It's important to have two different IP addresses for the gateway server for ingress and egress traffic. Put the secondary gateway IP address in the `egress_ip` variable. If you have more than one gateway, just copy the whole block and modify its values respectively.
 
-Then edit _group_vars/all/config.yml_ and set your `domain_public` to the subdomain name that you delegated (eg. `float.example.com`), the `domain` can be set to `infra.example.com` as this is the internally managed domain. 
+#### 3.2. Configure _config.yml_ :)
+Edit _group_vars/all/config.yml_ and set your `domain_public` to the subdomain name that you delegated (eg. `float.example.com`), the `domain` can be set to `infra.example.com` as this is the internally managed domain. 
 
-The _config.yml_ contains a list of admins, a default hashed password and a set of ssh keys that will be able to connect to the system as root. If you do not change this password, then the user 'admin' and password 'password' are used. To change the hashed password you can run 
+The _config.yml_ contains a list of admins and a default hashed password. If you do not change this password, then the user 'admin' and password 'password' are used. To change the hashed password you can run 
 ```shell
 pwtool <type-here-your-password>
 ``` 
 and paste the output into the `password` variable. Have a look at [the common operators playbook](https://git.autistici.org/ai3/float/-/blob/master/docs/playbook.md#adding-an-admin-account) for additional options, such as setting up OTP or U2F tokens.
 
+Next specify ssh keys that will be able to connect to the system as root in the `admin` section under `ssh_keys`.
+
 This _config.yml_ also contains the credentials for an updated geoip database. The `geoip_account_id` and `geoip_license_key` values must be changed, you can register for an account on maxmind.com to obtain these. The geoip service helps end users to choose a gateway near them (usually faster).
 
-Then edit _group_vars/all/gateway_locations.yml_, _group_vars/all/provider_config.yml_ to match your environment. 
+#### 3.3. Specify your gateway locations
 
-NOTE: The value of `location` for a VPN gateway host, and the location keys in _gateway_locations.yml_, **must** match exactly one of [these city names](https://github.com/tidwall/cities/blob/master/cities.go).
+Edit _group_vars/all/gateway_locations.yml_ to match your environment. The value of `location` in the gateway section in _hosts.yml_ must match the key for a location in _gateway_locations.yml_. And the `name` variable in _gateway_locations.yml_ **must** match exactly one of [these city names](https://github.com/tidwall/cities/blob/master/cities.go). Make sure to have one corresponding entry in the _gateway_locations.yml_ for each gateway location configured in _hosts.yml_.
+
+#### 3.4. Specify your provider details
+
+Edit _group_vars/all/provider_config.yml_: choose a name and description for your provider and fill in your domain name instead of "example.com" in all other lines.
 
 ### 4. Generate credentials 
 
@@ -127,7 +135,7 @@ _Note:_ this is not the built-in float init-credentials, rather this is the LEAP
 float/float run playbooks/init-credentials
 ```
 
-***You should not see any red text*** in this process, if you do, stop now.
+***You should not see any red text*** in this process, if you do, stop now, doublecheck the configurations and try again.
 
 This will generate service-level credentials, which are automatically managed by the toolkit and are encrypted with ansible-vault. These include the internal X509 PKI for TLS service authentication, a SSH PKI for hosts, and application credentials. 
 
@@ -136,9 +144,9 @@ This will generate service-level credentials, which are automatically managed by
 ... to git, and pushing them to a repository. All auto-generated credentials are stored in the _credentials_dir_ - you will want to ensure that these are properly encrypted, checked into a git repository and kept private. The secret material is encrypted with ansible-vault, so it cannot be read without the access to the _.ansible_vault_pw_. If you commit these files, and push them to a respository, then you can share them with other admins, but be aware that these are secrets that should not be shared with anyone but trusted admins. If you gpg encrypted the _.ansible_vault_pw_, then that file is also encrypted and could also be committed.
 
 ### 6. Ensure SSH access
-Lilypad uses elliptic curves for ssh, ed25519. Make sure you can ssh to the hosts as root without being prompted for a password every time after having verified and accepted the correct host key. Try to login:
+Make sure you can ssh to all hosts (backend, reverse-proxy, gateway(s)) as root without being prompted for a password every time after having verified and accepted the correct host key. Try to login to each of your hosts by running:
 ```shell
-ssh -i ~/.ssh/id_ed25519 root@float.example.com
+ssh root@<host-ip>
 ```
 
 ### 7. Deploy the configuration 
