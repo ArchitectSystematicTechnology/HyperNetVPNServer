@@ -143,6 +143,8 @@ obfsvpn:
         OBFS4_HOST: "0.0.0.0"
         OPENVPN_HOST: "{{ gateway | default(groups['gateway'][0]) }}"
         OPENVPN_PORT: "80"
+        OBFS4_IP: "{{ ips | ansible.netcommon.ipv4 | first }}"
+        OBFSVPN_LOCATION: "unknown"
         HOP_PT: "0"
         OBFS4_DATA_DIR: /opt/obfsvpn/data
         OBFS4_KEY_FILE: /opt/obfsvpn/data/obfs4_state.json
