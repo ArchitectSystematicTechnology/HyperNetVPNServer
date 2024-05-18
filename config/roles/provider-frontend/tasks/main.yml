@@ -1,0 +1,38 @@
+# use the sspki role to create the credentials directory:
+# the sspki role should create the api endpont cert, and the full chain bundle
+# (containing the API endpoint CA and the generated cert) and install them
+
+- include_role:
+    name: sspki
+  vars:
+    sspki:
+      name: provider
+      SANs:
+        - "{{ domain_public[0] }}"
+      ca: "{{ credentials_dir }}/common/api_ca.crt"
+      ca_key: "{{ credentials_dir }}/common/api_ca.key"
+
+- name: Restart nginx because certificate has changed
+  systemd:
+    name: nginx.service
+    state: restarted
+  when: sspki_sign.changed
+
+- name: Add the nginx user to the provider-sspki group
+  user:
+    name: nginx
+    groups: provider-sspki
+    append: yes
+
+- name: Install provider nginx configuration
+  template:
+    src: provider.conf.j2
+    dest: /etc/nginx/sites-available/provider.conf
+  notify: reload NGINX
+
+- name: Enable provider nginx configuration
+  file:
+    dest: /etc/nginx/sites-enabled/provider.conf
+    src: ../sites-available/provider.conf
+    state: link
+  notify: reload NGINX

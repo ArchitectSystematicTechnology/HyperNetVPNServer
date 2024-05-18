@@ -119,7 +119,7 @@ provider:
       port: 8080
       scheme: http
       domains:
-        - "{{ domain_public[0] }}"
+        - "{{ default(['provider.' + domain_public[0]]) }}"
 
 obfsvpn:
   scheduling_group: bridge

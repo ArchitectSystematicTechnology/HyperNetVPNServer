@@ -1,11 +1,8 @@
-upstream be_vpnweb {
-  server vpnweb.{{ domain }}:{{ services['vpnweb'].public_endpoints[0].port }};
-}
 
 server {
   listen [::]:4430 ssl http2 ipv6only=off;
 
-  server_name {{ provider_config.api_domain}};
+  server_name {{ domain_public[0] }};
   include /etc/nginx/snippets/site-common.conf;
 
   ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
@@ -14,20 +11,20 @@ server {
   ssl_session_cache shared:SSL:10m;
   ssl_session_timeout 5m;
   ssl_dhparam /etc/nginx/dhparam;
-  ssl_certificate /etc/credentials/sspki/vpnweb/fullchain.crt;
-  ssl_certificate_key /etc/credentials/sspki/vpnweb/private.key;
+  ssl_certificate /etc/credentials/sspki/provider/fullchain.crt;
+  ssl_certificate_key /etc/credentials/sspki/provider/private.key;
 
   location / {
           include /etc/nginx/snippets/block.conf;
           include /etc/nginx/snippets/proxy.conf;
-          proxy_pass http://be_vpnweb;
+          proxy_pass http://be_provider_8080_provider;
           proxy_cache global;
   }
 
   # Route cert generation requests to menshen
-  location /3/cert {
+  location /ca.cert {
           include /etc/nginx/snippets/block.conf;
           include /etc/nginx/snippets/proxy.conf;
-          proxy_pass  http://be_menshen_9001_menshen/api/5/openvpn/cert;
+          proxy_pass http://be_api_8000_vpnweb;
   }
 }
