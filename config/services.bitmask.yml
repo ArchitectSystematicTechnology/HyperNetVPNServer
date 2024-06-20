@@ -11,7 +11,7 @@ menshen:
     - name: menshen
       port: 9001
       scheme: http
-      domains: "{{ custom_menshen_web_domains | default(['menshen.' + domain_public[0]]) }}"
+      domains: "{{ custom_menshen_web_domains | default(['api.' + domain_public[0]]) }}"
   containers:
     - name: menshen
       image: registry.0xacab.org/leap/menshen:main
@@ -69,39 +69,6 @@ openvpn:
         LOGLEVEL: DEBUG
         # to try and get stability of socket name
         SYSTEMD_INSTANCE: 1
-
-vpnweb:
-  scheduling_group: backend
-  num_instances: 1
-  monitoring_endpoints:
-    - job_name: vpnweb
-      port: 8001
-      scheme: http
-  containers:
-    - name: vpnweb
-      image: registry.0xacab.org/leap/vpnweb:1-0
-      port: 8000
-      volumes:
-        - /etc/leap: /etc/leap
-      env:
-        VPNWEB_API_PATH: /etc/leap/config
-        VPNWEB_CACRT: /etc/leap/ca/client_ca.crt
-        VPNWEB_CAKEY: /etc/leap/keys/client_ca.key
-        VPNWEB_PROVIDER_CA: /etc/leap/ca/api_ca.crt
-        VPNWEB_AUTH: "{{ vpnweb_auth | default('anon') }}"
-        VPNWEB_SIP_USER: "{{ vpnweb_sip_user | default('') }}"
-        VPNWEB_SIP_PASS: "{{ vpnweb_sip_password | default('') }}"
-        VPNWEB_AUTH_SECRET: "{{ vpnweb_auth_secret | default('') }}"
-        VPNWEB_SIP_HOST: "{{ vpnweb_sip_host | default('') }}"
-        VPNWEB_SIP_PORT: "{{ vpnweb_sip_port | default('') }}"
-        VPNWEB_SIP_LIBR_LOCATION: "{{ vpnweb_sip_location | default('') }}"
-        VPNWEB_SIP_TERMINATOR: "{{ vpnweb_sip_terminator | default('') }}"
-        VPNWEB_PASSWORD_POLICY: "{{ vpnweb_password_policy | default('') }}"
-  public_endpoints:
-    - name: api
-      port: 8000
-      scheme: http
-      domains: "{{ custom_vpn_web_domains | default(['api.' + domain_public[0]]) }}"
 
 provider:
   scheduling_group: backend
