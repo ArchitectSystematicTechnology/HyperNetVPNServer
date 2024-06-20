@@ -17,4 +17,4 @@
     - menshen
 
 - hosts: frontend
-  roles: [vpnweb-frontend, menshen-frontend]
+  roles: [menshen-frontend]
