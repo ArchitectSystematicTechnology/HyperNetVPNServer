@@ -1,15 +1,41 @@
 # use the sspki plugin to create a cert that is signed by the internal CA to
 # authenticate menshen
-
 - include_role:
     name: sspki
   vars:
     sspki:
-      name: menshen
+      name: api 
       SANs:
-        - "menshen.{{ domain_public[0] }}"
+        - "api.{{ domain_public[0] }}"
       ca: "{{ credentials_dir }}/common/api_ca.crt"
       ca_key: "{{ credentials_dir }}/common/api_ca.key"
+
+
+- name: Insert block below server_name api.domain.com;
+  lineinfile:
+    path: /etc/nginx/sites-available/float.conf
+    insertafter: 'server_name api.heaven.boblove.org;'
+    line: |
+      # Begin block to be inserted
+      # v3_compatability
+      location /ca.crt {
+              include /etc/nginx/snippets/block.conf;
+              include /etc/nginx/snippets/proxy.conf;
+              proxy_pass http://be_provider_8080_provider/ca.crt;
+      }
+
+      location /3/cert {
+              include /etc/nginx/snippets/block.conf;
+              include /etc/nginx/snippets/proxy.conf;
+              proxy_pass  http://be_menshen/api/5/openvpn/cert;
+      }
+      location /3/config/eip-service.json {
+              include /etc/nginx/snippets/block.conf;
+              include /etc/nginx/snippets/proxy.conf;
+              proxy_pass http://be_provider_8080_provider/3/config/eip-service.json;
+      }
+      # v3_compatability
+      # End block
 
 - name: Restart nginx because certificate has changed
   systemd:
@@ -20,7 +46,7 @@
 - name: Add the nginx user to the menshen-sspki group
   user:
     name: nginx
-    groups: menshen-sspki
+    groups: api-sspki
     append: yes
 
 - name: Install menshen nginx configuration
@@ -36,3 +62,8 @@
     state: link
   notify: reload NGINX
 
+- name: Install firewall config for vpnweb
+  copy:
+    src: "50menshen4430.firewall"
+    dest: "/etc/firewall/filter.d/50menshen4430"
+  notify: "reload firewall"
