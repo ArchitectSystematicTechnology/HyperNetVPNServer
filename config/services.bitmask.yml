@@ -8,7 +8,7 @@ menshen:
       port: 9002
       scheme: http
   public_endpoints:
-    - name: menshen
+    - name: api
       port: 9001
       scheme: http
       domains: "{{ custom_menshen_web_domains | default(['api.' + domain_public[0]]) }}"
@@ -21,6 +21,7 @@ menshen:
         - /etc/leap: /etc/leap
         - /opt/menshen: /opt/menshen
       env:
+        ENABLE_CERT_V3: true
         MENSHEN_PORT: 9001
         MENSHEN_METRICS_PORT: 9002
         MENSHEN_FROM_EIP_FILE: /etc/leap/config/3/eip-service.json
@@ -118,3 +119,4 @@ obfsvpn:
         OBFS4_PORT: "443"
         PERSIST_BRIDGE_STATE: "true"
         LOGLEVEL: DEBUG
+
