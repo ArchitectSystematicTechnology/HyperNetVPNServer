@@ -10,9 +10,8 @@
   roles:
     - bridge
 
-- hosts: vpnweb
+- hosts: menshen 
   roles:
-    - vpnweb
     - leap-prometheus
     - menshen
 
