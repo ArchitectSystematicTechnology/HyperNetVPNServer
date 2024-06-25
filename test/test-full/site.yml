@@ -6,10 +6,9 @@
     - kresd
     - openvpn
 
-- hosts: vpnweb
+- hosts: menshen
   roles:
-    - vpnweb
     - menshen
 
 - hosts: frontend
-  roles: [vpnweb-frontend]
+  roles: [menshen-frontend]
