@@ -14,5 +14,5 @@
 - name: "Install LEAP Endpoint CA (ca.crt)"
   copy:
     src: "{{ credentials_dir }}/common/api_ca.crt"
-    dest: "/etc/leap/config/vpnweb/ca.crt"
+    dest: "/etc/leap/config/ca.crt"
 
