@@ -1,5 +1,50 @@
 # use the sspki plugin to create a cert that is signed by the internal CA to
 # authenticate menshen
+- name: Remove comment blocks in file
+  replace:
+    path: /etc/nginx/sites-available/float.conf
+    regexp: "(?s)#Begin-block-apiv3(.*?)##End-block-apiv3"
+    replace: ""
+  register: replace_result
+
+- name: Insert block below server_name api.domain.com;
+  lineinfile:
+    backrefs: true
+    regexp: "(?s)#Begin-block-apiv3(.*?)##End-block-apiv3"
+    path: /etc/nginx/sites-available/float.conf
+    insertafter: 'server_name api.heaven.boblove.org;'
+    line: |
+      #Begin-block-apiv3
+      # v3 compatability
+      location = /ca.crt {
+              include /etc/nginx/snippets/block.conf;
+              include /etc/nginx/snippets/proxy.conf;
+              proxy_pass http://be_provider_8080_provider/ca.crt;
+      }
+      ## begin block
+      ## desktop app uses POST
+      location = /3/cert {
+              include /etc/nginx/snippets/block.conf;
+              include /etc/nginx/snippets/proxy.conf;
+              proxy_pass http://be_api_9001_menshen/3/cert;
+              proxy_method GET;
+      }
+      ## desktop app uses POST
+      ## end block
+      location = /3/config/eip-service.json {
+              include /etc/nginx/snippets/block.conf;
+              include /etc/nginx/snippets/proxy.conf;
+              proxy_pass http://be_provider_8080_provider/3/config/eip-service.json;
+      }
+      # v3 compatability
+      #End-block-apiv3
+- name: Run nginx -t to test configuration
+  command: nginx -t
+  register: nginx_test
+
+- name: Show test results
+  debug: var=nginx_test.stdout 
+
 - include_role:
     name: sspki
   vars:
@@ -10,32 +55,12 @@
       ca: "{{ credentials_dir }}/common/api_ca.crt"
       ca_key: "{{ credentials_dir }}/common/api_ca.key"
 
+- name: Run nginx -t to test configuration
+  command: nginx -t
+  register: nginx_test  
 
-- name: Insert block below server_name api.domain.com;
-  lineinfile:
-    path: /etc/nginx/sites-available/float.conf
-    insertafter: 'server_name api.heaven.boblove.org;'
-    line: |
-      # Begin block to be inserted
-      # v3_compatability
-      location /ca.crt {
-              include /etc/nginx/snippets/block.conf;
-              include /etc/nginx/snippets/proxy.conf;
-              proxy_pass http://be_provider_8080_provider/ca.crt;
-      }
-
-      location /3/cert {
-              include /etc/nginx/snippets/block.conf;
-              include /etc/nginx/snippets/proxy.conf;
-              proxy_pass  http://be_menshen/api/5/openvpn/cert;
-      }
-      location /3/config/eip-service.json {
-              include /etc/nginx/snippets/block.conf;
-              include /etc/nginx/snippets/proxy.conf;
-              proxy_pass http://be_provider_8080_provider/3/config/eip-service.json;
-      }
-      # v3_compatability
-      # End block
+- name: Show test results
+  debug: var=nginx_test.stdout
 
 - name: Restart nginx because certificate has changed
   systemd:
@@ -67,3 +92,4 @@
     src: "50menshen4430.firewall"
     dest: "/etc/firewall/filter.d/50menshen4430"
   notify: "reload firewall"
+

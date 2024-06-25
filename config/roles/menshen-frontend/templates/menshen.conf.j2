@@ -16,29 +16,25 @@ server {
   ssl_certificate /etc/credentials/sspki/api/fullchain.crt;
   ssl_certificate_key /etc/credentials/sspki/api/private.key;
 
+# v3 compatability  
+  location = /ca.crt {
+          include /etc/nginx/snippets/block.conf;
+          include /etc/nginx/snippets/proxy.conf;
+          proxy_pass http://be_provider_8080_provider/ca.crt;
+  }
+
+  location = /3/config/eip-service.json {
+          include /etc/nginx/snippets/block.conf;
+          include /etc/nginx/snippets/proxy.conf;
+          proxy_pass http://be_provider_8080_provider/3/config/eip-service.json;
+  }
+# v3 compatability
+
   location / {
           include /etc/nginx/snippets/block.conf;
           include /etc/nginx/snippets/proxy.conf;
           proxy_pass http://be_menshen;
           proxy_cache global;
   }
-# v3_compatability  
-  location /ca.crt {
-          include /etc/nginx/snippets/block.conf;
-          include /etc/nginx/snippets/proxy.conf;
-          proxy_pass http://be_provider_8080_provider/ca.crt;
-  }
 
-  location /3/cert {
-          include /etc/nginx/snippets/block.conf;
-          include /etc/nginx/snippets/proxy.conf;
-          proxy_pass  http://be_menshen/api/5/openvpn/cert;
-  }
-
-  location /3/config/eip-service.json {
-          include /etc/nginx/snippets/block.conf;
-          include /etc/nginx/snippets/proxy.conf;
-          proxy_pass http://be_provider_8080_provider/3/config/eip-service.json;
-  }
-# v3_compatability
 }
