@@ -78,6 +78,7 @@ def produce_eip_config(config, obfs4_state_dir, public_domain, transports):
             "ip_address": first_ipv4(v.get("ips")),
             "ip_address6": first_ipv6(v.get("ips")),
             "location": v.get("location", "Unknown"),
+            "bucket": v.get("bucket", ""),
             "capabilities": {
                 "adblock": False,
                 "filter_dns": False,
