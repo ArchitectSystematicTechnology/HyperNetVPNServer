@@ -24,7 +24,7 @@ menshen:
         ENABLE_CERT_V3: true
         MENSHEN_PORT: 9001
         MENSHEN_METRICS_PORT: 9002
-        MENSHEN_FROM_EIP_FILE: /etc/leap/config/3/eip-service.json
+        MENSHEN_FROM_EIP_FILE: /etc/leap/config/3/config/eip-service.json
         MENSHEN_OVPN_CA_CRT: /etc/leap/ca/client_ca.crt
         MENSHEN_OVPN_CA_KEY: /etc/leap/keys/client_ca.key
         MENSHEN_CA_FILE: /etc/leap/ca/api_ca.crt
