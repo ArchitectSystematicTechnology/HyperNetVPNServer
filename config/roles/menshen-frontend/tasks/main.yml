@@ -3,16 +3,17 @@
 - name: Remove comment blocks in file
   replace:
     path: /etc/nginx/sites-available/float.conf
-    regexp: "(?s)#Begin-block-apiv3(.*?)##End-block-apiv3"
+    regexp: '(?s)#Begin-block-apiv3.*?#End-block-apiv3'
     replace: ""
   register: replace_result
 
+#- name: Show test results
+#  debug: var=replace_result
+
 - name: Insert block below server_name api.domain.com;
   lineinfile:
-    backrefs: true
-    regexp: "(?s)#Begin-block-apiv3(.*?)##End-block-apiv3"
     path: /etc/nginx/sites-available/float.conf
-    insertafter: 'server_name api.heaven.boblove.org;'
+    insertafter: '^\s*server_name.*api.*;'
     line: |
       #Begin-block-apiv3
       # v3 compatability
