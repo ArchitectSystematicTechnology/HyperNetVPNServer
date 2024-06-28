@@ -10,11 +10,10 @@
   roles:
     - bridge
 
-- hosts: vpnweb
+- hosts: menshen 
   roles:
-    - vpnweb
     - leap-prometheus
     - menshen
 
 - hosts: frontend
-  roles: [vpnweb-frontend, menshen-frontend]
+  roles: [menshen-frontend]

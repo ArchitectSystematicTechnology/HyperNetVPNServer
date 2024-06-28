@@ -3,19 +3,32 @@ upstream be_menshen {
 }
 
 server {
-  listen [::]:443 ssl http2;
+  listen [::]:4430 ssl default_server ipv6only=off;
+  server_name {{ provider_config.api_domain }}; 
 
-  server_name menshen.{{ domain_public[0] }};
   include /etc/nginx/snippets/site-common.conf;
-
   ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
   ssl_ciphers HIGH:!aNULL:!MD5;
   ssl_prefer_server_ciphers on;
   ssl_session_cache shared:SSL:10m;
   ssl_session_timeout 5m;
   ssl_dhparam /etc/nginx/dhparam;
-  ssl_certificate /etc/credentials/sspki/menshen/fullchain.crt;
-  ssl_certificate_key /etc/credentials/sspki/menshen/private.key;
+  ssl_certificate /etc/credentials/sspki/api/fullchain.crt;
+  ssl_certificate_key /etc/credentials/sspki/api/private.key;
+
+# v3 compatability  
+  location = /ca.crt {
+          include /etc/nginx/snippets/block.conf;
+          include /etc/nginx/snippets/proxy.conf;
+          proxy_pass http://be_provider_8080_provider/ca.crt;
+  }
+
+  location = /3/config/eip-service.json {
+          include /etc/nginx/snippets/block.conf;
+          include /etc/nginx/snippets/proxy.conf;
+          proxy_pass http://be_provider_8080_provider/3/config/eip-service.json;
+  }
+# v3 compatability
 
   location / {
           include /etc/nginx/snippets/block.conf;
@@ -23,4 +36,5 @@ server {
           proxy_pass http://be_menshen;
           proxy_cache global;
   }
+
 }

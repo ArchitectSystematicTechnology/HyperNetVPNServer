@@ -3,3 +3,10 @@
   systemd:
     name: nginx.service
     state: restarted
+
+- name: reload firewall
+  systemd:
+    name: firewall.service
+    state: restarted
+
+

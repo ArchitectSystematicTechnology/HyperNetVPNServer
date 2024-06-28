@@ -1,26 +1,76 @@
 # use the sspki plugin to create a cert that is signed by the internal CA to
 # authenticate menshen
+- name: Remove comment blocks in file
+  replace:
+    path: /etc/nginx/sites-available/float.conf
+    regexp: '(?s)#Begin-block-apiv3.*?#End-block-apiv3'
+    replace: ""
+  register: replace_result
+
+#- name: Show test results
+#  debug: var=replace_result
+
+- name: Insert block below server_name api.domain.com;
+  lineinfile:
+    path: /etc/nginx/sites-available/float.conf
+    insertafter: '^\s*server_name.*api.*;'
+    line: |
+      #Begin-block-apiv3
+      # v3 compatability
+      location = /ca.crt {
+              include /etc/nginx/snippets/block.conf;
+              include /etc/nginx/snippets/proxy.conf;
+              proxy_pass http://be_provider_8080_provider/ca.crt;
+      }
+      ## begin block
+      ## desktop app uses POST
+      location = /3/cert {
+              include /etc/nginx/snippets/block.conf;
+              include /etc/nginx/snippets/proxy.conf;
+              proxy_pass http://be_api_9001_menshen/3/cert;
+              proxy_method GET;
+      }
+      ## desktop app uses POST
+      ## end block
+      location = /3/config/eip-service.json {
+              include /etc/nginx/snippets/block.conf;
+              include /etc/nginx/snippets/proxy.conf;
+              proxy_pass http://be_provider_8080_provider/3/config/eip-service.json;
+      }
+      # v3 compatability
+      #End-block-apiv3
+- name: Run nginx -t to test configuration
+  command: nginx -t
+  register: nginx_test
+
+- name: Show nginx config test results and reload NGINX
+  debug: var=nginx_test.stdout 
+  notify: reload NGINX
 
 - include_role:
     name: sspki
   vars:
     sspki:
-      name: menshen
+      name: api 
       SANs:
-        - "menshen.{{ domain_public[0] }}"
+        - "api.{{ domain_public[0] }}"
       ca: "{{ credentials_dir }}/common/api_ca.crt"
       ca_key: "{{ credentials_dir }}/common/api_ca.key"
 
-- name: Restart nginx because certificate has changed
-  systemd:
-    name: nginx.service
-    state: restarted
+- name: Run nginx -t to test configuration
+  command: nginx -t
+  register: nginx_test  
+  when: sspki_sign.changed
+
+- name: Show nginx config test results and reload NGINX
+  debug: var=nginx_test.stdout
+  notify: reload NGINX
   when: sspki_sign.changed
 
 - name: Add the nginx user to the menshen-sspki group
   user:
     name: nginx
-    groups: menshen-sspki
+    groups: api-sspki
     append: yes
 
 - name: Install menshen nginx configuration
@@ -35,4 +85,10 @@
     src: ../sites-available/menshen.conf
     state: link
   notify: reload NGINX
+
+- name: Install firewall config for menshen
+  copy:
+    src: "50menshen4430.firewall"
+    dest: "/etc/firewall/filter.d/50menshen4430"
+  notify: "reload firewall"
 
