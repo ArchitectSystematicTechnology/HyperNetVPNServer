@@ -85,7 +85,7 @@
     state: link
   notify: reload NGINX
 
-- name: Install firewall config for vpnweb
+- name: Install firewall config for menshen
   copy:
     src: "50menshen4430.firewall"
     dest: "/etc/firewall/filter.d/50menshen4430"
