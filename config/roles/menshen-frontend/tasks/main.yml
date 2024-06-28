@@ -42,8 +42,9 @@
   command: nginx -t
   register: nginx_test
 
-- name: Show test results
+- name: Show nginx config test results and reload NGINX
   debug: var=nginx_test.stdout 
+  notify: reload NGINX
 
 - include_role:
     name: sspki
@@ -58,14 +59,11 @@
 - name: Run nginx -t to test configuration
   command: nginx -t
   register: nginx_test  
+  when: sspki_sign.changed
 
-- name: Show test results
+- name: Show nginx config test results and reload NGINX
   debug: var=nginx_test.stdout
-
-- name: Restart nginx because certificate has changed
-  systemd:
-    name: nginx.service
-    state: restarted
+  notify: reload NGINX
   when: sspki_sign.changed
 
 - name: Add the nginx user to the menshen-sspki group
