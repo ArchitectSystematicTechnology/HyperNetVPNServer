@@ -14,7 +14,7 @@ menshen:
       domains: "{{ custom_menshen_web_domains | default(['api.' + domain_public[0]]) }}"
   containers:
     - name: menshen
-      image: registry.0xacab.org/leap/menshen:main
+      image: registry.0xacab.org/leap/menshen:1-1-0
       port: 9001
       volumes:
         - /var/lib/GeoIP: /var/lib/GeoIP/
@@ -93,7 +93,7 @@ obfsvpn:
   num_instances: all
   containers:
     - name: obfsvpn
-      image: registry.0xacab.org/leap/obfsvpn:server-main
+      image: registry.0xacab.org/leap/obfsvpn:server-v1-0-0
 
       # This is how float handles providing a "command" 🙃
       args: /opt/obfsvpn/start_obfsvpn.sh
