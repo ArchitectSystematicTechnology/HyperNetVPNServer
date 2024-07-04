@@ -12,6 +12,7 @@
 
 - hosts: menshen 
   roles:
+    - provider
     - leap-prometheus
     - menshen
 
