@@ -1,6 +1,12 @@
 ---
 - import_tasks: "credentials.yml"
 
+# to support vpnweb deprecation duirng upgrades from older deployments
+- name: Delete vpnweb config folder
+  file:
+    path: "/etc/leap/vpnweb"
+    state: absent
+
 # need to install the api dirs
 - name: "Create API versioned directories"
   file:

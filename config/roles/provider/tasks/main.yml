@@ -1,13 +1,13 @@
 # install the provider.json
 - name: "Create directory for provider.json to live"
   file:
-    path: "/etc/leap/config/vpnweb"
+    path: "/etc/leap/config"
     state: directory
 
 - name: "Render the provider.json template"
   template:
     src: 'provider-config.json.j2'
-    dest: '/etc/leap/config/vpnweb/provider.json'
+    dest: '/etc/leap/config/provider.json'
 
 # Make sure the endpoint CA is available at {{ provider_domain }}/ca.crt
 # eg. https://black.riseup.net/ca.crt

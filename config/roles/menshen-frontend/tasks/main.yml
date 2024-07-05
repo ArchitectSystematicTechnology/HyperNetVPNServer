@@ -7,6 +7,24 @@
     replace: ""
   register: replace_result
 
+##-> to support vpnweb deprecation for older deployments
+- name: Delete nginx vpnweb.conf if it exists
+  file:
+    path: "/etc/nginx/sites-enabled/vpnweb.conf"
+    state: absent
+
+- name: Check if file exists
+  stat:
+    path: "/etc/nginx/sites-available/vpnweb.conf"
+  register: vpnweb_conf_file
+
+- name: Rename deprecated vpnweb config
+  file:
+    src: "/etc/nginx/sites-available/vpnweb.conf"
+    dest: "/etc/nginx/sites-available/.deprecated-vpnweb.conf"
+  when: vpnweb_conf_file.stat.exists
+##<- to support vpnweb deprecation for older deployments
+
 #- name: Show test results
 #  debug: var=replace_result
 
