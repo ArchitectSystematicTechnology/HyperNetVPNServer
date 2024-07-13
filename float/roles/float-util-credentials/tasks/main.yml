@@ -76,7 +76,7 @@
         params: "{{ item.0.x509_params|default({}) }}"
         private_key_path: "/etc/credentials/{{ item.0.credentials.ca_tag | default(default_ca_tag) }}/{{ item.0.credentials.name }}/{{ item.0.mode }}/private_key.pem"
         check: false
-      when: "item.1.changed"
+      when: "item.1.changed or (force_renew_credentials | default(False))"
       loop: "{{ credentials | zip(x509_should_update.results) | list }}"
       register: x509_csr
 

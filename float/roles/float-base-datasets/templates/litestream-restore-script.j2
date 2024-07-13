@@ -6,7 +6,7 @@
 set -a
 . /etc/litestream/{{ dataset_tag }}.env
 
-/usr/bin/litestream restore --config=/etc/litestream/{{ dataset_tag }}.yml --if-replica-exists -v "{{ dataset_path }}/{{ dataset_filename }}"
+/usr/bin/litestream restore --config=/etc/litestream/{{ dataset_tag }}.yml --if-replica-exists "{{ dataset_path }}/{{ dataset_filename }}"
 
 if [ $? -gt 0 ]; then
     echo "ERROR: restore failed!" >&2

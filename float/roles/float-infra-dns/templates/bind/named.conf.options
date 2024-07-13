@@ -30,6 +30,9 @@ options {
 
   dnssec-validation auto;
 
+  // For re-signing with dynamic updates.
+  key-directory "/etc/credentials/dnssec";
+
   notify no;
   rrset-order { order random; };
 

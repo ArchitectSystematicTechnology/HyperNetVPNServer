@@ -32,6 +32,6 @@ view "external-in" in {
   // Include manually-maintained zones.
   include "/etc/bind/named.conf.external-custom-zones";
 
-// Include zonetool-maintained zones.
-  include "/etc/bind/named.conf.zones";
+  // Include zonetool-maintained zones (in-view references).
+  include "/etc/bind/named.conf.zones.in-view";
 };
