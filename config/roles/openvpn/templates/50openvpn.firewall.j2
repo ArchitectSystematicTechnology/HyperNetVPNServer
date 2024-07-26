@@ -8,6 +8,27 @@ add_rule6 -A user-input -p tcp -m tcp -d {{ ips | ansible.netcommon.ipv6 | first
 add_rule6 -A user-input -p udp -m udp -d {{ ips | ansible.netcommon.ipv6 | first }} --dport 80 -j ACCEPT
 {% endif %}
 
+
+# deny outgoing ports that shouldn't be used
+# Strict egress filtering:
+# SMTP (TCP 25)
+# Trivial File Transfer Protocol - TFTP (UDP 69)
+# MS RPC (TCP & UDP 135)
+# NetBIOS/IP (TCP/UDP 139 & UDP 137, UDP 138)
+# Simple Network Management Protocol – SNMP (UDP/TCP 161-162)
+# SMB/IP (TCP/UDP 445)
+# Syslog (UDP 514)
+# Gamqowi trojan: TCP 4661
+# Mneah trojan: TCP 4666
+add_rule4 -A FORWARD -i tun0 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
+add_rule4 -A FORWARD -i tun1 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
+add_rule4 -A FORWARD -i tun0 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
+add_rule4 -A FORWARD -i tun1 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
+add_rule6 -A FORWARD -i tun0 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
+add_rule6 -A FORWARD -i tun1 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
+add_rule6 -A FORWARD -i tun0 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
+add_rule6 -A FORWARD -i tun1 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
+
 # let ipv4 tcp vpn hosts reach the internet
 add_rule4 -A FORWARD -s {{ openvpn_tcp_network | ipaddr('network/prefix') }} -o {{ ansible_default_ipv4.interface }} -j ACCEPT
 # allow re/established tcp *inbound* to vpn hosts
@@ -40,26 +61,6 @@ add_rule6 -A FORWARD -i tun0 -p tcp -o tun0 -j DROP
 # deny v6 udp client-to-client communication
 add_rule6 -A FORWARD -i tun1 -p udp -o tun0 -j DROP
 {% endif %}
-
-# deny outgoing ports that shouldn't be used
-# Strict egress filtering:
-# SMTP (TCP 25)
-# Trivial File Transfer Protocol - TFTP (UDP 69)
-# MS RPC (TCP & UDP 135)
-# NetBIOS/IP (TCP/UDP 139 & UDP 137, UDP 138)
-# Simple Network Management Protocol – SNMP (UDP/TCP 161-162)
-# SMB/IP (TCP/UDP 445)
-# Syslog (UDP 514)
-# Gamqowi trojan: TCP 4661
-# Mneah trojan: TCP 4666
-add_rule4 -A OUTPUT -o tun0 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
-add_rule4 -A OUTPUT -o tun1 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
-add_rule4 -A OUTPUT -o tun0 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
-add_rule4 -A OUTPUT -o tun1 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
-add_rule6 -A OUTPUT -o tun0 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
-add_rule6 -A OUTPUT -o tun1 -p tcp -m multiport --dports 25,135,139,161,162,445,4661,4666 -j DROP
-add_rule6 -A OUTPUT -o tun0 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
-add_rule6 -A OUTPUT -o tun1 -p udp -m multiport --dports 69,135,139,137,138,161,162,445,514 -j DROP
 
 # allow tcp vpn clients to resolve DNS (i.e. query knot-resolver)
 add_rule -A user-input -i tun0 -p udp --dport 53 -j ACCEPT
