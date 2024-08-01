@@ -364,13 +364,12 @@ def command_create_env(path, services, passwords, playbooks,
     # Catch ValueError to handle parsing errors for composite-valued
     # options and print a friendly message.
     try:
-        all_vars['inventory']['hosts'] = _random_hosts(
-            num_hosts,
-            _parse_additional_host_groups(additional_host_groups),
-        )
+        extra_memberships = _parse_additional_host_groups(additional_host_groups)
     except ValueError:
         print('Unable to parse additional-host-group spec', file=sys.stderr)
         return 1
+
+    all_vars['inventory']['hosts'] = _random_hosts(num_hosts, extra_memberships)
 
     all_vars['ram'] = ram
     all_vars['config']['domain_public'] = [domain]

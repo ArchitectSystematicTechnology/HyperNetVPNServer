@@ -29,6 +29,11 @@
   notify: reload bind
   register: dns_config
 
+- name: Install in-view.sed script
+  copy:
+    src: "in-view.sed"
+    dest: "/etc/bind/in-view.sed"
+
 - name: Create bind9 zone dirs
   file:
     path: "/etc/bind/zones"
@@ -60,6 +65,7 @@
   changed_when: false
   with_items:
     - named.conf.zones
+    - named.conf.zones.in-view
     - named.conf.internal-custom-zones
     - named.conf.external-custom-zones
 
@@ -103,13 +109,17 @@
   file:
     path: "/etc/credentials/dnssec"
     state: directory
-    mode: 0700
+    owner: root
+    group: bind
+    mode: 0750
 
 - name: Install DNSSEC keys
   copy:
     src: "{{ item }}"
     dest: "/etc/credentials/dnssec/{{ item | basename }}"
-    mode: 0600
+    owner: root
+    group: bind
+    mode: 0640
   with_fileglob:
     - "{{ credentials_dir }}/dnssec/K*.private"
     - "{{ credentials_dir }}/dnssec/K*.key"

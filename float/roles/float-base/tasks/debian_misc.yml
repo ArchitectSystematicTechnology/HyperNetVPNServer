@@ -38,6 +38,11 @@
     dest: "/etc/sysctl.conf"
   notify: reload sysctl
 
+- name: Configure kernel modules
+  template:
+    src: "modules.conf.j2"
+    dest: "/etc/modules-load.d/float-base.conf"
+
 - name: Configure systemd
   copy:
     src: "system.conf"

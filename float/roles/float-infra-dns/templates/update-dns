@@ -3,7 +3,11 @@
 # Wrapper for zonetool, with the right options.
 #
 
-exec /usr/bin/zonetool \
+set -e
+
+rndc freeze
+
+/usr/bin/zonetool \
      --config /etc/dns/zonetool.yml \
      --named-conf /etc/bind/named.conf.zones \
      --output-dir /etc/bind/zones --delete \
@@ -11,4 +15,12 @@ exec /usr/bin/zonetool \
      --ds-dir /etc/bind/dnssec-ds \
      --nsec3-salt {{ dnssec_nsec3_salt }} \
      --dnssec-refresh \
+     --update-policy 'grant acme zonesub TXT' \
      /etc/dns/manual /etc/dns/auto
+
+sed -n -f /etc/bind/in-view.sed \
+     /etc/bind/named.conf.zones \
+     > /etc/bind/named.conf.zones.in-view
+
+rndc thaw
+

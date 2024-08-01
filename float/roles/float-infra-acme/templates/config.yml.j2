@@ -10,9 +10,9 @@ http:
   enabled: true
 dns:
   enabled: true
-  tsig_key_name: "acme"
-  tsig_key_algo: "{{ acme_tsig_key.algo }}"
-  tsig_key_secret: "{{ acme_tsig_key.private }}"
+  tsig_key_name: "acme."
+  tsig_key_algo: "{{ acme_tsig_key.algo | lower }}."
+  tsig_key_secret: "{{ acme_tsig_key.public }}"
   nameservers:
 {% for h in services['dns'].hosts | sort %}
     - {{ h }}.dns.{{ domain }}

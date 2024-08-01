@@ -53,6 +53,6 @@ class ActionModule(ActionBase):
                     'x509ca', 'init', '--subject=' + ca_subject,
                     '--ca-cert=' + ca_cert_path, '--ca-key=' + tmp_ca_key_path])
                 vault_encrypt(tmp_ca_key_path, ca_key_path)
-        
+
         result['changed'] = changed
         return result
