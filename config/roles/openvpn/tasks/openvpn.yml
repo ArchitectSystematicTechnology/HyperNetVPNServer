@@ -57,6 +57,13 @@
     - net.core.wmem_max
     - net.core.wmem_default
 
+# Set maximum size of the network interface's receive queue
+# as required for kcp - ( see #95 )
+- sysctl:
+    name: net.core.netdev_max_backlog
+    value: '2048'
+    sysctl_set: yes
+
 # Increase the conntrack buckets
 - sysctl:
     name: net.netfilter.nf_conntrack_buckets
