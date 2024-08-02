@@ -1,11 +1,22 @@
 # Allow incoming connections to ipv4 port 80 for both udp and tcp
 add_rule4 -A user-input -p tcp -m tcp -d {{ ips | ansible.netcommon.ipv4 | first }} --dport 80 -j ACCEPT
 add_rule4 -A user-input -p udp -m udp -d {{ ips | ansible.netcommon.ipv4 | first }} --dport 80 -j ACCEPT
+{% if direct_openvpn_access is defined and direct_openvpn_access == false -%}
+add_rule4 -I user-input -p udp --dport 80 -j DROP
+add_rule4 -I user-input -p tcp --dport 80 -j DROP
+{% endif %}
+
 
 {% if openvpn_tcp_network6 is defined and openvpn_tcp_network6|d('')|length > 0 -%}
 # Allow incoming connections to ipv6 port 80 for both udp and tcp
 add_rule6 -A user-input -p tcp -m tcp -d {{ ips | ansible.netcommon.ipv6 | first }} --dport 80 -j ACCEPT
 add_rule6 -A user-input -p udp -m udp -d {{ ips | ansible.netcommon.ipv6 | first }} --dport 80 -j ACCEPT
+
+{% if direct_openvpn_access is defined and direct_openvpn_access == false -%}
+add_rule6 -I user-input -p udp --dport 80 -j DROP
+add_rule6 -I user-input -p tcp --dport 80 -j DROP
+{% endif %}
+
 {% endif %}
 
 
