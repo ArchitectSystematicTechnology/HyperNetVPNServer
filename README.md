@@ -116,7 +116,7 @@ The _config.yml_ contains a list of admins and a default hashed password. If you
 ```shell
 pwtool <type-here-your-password>
 ``` 
-and paste the output into the `password` variable. Have a look at [the common operators playbook](https://git.autistici.org/ai3/float/-/blob/master/docs/playbook.md#adding-an-admin-account) for additional options, such as setting up OTP or U2F tokens.
+and paste the output into the `password` variable. Have a look at [the common operators playbook](https://git.autistici.org/ai3/float/-/blob/master/docs/reference.md#adding-an-admin-account) for additional options, such as setting up OTP or U2F tokens.
 
 Next specify ssh keys that will be able to connect to the system as root in the `admin` section under `ssh_keys`. It's recommended to use ed25519 instead of RSA keys.
 
