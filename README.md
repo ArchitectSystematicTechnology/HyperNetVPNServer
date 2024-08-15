@@ -107,6 +107,10 @@ Open _hosts.yml_ and change `floatapp1` to your app host's hostname, and specify
 
 Configure the front-end reverse proxy and the gateway sections in the same way. Change the `floatrp1` to your hostname, and the `ansible_host` and `ip` to the IP it should have. Same for the gateway section: change `gateway1` to your gateway server's hostname and put the respective IP address under `ansible_host` and `ip`. Also set the `location` value to where this server is located. It's important to have two different IP addresses for the gateway server for ingress and egress traffic. Put the secondary gateway IP address in the `egress_ip` variable. If you have more than one gateway, just copy the whole block and modify its values respectively.
 
+You can control whether direct openvpn access is permitted for each gateway host by adjusting the `direct_openvpn_access` flag. This is enabled by default, you can disable for each gateway by kepping the variable as `false` under each gateway host.      
+Enabling this flag will mandate that users to use censorship-circumvention methods by default.    
+It's important to note that direct connections to openvpn can be easily detected by intermediaries
+
 _NOTE:_ If you use IPv6 addresses uncomment and adapt the gateway example given in the section `gateway2`.
 
 #### 3.2. Configure _config.yml_ :)
