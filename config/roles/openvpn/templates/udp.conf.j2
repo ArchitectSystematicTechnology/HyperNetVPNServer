@@ -6,7 +6,10 @@ ca /etc/leap/ca/leap_ca_bundle.crt
 cert /etc/credentials/sspki/openvpn/cert.pem
 key /etc/credentials/sspki/openvpn/private.key
 dh /etc/leap/keys/dh.pem
-data-ciphers AES-256-GCM:AES-128-CBC
+data-ciphers AES-256-GCM:CHACHA20-POLY1305
+{% if openvpn_dco_enabled is defined and openvpn_dco_enabled == false -%}
+disable-dco
+{% endif %}
 tls-version-min 1.2
 dev tun
 duplicate-cn

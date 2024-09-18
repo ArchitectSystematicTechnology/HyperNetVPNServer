@@ -1,0 +1,12 @@
+- name: Install packages
+  apt:
+    name: 
+      - openvpn-dco-dkms
+      - dkms
+      - linux-headers-amd64
+    state: present
+
+- name: Add the openvpn-dco module
+  modprobe:
+    name: ovpn-dco-v2
+    state: present
