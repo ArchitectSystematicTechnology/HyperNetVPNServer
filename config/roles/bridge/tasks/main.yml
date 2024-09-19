@@ -4,6 +4,7 @@
     src: "{{ credentials_dir }}/obfs4/"
     dest: "/opt/obfsvpn/data"
     owner: docker-obfsvpn
+    group: docker-obfsvpn
     mode: 0640
 
 - name: Install firewall config for obfsvpn
@@ -16,15 +17,17 @@
   file:
     path: "/opt/obfsvpn/data/obfs4_state.json"
     owner: docker-obfsvpn
+    group: docker-obfsvpn
     mode: 0640
 
 - name: Make sure obfs4 obfs4_bridgeline.txt file ownership is correct
   file:
     path: "/opt/obfsvpn/data/obfs4_cert.txt"
     owner: docker-obfsvpn
+    group: docker-obfsvpn
     mode: 0640
 
-- name: Create data dir for kcp
+- name: Create data dir for kcp and introducer
   file:
     path: "/opt/obfsvpn/data/{{ item }}"
     state: directory
@@ -36,6 +39,12 @@
 - name: adding existing user docker-obfsvpn-kcp to group docker-obfsvpn
   user:
     name: docker-obfsvpn-kcp
+    groups: docker-obfsvpn
+    append: yes
+
+- name: adding existing user docker-obfsvpn-introducer to group docker-obfsvpn
+  user:
+    name: docker-obfsvpn-introducer
     groups: docker-obfsvpn
     append: yes
 
