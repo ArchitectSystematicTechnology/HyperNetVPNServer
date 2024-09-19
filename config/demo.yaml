@@ -28,6 +28,7 @@ gateways:
         - host: pt.demo.bitmask.net
         - ip_address: 37.218.247.60
         - location: Amsterdam
+          bucket: "demo-bucket-1"
         - transports:
             - [ "openvpn", "tcp", "443"]
             - [ "obfs4", "tcp", "23042"]
