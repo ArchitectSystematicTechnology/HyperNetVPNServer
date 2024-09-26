@@ -30,6 +30,7 @@ variables:
       --additional-host-group=gateway=host3
       --additional-host-group=bridge=host3
       --additional-host-group=bridge-kcp=host3
+      --additional-host-group=bridge-introducer=host3
       --additional-config ${TEST_DIR}/group_vars/all/openvpn_config.yml
       --additional-config ${TEST_DIR}/group_vars/all/custom_config.yml
       --additional-config ${TEST_DIR}/group_vars/all/gateway_locations.yml
