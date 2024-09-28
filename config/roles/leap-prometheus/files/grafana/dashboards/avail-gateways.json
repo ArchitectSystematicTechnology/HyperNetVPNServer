@@ -1,0 +1,109 @@
+{
+  "type": "barchart",
+  "title": "Total gatway status tests/network success/failure",
+  "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 12,
+    "h": 8
+  },
+  "id": 14,
+  "targets": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P49960DE5880E8C68"
+      },
+      "refId": "A",
+      "editorMode": "code",
+      "expr": "sum by (status)(oonifetch_gateway_status_per_network{exported_job=\"ooni_fetch\"}offset 2h) \n",
+      "legendFormat": "__auto",
+      "range": true
+    }
+  ],
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "lineWidth": 1,
+        "fillOpacity": 40,
+        "gradientMode": "none",
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "off"
+        }
+      },
+      "color": {
+        "mode": "thresholds"
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "color": "red",
+            "value": null
+          },
+          {
+            "color": "green",
+            "value": 80
+          }
+        ]
+      }
+    },
+    "overrides": [
+      {
+        "matcher": {
+          "id": "byName",
+          "options": "n/a"
+        },
+        "properties": [
+          {
+            "id": "color",
+            "value": {
+              "mode": "fixed",
+              "fixedColor": "yellow"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "datasource": {
+    "uid": "P49960DE5880E8C68",
+    "type": "prometheus"
+  },
+  "pluginVersion": "9.4.7",
+  "options": {
+    "orientation": "auto",
+    "xTickLabelRotation": 0,
+    "xTickLabelSpacing": 100,
+    "showValue": "auto",
+    "stacking": "percent",
+    "groupWidth": 0.7,
+    "barWidth": 0.86,
+    "barRadius": 0,
+    "fullHighlight": false,
+    "tooltip": {
+      "mode": "single",
+      "sort": "none"
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "list",
+      "placement": "bottom",
+      "calcs": []
+    },
+    "xField": "Time"
+  }
+}
