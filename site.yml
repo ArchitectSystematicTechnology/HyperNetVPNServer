@@ -10,7 +10,11 @@
   roles:
     - bridge
 
-- hosts: menshen 
+- hosts: bridge-introducer
+  roles:
+    - bridge-introducer
+
+- hosts: menshen
   roles:
     - provider
     - leap-prometheus

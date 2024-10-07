@@ -84,7 +84,7 @@ obfsvpn:
   num_instances: all
   containers:
     - name: obfsvpn
-      image: registry.0xacab.org/leap/obfsvpn:server-v1-0-0
+      image: registry.0xacab.org/leap/obfsvpn:server-v1-2-0
 
       # This is how float handles providing a "command" 🙃
       args: /opt/obfsvpn/start_obfsvpn.sh
@@ -117,7 +117,7 @@ obfsvpn-kcp:
   num_instances: all
   containers:
     - name: obfsvpn
-      image: registry.0xacab.org/leap/obfsvpn:server-main
+      image: registry.0xacab.org/leap/obfsvpn:server-v1-2-0
 
       # This is how float handles providing a "command" 🙃
       args: /opt/obfsvpn/start_obfsvpn.sh
@@ -139,6 +139,37 @@ obfsvpn-kcp:
         OBFS4_IP: "{{ ips | ansible.netcommon.ipv4 | first }}"
         OBFSVPN_LOCATION: "{{ hostvars[inventory_hostname]['location'] | default('unknown') }}"
         OBFS4_PORT: "4431"
+        CONTROL_PORT: "9091"
+        PERSIST_BRIDGE_STATE: "true"
+        LOGLEVEL: DEBUG
+
+obfsvpn-introducer:
+  scheduling_group: bridge-introducer
+  num_instances: all
+  containers:
+    - name: obfsvpn
+      image: registry.0xacab.org/leap/obfsvpn:server-v1-2-0
+      args: /opt/obfsvpn/start_obfsvpn.sh
+      ports: [443]
+      drop_capabilities: false
+      docker_options: '--cap-add=NET_ADMIN --cap-add=CAP_NET_BIND_SERVICE'
+      volumes:
+        - /opt/obfs4-introducer/: /opt/obfsvpn/data
+        - /dev/net: /dev/net
+      env:
+        HOP_PT: "0"
+        KCP: "0"
+        TCP: "1"
+        PROTO: "TCP"
+        OBFS4_HOST: "0.0.0.0"
+        # TODO : rename these var's for running in introducer mode(till then read it as REMOTE_HOST and REMOTE_PORT)
+        OPENVPN_HOST: "{{ hostvars[inventory_hostname]['nginx_host'] | default('localhost') }}" 
+        OPENVPN_PORT: "443"
+        OBFS4_DATA_DIR: /tmp
+        OBFS4_KEY_FILE: /opt/obfsvpn/data/obfs4_state.json
+        OBFS4_IP: "{{ ips | ansible.netcommon.ipv4 | first }}"
+        OBFSVPN_LOCATION: "{{ hostvars[inventory_hostname]['location'] | default('unknown') }}"
+        OBFS4_PORT: "8080"
         CONTROL_PORT: "9091"
         PERSIST_BRIDGE_STATE: "true"
         LOGLEVEL: DEBUG

@@ -1,0 +1,33 @@
+---
+- name: Check if introducer state exists
+  local_action: stat path={{ credentials_dir }}/obfs4-introducer/obfs4_state.json
+  register: introducer_state_file
+
+- name: "Generate obfs4 cert and json"
+  local_action: shell {{playbook_dir}}/scripts/gen-obfs4-state.py {{ credentials_dir }}/obfs4-introducer
+  when: not introducer_state_file.stat.exists
+
+- name: "Encrypt obfs4 state file"
+  local_action: shell ansible-vault encrypt {{ credentials_dir }}/obfs4-introducer/obfs4_state.json
+  when: "lookup('env', 'ANSIBLE_VAULT_PASSWORD_FILE') and not introducer_state_file.stat.exists"
+
+- name: Install obfs4 state
+  copy:
+    src: "{{ credentials_dir }}/obfs4-introducer/"
+    dest: "/opt/obfs4-introducer"
+    owner: docker-obfsvpn-introducer
+    group: docker-obfsvpn-introducer
+    mode: 0640
+
+- name: Install firewall config for allowing obfsvpn ports
+  template:
+    src: "50introducer.firewall.j2"
+    dest: "/etc/firewall/filter.d/50obfsvpn"
+  notify: "reload firewall"
+
+- name: Create data dir for kcp and other obfs modes
+  file:
+    path: "/opt/obfs4-introducer/data"
+    state: directory
+    owner: "docker-obfsvpn-introducer"
+    group: "docker-obfsvpn-introducer"

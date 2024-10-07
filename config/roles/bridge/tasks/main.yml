@@ -27,7 +27,7 @@
     group: docker-obfsvpn
     mode: 0640
 
-- name: Create data dir for kcp and introducer
+- name: Create data dir for kcp and other obfs modes
   file:
     path: "/opt/obfsvpn/data/{{ item }}"
     state: directory
@@ -41,10 +41,3 @@
     name: docker-obfsvpn-kcp
     groups: docker-obfsvpn
     append: yes
-
-- name: adding existing user docker-obfsvpn-introducer to group docker-obfsvpn
-  user:
-    name: docker-obfsvpn-introducer
-    groups: docker-obfsvpn
-    append: yes
-
