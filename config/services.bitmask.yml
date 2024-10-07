@@ -159,7 +159,7 @@ obfsvpn-introducer:
     - name: obfsvpn
       image: registry.0xacab.org/leap/obfsvpn:server-v1-2-0
       args: /opt/obfsvpn/start_obfsvpn.sh
-      ports: [8080]
+      ports: [443]
       drop_capabilities: false
       docker_options: '--cap-add=NET_ADMIN --cap-add=CAP_NET_BIND_SERVICE'
       volumes:
@@ -171,8 +171,8 @@ obfsvpn-introducer:
         TCP: "1"
         PROTO: "TCP"
         OBFS4_HOST: "0.0.0.0"
-        # TODO : rename these var's for running in introducer mode(till then read it as REMOT_HOST and REMOTE_PORT)
-        OPENVPN_HOST: "{{ hostvars[inventory_hostname]['menshen_endpoint'] | default('localhost') }}" 
+        # TODO : rename these var's for running in introducer mode(till then read it as REMOTE_HOST and REMOTE_PORT)
+        OPENVPN_HOST: "{{ hostvars[inventory_hostname]['nginx_host'] | default('localhost') }}" 
         OPENVPN_PORT: "443"
         OBFS4_DATA_DIR: /tmp
         OBFS4_KEY_FILE: /opt/obfsvpn/data/obfs4_state.json
